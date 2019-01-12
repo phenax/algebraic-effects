@@ -2,6 +2,9 @@
 import { Operation, isOperation, VALUE_HANDLER } from './utils';
 import globalHandlers from './operations';
 
+// type Runner = (GeneratorFunction, ...a) -> Promise
+
+// createRunner :: (Object Function) -> Runner
 const createRunner = (handlers = {}) => {
   // TODO: Validate if all handlers are specified
   return (generator, ...args) => new Promise((resolve, reject) => {
@@ -27,6 +30,7 @@ const createRunner = (handlers = {}) => {
   });
 };
 
+// createEffect :: (String, Object *) -> Effect
 export const createEffect = (name, operations) => {
   const effectful = {
     name,
@@ -42,10 +46,12 @@ export const createEffect = (name, operations) => {
   return effectful;
 };
 
+// composeEffects :: ...Effect -> Effect
 export const composeEffects = (...effects) => {
   const name = `Effect(${effects.map(({ name }) => name).join(', ')})`;
   const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
   return createEffect(name, operations);
 };
 
+// run :: Runner
 export const run = createRunner();
