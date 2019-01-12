@@ -1,18 +1,13 @@
 
-import { createEffect, sleep } from '../src';
-
-const Exception = createEffect('Exception', {
-  throw: [], // NOTE: Unneccassary api
-});
-
-Exception.try = Exception.handler({
-  throw: (resume, end, throw_) => msg => throw_(msg),
-});
+import { sleep } from '../src';
+import Exception from '../src/Exception';
 
 describe('Exception', () => {
+  // Divide function with added delays
   const divide = function *(a, b) {
+    yield sleep(100);
     if (b === 0) yield Exception.throw(new Error('Invalid operation'));
-    // yield sleep(500);
+    yield sleep(100);
     yield a / b;
   };
 

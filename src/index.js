@@ -3,7 +3,15 @@ const isOperation = x => x && x.$$type === OPERATION;
 
 const VALUE_HANDLER = (_, end) => x => end(x);
 
+// type Operation = ...a -> { name :: String, payload :: a }
 const Operation = name => (...payload) => ({ name, payload, $$type: OPERATION });
+
+export const sleep = Operation('sleep');
+const globalHandlers = {
+  sleep: resume => duration => {
+    setTimeout(resume, duration);
+  },
+};
 
 export const createEffect = (name, operations) => {
   const effectful = {
@@ -16,23 +24,21 @@ export const createEffect = (name, operations) => {
   
         const throwError = reject;
         const end = resolve;
-        const resume = (...args) => {
-          const { value, done } = g.next(...args);
-          console.log('>> x', value, done);
+        const resume = data => {
+          const { value, done } = g.next(data);
+
           if (done) return end(value);
-          return value;
+
+          if (isOperation(value)) {
+            const effectHandler = handlers[value.name] || globalHandlers[value.name];
+            effectHandler(resume, end, throwError)(...value.payload);
+          } else {
+            const effectHandler = handlers._ || VALUE_HANDLER;
+            effectHandler(resume, end, throwError)(value);
+          }
         };
-  
-        const value = resume();
-  
-        if (isOperation(value)) {
-          const effectHandler = handlers[value.name] || globalHandlers[value.name];
-          console.log(value.name, effectHandler);
-          effectHandler(resume, end, throwError)(...value.payload);
-        } else {
-          const effectHandler = handlers._ || VALUE_HANDLER;
-          effectHandler(resume, end, throwError)(value);
-        }
+
+        return resume();
       });
     },
   };
