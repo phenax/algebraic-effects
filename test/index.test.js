@@ -1,5 +1,5 @@
 
-import { sleep } from '../src';
+import { sleep } from '../src/operations';
 import Exception from '../src/Exception';
 
 describe('Exception', () => {
