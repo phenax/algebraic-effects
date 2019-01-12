@@ -1,6 +1,6 @@
 
 import { run } from '../src';
-import { sleep } from '../src/operations';
+import { sleep, awaitPromise } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -36,6 +36,38 @@ describe('Global operations', () => {
           done();
         })
         .catch(done);
+    });
+  });
+
+  describe('awaitPromise', () => {
+    function* runSuccPromise() {
+      const resp = yield awaitPromise(Promise.resolve({
+        data: 'Some data',
+      }));
+      return resp.data;
+    }
+
+    function* runFailPromise() {
+      const resp = yield awaitPromise(Promise.reject('rror'));
+      return resp.data;
+    }
+
+    it('should resolve normally for resolves promise', done => {
+      run(runSuccPromise)
+        .then(x => {
+          expect(x).toBe('Some data');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should resolve normally for resolves promise', done => {
+      run(runFailPromise)
+        .then(done)
+        .catch(e => {
+          expect(e).toBe('rror');
+          done();
+        });
     });
   });
 });
