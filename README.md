@@ -20,11 +20,106 @@ yarn add algebraic-effects
 
 #### Import it to your file
 ```js
-import {  } from 'algebraic-effects';
-// Note: compose is a regular lodash-like compose function
+import { createEffect } from 'algebraic-effects';
+import { sleep } from 'algebraic-effects/operations';
+import Exception from 'algebraic-effects/Exception';
+```
+
+#### Custom effect
+
+```js
+const ApiEffect = createEffect('ApiEffect', {
+  search: ['q'],
+});
+
+const api = ApiEffect.handler({
+  search: (resume, _, throwE) => q => fetch(`/search?q=${q}`).then(resume).catch(throwE),
+});
+
+function* searchUsers(query) {
+  const users = yield ApiEffect.search(query);
+  yield users.map(user => user.name);
+}
+
+const names = await api(searchUsers, 'Akshay');
+```
+
+
+
+#### Compose handlers
+
+```js
+import { createEffect, composeHandlers } from 'algebraic-effects';
+
+const ApiEff = createEffect('ApiEff', { search: ['q'] });
+const ConsoleEff = createEffect('ConsoleEff', { log: [] });
+
+const api = ApiEff.handler({
+  search: (resume, _, throwE) => q => fetch(`/search?q=${q}`).then(resume).catch(throwE),
+});
+
+const konsole = ConsoleEffect.handler({
+  log: resume => (label, data) => {
+    console.log(data);
+    resume(data); // Return data
+  },
+});
+
+function* searchUsers(query) {
+  const users = yield ApiEff.search(query);
+  ConsoleEff.log('Users', users);
+  yield users.map(user => user.name);
+}
+
+const names = await konsole.concat(api).run(searchUsers, 'Akshay');
+
+// OR
+
+const handler = konsole.concat(api);
+const names = await handler(searchUsers, 'Akshay');
+
+// OR
+
+const handler = composeHandlers(konsole, api);
+const names = await handler(searchUsers, 'Akshay');
+```
+
+
+
+#### Using Exception effect
+
+```js
+import Exception from 'algebraic-effects/Exception';
+
+const divide = function *(a, b) {
+  if (b === 0) yield Exception.throw(new Error('Invalid operation'));
+  yield a / b;
+};
+
+Exception.try(divide, 5, 2)
+  .then(result => console.log('5 / 2 ===', result));
+
+Exception.try(divide, 5, 0)
+  .catch(e => console.error(e));
+```
+
+Custom handler for exceptions
+```js
+import Exception from 'algebraic-effects/Exception';
+
+const divide = function *(a, b) {
+  if (b === 0) yield Exception.throw(new Error('Invalid operation'));
+  yield a / b;
+};
+
+const myTry = Exception.handler({
+  throw: (resume, end, throwError) => error => end({ error }),
+  _: (_, end) => value => end({ value }),
+});
+
+const { value, error } = await myTry(divide, 5, 2);
 ```
 
 
 ## TODO
-- [ ] Add compose or extend functionality to effects while running
-- [ ] 
+- [x] Add compose or extend functionality to effects and runners
