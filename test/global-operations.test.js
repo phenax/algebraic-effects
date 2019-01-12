@@ -5,14 +5,13 @@ import { sleep, awaitPromise } from '../src/operations';
 describe('Global operations', () => {
   describe('sleep', () => {
     function* gimmeXReturned(x) {
-      yield sleep(100);
-      yield sleep(500);
+      yield sleep(150);
       yield sleep(300);
       return x;
     }
 
     function* gimmeXYielded(x) {
-      yield sleep(900);
+      yield sleep(450);
       yield x;
     }
 
@@ -21,7 +20,7 @@ describe('Global operations', () => {
       run(gimmeXReturned, 5)
         .then(x => {
           expect(x).toBe(5);
-          expect(Date.now() - startTime).toBeGreaterThan(800);
+          expect(Date.now() - startTime).toBeGreaterThan(400);
           done();
         })
         .catch(done);
@@ -32,7 +31,7 @@ describe('Global operations', () => {
       run(gimmeXYielded, 5)
         .then(x => {
           expect(x).toBe(5);
-          expect(Date.now() - startTime).toBeGreaterThan(800);
+          expect(Date.now() - startTime).toBeGreaterThan(400);
           done();
         })
         .catch(done);

@@ -1,13 +1,10 @@
 
-import { sleep } from '../src/operations';
 import Exception from '../src/Exception';
 
 describe('Exception', () => {
   // Divide function with added delays
   const divide = function *(a, b) {
-    yield sleep(100);
     if (b === 0) yield Exception.throw(new Error('Invalid operation'));
-    yield sleep(100);
     yield a / b;
   };
 
