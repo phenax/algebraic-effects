@@ -1,7 +1,7 @@
 const EFFECT = Symbol.for('algebraic-effects/effect');
 const isEffect = x => x && x.$$type === EFFECT;
 
-const VALUE_HANDLER = (resume, _) => x => resume(x);
+const VALUE_HANDLER = resume => x => resume(x);
 
 export const Effect = (effects) => {
   const effectful = {};
@@ -9,7 +9,7 @@ export const Effect = (effects) => {
     handle: (handlers) => {
       // TODO: Validate if all handlers are specified
 
-      return (...args) => new Promise((end, _) => {
+      return (...args) => new Promise(end => {
         const g = generator(...args);
 
         const resume = (...args) => {
