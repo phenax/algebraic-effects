@@ -1,31 +1,27 @@
 
-import { sleep } from '../src/operations';
-import Exception from '../src/Exception';
+import { createEffect } from '../src';
 
-describe('Exception', () => {
-  // Divide function with added delays
-  const divide = function *(a, b) {
-    yield sleep(100);
-    if (b === 0) yield Exception.throw(new Error('Invalid operation'));
-    yield sleep(100);
-    yield a / b;
+const ApiEffect = createEffect('ApiEffect', {
+  fetch: [],
+});
+
+const apiEffect = ApiEffect.handler({
+  fetch: next => (url, req) => setTimeout(() => next({ url, req, data: 'wow' }), 500),
+});
+
+describe('createEffect example', () => {
+  const action = function *() {
+    const response = yield ApiEffect.fetch('/some-api');
+    yield response.data;
   };
 
   it('should resolve with the correct value for valid operation', done => {
-    Exception.try(divide, 12, 3)
-      .then(result => {
-        expect(result).toBe(4);
+    apiEffect(action)
+      .then(data => {
+        expect(data).toBe('wow');
         done();
       })
       .catch(done);
   });
-
-  it('should reject with invalid operation error if denominator is 0', done => {
-    Exception.try(divide, 8, 0)
-      .then(() => done(new Error('Shouldn have been called boey')))
-      .catch(e => {
-        expect(e.message).toBe('Invalid operation');
-        done();
-      });
-  });
 });
+
