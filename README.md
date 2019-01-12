@@ -23,3 +23,8 @@ yarn add algebraic-effects
 import {  } from 'algebraic-effects';
 // Note: compose is a regular lodash-like compose function
 ```
+
+
+## TODO
+- [ ] Add compose or extend functionality to effects while running
+- [ ] 

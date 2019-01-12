@@ -30,6 +30,7 @@ const createRunner = (handlers = {}) => {
 export const createEffect = (name, operations) => {
   const effectful = {
     name,
+    operations,
     fn: x => x,
     handler: createRunner,
   };
@@ -39,6 +40,12 @@ export const createEffect = (name, operations) => {
   });
 
   return effectful;
+};
+
+export const composeEffects = (...effects) => {
+  const name = `Effect(${effects.map(({ name }) => name).join(', ')})`;
+  const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
+  return createEffect(name, operations);
 };
 
 export const run = createRunner();

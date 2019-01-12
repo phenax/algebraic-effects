@@ -1,13 +1,13 @@
 
-import { createEffect } from '../src';
+import { createEffect, composeEffects } from '../src';
 
 describe('createEffect', () => {
-  const ApiEffect = createEffect('ApiEffect', {
-    fetch: ['url', 'request'],
+  const ConsoleEff = createEffect('ConsoleEff', {
+    log: ['...data'],
   });
 
-  const apiEffect = ApiEffect.handler({
-    fetch: next => (url, req) => setTimeout(() => next({ url, req, data: 'wow' }), 500),
+  const ApiEffect = createEffect('ApiEffect', {
+    fetch: ['url', 'request'],
   });
 
   describe('Effect type', () => {
@@ -22,7 +22,31 @@ describe('createEffect', () => {
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
     });
   });
-  
+
+  describe('composeEffects', () => {
+    const action = function *() {
+      const response = yield ApiEffect.fetch('/some-api');
+      yield ConsoleEff.log(response);
+      yield response.data;
+    };
+
+    it('should compose Api and IO effects', done => {
+      const Effect = composeEffects(ApiEffect, ConsoleEff);
+
+      const eff = Effect.handler({
+        log: resume => ({ data }) => {
+          expect(data).toBe('wow');
+          resume();
+        },
+        fetch: resume => () => resume({ data: 'wow' }),
+      });
+
+      eff(action)
+        .then(() => done())
+        .catch(done);
+    });
+  });
+
   describe('example usage', () => {
     const action = function *() {
       const response = yield ApiEffect.fetch('/some-api');
@@ -30,7 +54,11 @@ describe('createEffect', () => {
     };
   
     it('should resolve with the correct value for valid operation', done => {
-      apiEffect(action)
+      const api = ApiEffect.handler({
+        fetch: resume => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+      });
+
+      api(action)
         .then(data => {
           expect(data).toBe('wow');
           done();
