@@ -40,4 +40,4 @@ jobs:
           name: Coverage
           command: yarn coverage:ci
           environment:
-            CODECOV_TOKEN: 1cc28c23-ea43-4955-8260-f5ccf2a08823
+            CODECOV_TOKEN: dc2e140e-eed5-47bd-9bc9-a6889eba4167
