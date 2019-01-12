@@ -1,43 +1,45 @@
-const EFFECT = Symbol.for('algebraic-effects/effect');
-const isEffect = x => x && x.$$type === EFFECT;
+const OPERATION = Symbol.for('algebraic-effects/operation');
+const isOperation = x => x && x.$$type === OPERATION;
 
-const VALUE_HANDLER = resume => x => resume(x);
+const VALUE_HANDLER = (_, end) => x => end(x);
 
-export const Effect = (effects) => {
-  const effectful = {};
-  effectful.handler = generator => ({
-    handle: (handlers) => {
+const Operation = name => (...payload) => ({ name, payload, $$type: OPERATION });
+
+export const createEffect = (name, operations) => {
+  const effectful = {
+    name,
+    fn: x => x,
+    handler: handlers => {
       // TODO: Validate if all handlers are specified
-
-      return (...args) => new Promise(end => {
+      return (generator, ...args) => new Promise((resolve, reject) => {
         const g = generator(...args);
-
+  
+        const throwError = reject;
+        const end = resolve;
         const resume = (...args) => {
           const { value, done } = g.next(...args);
+          console.log('>> x', value, done);
           if (done) return end(value);
           return value;
         };
-
+  
         const value = resume();
-
-        if (isEffect(value)) {
-          const effectHandler = handlers[value.name];
-          effectHandler(resume, end)(...value.payload);
+  
+        if (isOperation(value)) {
+          const effectHandler = handlers[value.name] || globalHandlers[value.name];
+          console.log(value.name, effectHandler);
+          effectHandler(resume, end, throwError)(...value.payload);
         } else {
           const effectHandler = handlers._ || VALUE_HANDLER;
-          effectHandler(resume, end)(value);
+          effectHandler(resume, end, throwError)(value);
         }
       });
     },
-  });
+  };
 
-  Object.keys(effects).forEach(name => {
-    effectful[name] = (...args) => ({ name, payload: args, $$type: EFFECT });
+  Object.keys(operations).forEach(name => {
+    effectful[name] = Operation(name, operations[name]);
   });
 
   return effectful;
 };
-
-Effect.fn = () => {};
-
-export const runEffect = () => (fn, ...args) => fn(...args);
