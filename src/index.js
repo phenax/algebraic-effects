@@ -7,13 +7,13 @@ import globalHandlers from './operations';
 // createRunner :: (Object Function) -> Runner
 const createRunner = (handlers = {}) => {
   // TODO: Validate if all handlers are specified
-  return (generator, ...args) => new Promise((resolve, reject) => {
+  const run = (generator, ...args) => new Promise((resolve, reject) => {
     const g = generator(...args);
 
     const throwError = reject;
     const end = resolve;
-    const resume = data => {
-      const { value, done } = g.next(data);
+    const resume = (...data) => {
+      const { value, done } = g.next(...data);
 
       if (done) return end(value);
 
@@ -28,6 +28,9 @@ const createRunner = (handlers = {}) => {
 
     return resume();
   });
+
+  run.handlers = handlers;
+  return run;
 };
 
 // createEffect :: (String, Object *) -> Effect
@@ -51,6 +54,12 @@ export const composeEffects = (...effects) => {
   const name = `Effect(${effects.map(({ name }) => name).join(', ')})`;
   const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
   return createEffect(name, operations);
+};
+
+// composeHandlers :: ...Runner -> Runner
+export const composeHandlers = (...runners) => {
+  const handlers = runners.map(r => r.handlers).reduce((acc, o) => ({ ...acc, ...o }), {});
+  return createRunner(handlers);
 };
 
 // run :: Runner

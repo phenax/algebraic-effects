@@ -1,5 +1,5 @@
 
-import { createEffect, composeEffects } from '../src';
+import { createEffect, composeEffects, composeHandlers } from '../src';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
@@ -43,6 +43,34 @@ describe('createEffect', () => {
 
       eff(action)
         .then(() => done())
+        .catch(done);
+    });
+  });
+
+  describe('composeHandlers', () => {
+    const action = function *() {
+      const response = yield ApiEffect.fetch('/some-api');
+      yield ConsoleEff.log(response + ' world');
+      yield response;
+    };
+
+    it('should compose Api and IO effects', done => {
+      const logg = jest.fn();
+      const api = ApiEffect.handler({
+        fetch: resume => () => resume('Hello'),
+      });
+      const konsole = ConsoleEff.handler({
+        log: resume => d => resume(logg(d)),
+      });
+
+      const eff = composeHandlers(api, konsole);
+
+      eff(action)
+        .then(data => {
+          expect(data).toBe('Hello');
+          expect(logg).toBeCalledWith('Hello world');
+          done();
+        })
         .catch(done);
     });
   });
