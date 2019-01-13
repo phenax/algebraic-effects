@@ -226,6 +226,7 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
+- [x] Add import points for Exception, State, operations
 - [ ] Improve handler composition
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed
