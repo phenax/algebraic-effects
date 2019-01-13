@@ -28,6 +28,29 @@ import { sleep } from 'algebraic-effects/operations';
 
 
 
+#### Using State effect
+State effect allows you to maintain state in your program accross multiple calls.
+
+```js
+import State from 'algebraic-effects/State';
+import { call, sleep } from 'algebraic-effects/operations';
+
+const countdown = function*() {
+  const count = yield State.get();
+
+  if(count > 0) {
+    yield State.set(count - 1); // Decrement count
+    yield sleep(1000); // Add a delay of 1 second
+    yield call(countdown); // Call the function recursively
+  }
+}
+
+State.of(10)(countdown)
+  .then(() => alert('HAPPY NEW YEAR!!!!'));
+```
+
+
+
 #### Create your own Effect for I/O
 In the example below, we have created a I/O effect with the operations `getInput` and `showMessage`. The behavior of those operations are not defined with the type as this just acts as the interface marking control flow to the actual effect.
 
@@ -108,27 +131,6 @@ const handler = composeHandlers(konsole, api);
 const names = await handler(searchUsers, 'Akshay');
 ```
 
-
-#### Using State effect
-State effect allows you to maintain state in your program accross multiple calls.
-
-```js
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
-
-const countdown = function*() {
-  const count = yield State.get();
-
-  if(count > 0) {
-    yield State.set(count - 1); // Decrement count
-    yield sleep(1000); // Add a delay of 1 second
-    yield call(countdown); // Call the function recursively
-  }
-}
-
-State.of(10)(countdown)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
-```
 
 
 #### Composing with State effect
