@@ -29,15 +29,23 @@ var createRunner = function createRunner() {
   var handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   // TODO: Validate if all handlers are specified
-  var run = function run(generator) {
+  var runner = function runner(generator) {
     for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
     return new Promise(function (resolve, reject) {
       var g = generator.apply(void 0, args);
-      var throwError = reject;
-      var end = resolve;
+
+      var throwError = function throwError(x) {
+        g.return(x);
+        reject(x);
+      };
+
+      var end = function end(x) {
+        g.return(x);
+        resolve(x);
+      };
 
       var resume = function resume() {
         var _g$next = g.next.apply(g, arguments),
@@ -60,8 +68,13 @@ var createRunner = function createRunner() {
     });
   };
 
-  run.handlers = handlers;
-  return run;
+  runner.concat = function (run1) {
+    return createRunner(_objectSpread({}, handlers, run1.handlers));
+  };
+
+  runner.handlers = handlers;
+  runner.run = run;
+  return runner;
 }; // createEffect :: (String, Object *) -> Effect
 
 
@@ -69,9 +82,6 @@ var createEffect = function createEffect(name, operations) {
   var effectful = {
     name: name,
     operations: operations,
-    fn: function fn(x) {
-      return x;
-    },
     handler: createRunner
   };
   Object.keys(operations).forEach(function (name) {
@@ -106,12 +116,9 @@ var composeHandlers = function composeHandlers() {
     runners[_key3] = arguments[_key3];
   }
 
-  var handlers = runners.map(function (r) {
-    return r.handlers;
-  }).reduce(function (acc, o) {
-    return _objectSpread({}, acc, o);
-  }, {});
-  return createRunner(handlers);
+  return runners.reduce(function (acc, r) {
+    return acc.concat(r);
+  });
 }; // run :: Runner
 
 

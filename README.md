@@ -9,12 +9,14 @@ Algebraic effects in javascript using generators
 
 [Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/docs)
 
+
 ## Install
 
 #### To add the project to your project
 ```bash
 yarn add algebraic-effects
 ```
+
 
 ## Usage
 
