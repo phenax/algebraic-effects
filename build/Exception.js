@@ -5,18 +5,18 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _2 = require(".");
+var _ = require(".");
 
 // Exception :: Effect
-var Exception = (0, _2.createEffect)('Exception', {
-  throw: [] // NOTE: Unneccassary api
-
+var Exception = (0, _.createEffect)('Exception', {
+  throw: (0, _.func)(['error'])
 }); // Exception.try :: Runner
 
 Exception.try = Exception.handler({
-  throw: function _throw(_, __, throwE) {
+  throw: function _throw(_ref) {
+    var throwError = _ref.throwError;
     return function (e) {
-      return throwE(e);
+      return throwError(e);
     };
   }
 });

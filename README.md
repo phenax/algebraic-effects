@@ -225,7 +225,7 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 - [x] Make operation handlers get resume, end, throwError as object (destructure)
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
-- [ ] Add type signature checks
+- [x] Add type signature checks
 - [ ] Improve handler composition
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed

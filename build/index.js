@@ -3,6 +3,12 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+Object.defineProperty(exports, "func", {
+  enumerable: true,
+  get: function get() {
+    return _utils.func;
+  }
+});
 exports.run = exports.composeHandlers = exports.composeEffects = exports.createEffect = void 0;
 
 var _utils = require("./utils");
@@ -27,40 +33,60 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 // createRunner :: (Object Function) -> Runner
 var createRunner = function createRunner() {
   var handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
   // TODO: Validate if all handlers are specified
-  var runner = function runner(generator) {
+  var valueHandler = handlers._ || _utils.VALUE_HANDLER;
+
+  var effectRunner = function effectRunner(generator) {
     for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
     return new Promise(function (resolve, reject) {
       var g = generator.apply(void 0, args);
+      effectRunner.isCancelled = false; // throwError :: * -> ()
 
       var throwError = function throwError(x) {
         g.return(x);
-        reject(x);
-      };
+        !effectRunner.isCancelled && reject(x);
+      }; // end  :: * -> ()
+
 
       var end = function end(x) {
         g.return(x);
-        resolve(x);
-      };
+        !effectRunner.isCancelled && resolve(x);
+      }; // resume :: * -> ()
 
-      var resume = function resume() {
-        var _g$next = g.next.apply(g, arguments),
+
+      var resume = function resume(x) {
+        if (effectRunner.isCancelled) return;
+
+        var _g$next = g.next(x),
             value = _g$next.value,
             done = _g$next.done;
 
-        if (done) return end(value);
+        var call = function call() {
+          return effectRunner.apply(void 0, arguments).then(resume).catch(throwError);
+        };
+
+        var flowOperators = {
+          resume: resume,
+          end: end,
+          throwError: throwError,
+          call: call
+        };
+        if (done) return valueHandler(flowOperators)(value);
 
         if ((0, _utils.isOperation)(value)) {
-          var effectHandler = handlers[value.name] || _operations.default[value.name];
-          effectHandler(resume, end, throwError).apply(void 0, _toConsumableArray(value.payload));
-        } else {
-          var _effectHandler = handlers._ || _utils.VALUE_HANDLER;
+          var runOp = handlers[value.name] || _operations.default[value.name];
 
-          _effectHandler(resume, end, throwError)(value);
+          if (!runOp) {
+            throwError(new Error("Invalid operation executed. The operation \"".concat(value.name, "\", was not defined in the effect")));
+            return;
+          }
+
+          runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
+        } else {
+          valueHandler(flowOperators)(value);
         }
       };
 
@@ -68,13 +94,21 @@ var createRunner = function createRunner() {
     });
   };
 
-  runner.concat = function (run1) {
+  effectRunner.isCancelled = false;
+  effectRunner.handlers = handlers; // concat :: Runner -> Runner
+
+  effectRunner.concat = function (run1) {
     return createRunner(_objectSpread({}, handlers, run1.handlers));
+  }; // run :: Runner
+
+
+  effectRunner.run = effectRunner; // cancel :: () -> ()
+
+  effectRunner.cancel = function () {
+    return effectRunner.isCancelled = true;
   };
 
-  runner.handlers = handlers;
-  runner.run = run;
-  return runner;
+  return effectRunner;
 }; // createEffect :: (String, Object *) -> Effect
 
 
@@ -98,10 +132,10 @@ var composeEffects = function composeEffects() {
     effects[_key2] = arguments[_key2];
   }
 
-  var name = "Effect(".concat(effects.map(function (_ref) {
+  var name = effects.map(function (_ref) {
     var name = _ref.name;
-    return name;
-  }).join(', '), ")");
+    return "".concat(name).replace('.', '_');
+  }).join('.');
   var operations = effects.reduce(function (acc, eff) {
     return _objectSpread({}, acc, eff.operations);
   }, {});
