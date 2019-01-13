@@ -1,10 +1,10 @@
 
-import { createEffect}  from '../src';
+import { createEffect, func }  from '../src';
 import State from '../src/State';
 import { sleep, call } from '../src/operations';
 
 describe('State', () => {
-  const Logger = createEffect('Logger', { log: ['count'] });
+  const Logger = createEffect('Logger', { log: func(['count']) });
 
   const countdown = function *() {
     const count = yield State.get();

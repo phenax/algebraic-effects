@@ -1,9 +1,9 @@
 
-import { createEffect } from '.';
+import { createEffect, func } from '.';
 
 // Exception :: Effect
 const Exception = createEffect('Exception', {
-  throw: ['error'],
+  throw: func(['error']),
 });
 
 // Exception.try :: Runner

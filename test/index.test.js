@@ -1,14 +1,14 @@
 
-import { createEffect, composeEffects, composeHandlers } from '../src';
+import { createEffect, func, composeEffects, composeHandlers } from '../src';
 import { sleep } from '../src/operations';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
-    log: ['...data'],
+    log: func(['...data']),
   });
 
   const ApiEffect = createEffect('ApiEffect', {
-    fetch: ['url', 'request'],
+    fetch: func(['url', '?request'], 'promise *'),
   });
 
   describe('Effect type', () => {
@@ -18,13 +18,13 @@ describe('createEffect', () => {
 
     it('should have fetch operation', () => {
       expect(ApiEffect.fetch).toBeInstanceOf(Function);
-      expect(ApiEffect.fetch().name).toBe('fetch');
+      expect(ApiEffect.fetch('/').name).toBe('fetch');
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
     });
   });
 
   describe('createRunner#cancel', () => {
-    const DummyEff = createEffect('DummyEff', { myFn: [] });
+    const DummyEff = createEffect('DummyEff', { myFn: func() });
 
     it('should', done => {
       const action = function *() {

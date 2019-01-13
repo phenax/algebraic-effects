@@ -1,9 +1,9 @@
-import { createEffect } from '.';
+import { createEffect, func } from '.';
 
 // State :: Effect
 const State = createEffect('State', {
-  get: [],
-  set: ['x'],
+  get: func([], 'a'),
+  set: func(['a']),
 });
 
 // State.of :: a -> Runner a

@@ -1,10 +1,10 @@
 
-import { Operation } from './utils';
+import { Operation, func } from './utils';
 
 // * :: Operation
-export const sleep = Operation('sleep');
-export const awaitPromise = Operation('awaitPromise');
-export const call = Operation('call');
+export const sleep = Operation('sleep', func(['duration']));
+export const awaitPromise = Operation('awaitPromise', func(['promise a'], 'a'));
+export const call = Operation('call', func(['generator ...a b', '...a'], 'promise b'));
 
 export default {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),

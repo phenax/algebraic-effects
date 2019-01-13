@@ -1,5 +1,5 @@
 
-import { Operation, isOperation, VALUE_HANDLER } from './utils';
+import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
 import globalHandlers from './operations';
 
 // type Runner = (GeneratorFunction, ...a) -> Promise
@@ -96,3 +96,5 @@ export const composeHandlers = (...runners) => runners.reduce((acc, r) => acc.co
 
 // run :: Runner
 export const run = createRunner();
+
+export { func };

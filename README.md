@@ -22,7 +22,7 @@ yarn add algebraic-effects
 
 #### Import it to your file
 ```js
-import { createEffect } from 'algebraic-effects';
+import { createEffect, func } from 'algebraic-effects';
 import { sleep } from 'algebraic-effects/operations';
 ```
 
@@ -37,8 +37,8 @@ You can then call the `handler` method to attach behavior/control flow to the op
 
 ```js
 const IOEffect = createEffect('IOEffect', {
-  getInput: ['label'],
-  showMessage: ['type', 'data'],
+  getInput: func(['label'], 'name'),
+  showMessage: func(['message']),
 });
 
 // greetUser :: Program (String) IOEffect
@@ -72,15 +72,15 @@ You can also compose entire effects using `composeEffects` function which is use
 ```js
 import { createEffect, composeHandlers } from 'algebraic-effects';
 
-const ApiEff = createEffect('ApiEff', { search: ['q'] });
-const ConsoleEff = createEffect('ConsoleEff', { log: [] });
+const ApiEff = createEffect('ApiEff', { search: func(['q']) });
+const ConsoleEff = createEffect('ConsoleEff', { log: func(['...data']) });
 
 const api = ApiEff.handler({
   search: ({ resume, throwError }) => q =>
     fetch(`/search?q=${q}`).then(resume).catch(throwError),
 });
 
-const konsole = ConsoleEffect.handler({
+const konsole = ConsoleEff.handler({
   log: ({ resume }) => (label, data) => {
     console.log(data);
     resume(data); // Return data
@@ -140,11 +140,11 @@ import State from 'algebraic-effects/State';
 import { call, sleep } from 'algebraic-effects/operations';
 
 const CounterButtonEff = createEffect('CounterButtonEff', {
-  takeButtonClick: [],
+  takeButtonClick: func(),
 });
 
 const ConsoleEff = createEffect('ConsoleEff', {
-  log: ['data'],
+  log: func(['data']),
 });
 
 const clickCounter = function*() {
