@@ -131,6 +131,49 @@ State.of(10)(countdown)
 ```
 
 
+#### Composing with State effect
+You can compose State effect with custom effects to make a really cool api
+
+```js
+import { createEffect } from 'algebraic-effects';
+import State from 'algebraic-effects/State';
+import { call, sleep } from 'algebraic-effects/operations';
+
+const CounterButtonEff = createEffect('CounterButtonEff', {
+  takeButtonClick: [],
+});
+
+const ConsoleEff = createEffect('ConsoleEff', {
+  log: ['data'],
+});
+
+const clickCounter = function*() {
+  yield CounterButtonEff.takeButtonClick();
+
+  const count = yield State.get();
+  yield State.set(count + 1);
+
+  yield ConsoleEff.log(`Button clicked ${count} times!`);
+
+  yield call(clickCounter);
+}
+
+const buttonEff = CounterButtonEff.handler({
+  takeButtonClick: ({ resume }) => () =>
+    document.getElementById('button').addEventListener('click', resume),
+});
+const logEff = ConsoleEff.handler({
+  log: ({ resume }) => data => resume(console.log(data)),
+}),
+
+State.of(0)
+  .concat(buttonEff)
+  .concat(logEff)
+  .run(clickCounter)
+  .then(() => alert('HAPPY NEW YEAR!!!!'));
+```
+
+
 #### Using Exception effect
 You can use the Exception effect to handle error flows in your application. This gives you more control of the flow of the program than the traditional throw with `try/catch`.
 
