@@ -21,14 +21,18 @@ const createRunner = (handlers = {}) => {
     const resume = (...data) => {
       const { value, done } = g.next(...data);
 
-      if (done) return end(value);
+      const valueHandler = (() => {
+        const runValueOp = handlers._ || VALUE_HANDLER;
+        return runValueOp(resume, end, throwError);
+      })();
+
+      if (done) return valueHandler(value);
 
       if (isOperation(value)) {
-        const effectHandler = handlers[value.name] || globalHandlers[value.name];
-        effectHandler(resume, end, throwError)(...value.payload);
+        const runOp = handlers[value.name] || globalHandlers[value.name];
+        runOp(resume, end, throwError)(...value.payload);
       } else {
-        const effectHandler = handlers._ || VALUE_HANDLER;
-        effectHandler(resume, end, throwError)(value);
+        valueHandler(value);
       }
     };
 
