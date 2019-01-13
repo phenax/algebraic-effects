@@ -10,8 +10,14 @@ const createRunner = (handlers = {}) => {
   const runner = (generator, ...args) => new Promise((resolve, reject) => {
     const g = generator(...args);
 
-    const throwError = reject;
-    const end = resolve;
+    const throwError = x => {
+      g.return(x);
+      reject(x);
+    };
+    const end = x => {
+      g.return(x);
+      resolve(x);
+    };
     const resume = (...data) => {
       const { value, done } = g.next(...data);
 

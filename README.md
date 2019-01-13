@@ -124,3 +124,4 @@ const { value, error } = await myTry(divide, 5, 2);
 ## TODO
 - [x] Add compose or extend functionality to effects and runners
 - [ ] Move global handlers to their own meaningful effect and let people compose it themselves
+- [ ] Understand state effect and find how ae actually works in koka
