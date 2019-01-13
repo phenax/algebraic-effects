@@ -22,26 +22,30 @@ yarn add algebraic-effects
 ```js
 import { createEffect } from 'algebraic-effects';
 import { sleep } from 'algebraic-effects/operations';
-import Exception from 'algebraic-effects/Exception';
 ```
 
 #### Custom effect
 
 ```js
-const ApiEffect = createEffect('ApiEffect', {
-  search: ['q'],
+const IOEffect = createEffect('IOEffect', {
+  getInput: ['label'],
+  showMessage: ['type', 'data'],
 });
 
-const api = ApiEffect.handler({
-  search: (resume, _, throwE) => q => fetch(`/search?q=${q}`).then(resume).catch(throwE),
+const io = IOEffect.handler({
+  getInput: resume => label => showModal({ label, onSubmit: resume }), // Some onSubmit function
+  showMessage: resume => message => {
+    renderMessage(message); // Some renderMessage function that renders a text
+    resume();
+  };
 });
 
-function* searchUsers(query) {
-  const users = yield ApiEffect.search(query);
-  yield users.map(user => user.name);
+function* greetUser(greetText) {
+  const name = yield IOEffect.getInput('What is your name?'); // Will show the modal to a user and halt the execution till the user submits their response.
+  yield IOEffect.showMessage(`Hello, ${name}! ${greetText}`);
 }
 
-const names = await api(searchUsers, 'Akshay');
+await io(greetUser, 'Welcome!');
 ```
 
 
@@ -70,6 +74,8 @@ function* searchUsers(query) {
   ConsoleEff.log('Users', users);
   yield users.map(user => user.name);
 }
+
+// Now compose the handlers as ...
 
 const names = await konsole.concat(api).run(searchUsers, 'Akshay');
 
@@ -123,5 +129,7 @@ const { value, error } = await myTry(divide, 5, 2);
 
 ## TODO
 - [x] Add compose or extend functionality to effects and runners
-- [ ] Move global handlers to their own meaningful effect and let people compose it themselves
+- [ ] Allow calling generators from within effects
 - [ ] Understand state effect and find how ae actually works in koka
+- [ ] Add name to runner to identify which Effects were composed
+- [ ] ?Move global handlers to their own meaningful effect and let people compose it themselves
