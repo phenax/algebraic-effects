@@ -130,6 +130,8 @@ const { value, error } = await myTry(divide, 5, 2);
 ## TODO
 - [x] Add compose or extend functionality to effects and runners
 - [ ] Allow calling generators from within effects
-- [ ] Understand state effect and find how ae actually works in koka
+- [ ] Understand state effect and find how it actually works in koka
+- [ ] Improve handler composition
+- [ ] Add type signature checks
 - [ ] Add name to runner to identify which Effects were composed
 - [ ] ?Move global handlers to their own meaningful effect and let people compose it themselves

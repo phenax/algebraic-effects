@@ -46,7 +46,6 @@ export const createEffect = (name, operations) => {
   const effectful = {
     name,
     operations,
-    fn: x => x,
     handler: createRunner,
   };
 

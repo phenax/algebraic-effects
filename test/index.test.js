@@ -1,5 +1,6 @@
 
 import { createEffect, composeEffects, composeHandlers } from '../src';
+import { sleep } from '../src/operations';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
@@ -9,9 +10,14 @@ describe('createEffect', () => {
   const ApiEffect = createEffect('ApiEffect', {
     fetch: ['url', 'request'],
   });
+  
+  const State = createEffect('State', {
+    get: [],
+    set: ['x'],
+    call: ['fn'],
+  });
 
   describe('Effect type', () => {
-
     it('should have type info', () => {
       expect(ApiEffect.name).toBe('ApiEffect');
     });
@@ -80,8 +86,23 @@ describe('createEffect', () => {
       const response = yield ApiEffect.fetch('/some-api');
       yield response.data;
     };
+
+    const log = jest.fn();
+    const countdown = function *() {
+      const count = yield State.get();
+      log(count);
+      if(count > 0) {
+        yield State.set(count - 1);
+        yield sleep(10);
+        yield State.call(countdown);
+      }
+    };
+
+    beforeEach(() => {
+      log.mockClear();
+    });
   
-    it('should resolve with the correct value for valid operation', done => {
+    it('should resolve with the correct value for valid operation (fetch example)', done => {
       const api = ApiEffect.handler({
         fetch: resume => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
       });
@@ -91,6 +112,25 @@ describe('createEffect', () => {
           expect(data).toBe('wow');
           done();
         })
+        .catch(done);
+    });
+
+    it('should count down to 0 (state example)', done => {
+      const state = initState => {
+        let current = initState;
+        return State.handler({
+          get: resume => () => resume(current),
+          set: resume => x => resume(current = x),
+          call: (resume, _, throwE) => g => state(current)(g).then(resume).catch(throwE),
+        });
+      };
+
+      state(10)(countdown)
+        .then(() => {
+          const reversecount = Array(11).fill(null).map((_, i) => i).reverse();
+          expect(log.mock.calls.map(x => x[0])).toEqual(reversecount);
+        })
+        .then(() => done())
         .catch(done);
     });
   });
