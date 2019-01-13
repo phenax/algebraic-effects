@@ -143,6 +143,7 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 - [x] Cant handler end state with _
 - [x] Make operation handlers get resume, end, throwError as object (destructure)
 - [x] Allow calling generators from within effects
+- [ ] Add ability to cancel a runner
 - [ ] Understand state effect and find how it actually works in koka
 - [ ] Improve handler composition
 - [ ] Add type signature checks

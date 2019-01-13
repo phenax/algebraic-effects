@@ -75,15 +75,15 @@ describe('createEffect', () => {
   });
 
   describe('example usage', () => {
-    const action = function *() {
-      const response = yield ApiEffect.fetch('/some-api');
-      yield response.data;
-    };
-  
     it('should resolve with the correct value for valid operation (fetch example)', done => {
       const api = ApiEffect.handler({
         fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
       });
+
+      const action = function *() {
+        const response = yield ApiEffect.fetch('/some-api');
+        yield response.data;
+      };
 
       api(action)
         .then(data => {
@@ -91,6 +91,26 @@ describe('createEffect', () => {
           done();
         })
         .catch(done);
+    });
+
+    it('should resolve with the correct value for valid operation (fetch example)', done => {
+      const api = ApiEffect.handler({
+        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+      });
+
+      const action = function *() {
+        const response = yield ApiEffect.fetch('/some-api');
+        yield ConsoleEff.log('Wrong operation');
+        yield response.data;
+      };
+
+      api(action)
+        .then(() => done('Shouldve thrown error'))
+        .catch(e => {
+          expect(e.message).toContain('Invalid operation');
+          expect(e.message).toContain('"log"');
+          done();
+        });
     });
   });
 });

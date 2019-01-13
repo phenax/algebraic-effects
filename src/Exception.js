@@ -3,7 +3,7 @@ import { createEffect } from '.';
 
 // Exception :: Effect
 const Exception = createEffect('Exception', {
-  throw: [], // NOTE: Unneccassary api
+  throw: ['error'],
 });
 
 // Exception.try :: Runner

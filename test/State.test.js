@@ -24,7 +24,7 @@ describe('State', () => {
       .concat(logger)
       .run(countdown)
       .then(() => {
-        const reversecount = Array(11).fill(null).map((_, i) => i).reverse();
+        const reversecount = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
         expect(log.mock.calls.map(x => x[0])).toEqual(reversecount);
       })
       .then(() => done())

@@ -33,7 +33,12 @@ const createRunner = (handlers = {}) => {
 
       if (isOperation(value)) {
         const runOp = handlers[value.name] || globalHandlers[value.name];
-        if (!runOp) throw new Error(`Invalid operation executed. The operation "${value.name}", was not defined in the effect`);
+
+        if (!runOp) {
+          throwError(new Error(`Invalid operation executed. The operation "${value.name}", was not defined in the effect`));
+          return;
+        }
+
         runOp(flowOperators)(...value.payload);
       } else {
         valueHandler(value);
