@@ -37,8 +37,8 @@ const IOEffect = createEffect('IOEffect', {
 });
 
 const io = IOEffect.handler({
-  getInput: resume => label => showModal({ label, onSubmit: resume }), // Some onSubmit function
-  showMessage: resume => message => {
+  getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }), // Some onSubmit function
+  showMessage: ({ resume }) => message => {
     renderMessage(message); // Some renderMessage function that renders a text
     resume();
   };
@@ -63,11 +63,12 @@ const ApiEff = createEffect('ApiEff', { search: ['q'] });
 const ConsoleEff = createEffect('ConsoleEff', { log: [] });
 
 const api = ApiEff.handler({
-  search: (resume, _, throwE) => q => fetch(`/search?q=${q}`).then(resume).catch(throwE),
+  search: ({ resume, throwError }) => q =>
+    fetch(`/search?q=${q}`).then(resume).catch(throwError),
 });
 
 const konsole = ConsoleEffect.handler({
-  log: resume => (label, data) => {
+  log: ({ resume }) => (label, data) => {
     console.log(data);
     resume(data); // Return data
   },
@@ -127,8 +128,8 @@ const divide = function *(a, b) {
 };
 
 const toEither = Exception.handler({
-  throw: (_, end) => error => end(Either.Left(error.message)),
-  _: (_, end) => value => end(Either.Right(value)),
+  throw: ({ end }) => error => end(Either.Left(error.message)),
+  _: ({ end }) => value => end(Either.Right(value)),
 });
 
 await toEither(divide, 5, 2); // Either.Right 2.5
@@ -140,7 +141,7 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 ## TODO
 - [x] Add compose or extend functionality to effects and runners
 - [x] Cant handler end state with _
-- [ ] Make operation handlers get resume, end, throwError as object (destructure)
+- [x] Make operation handlers get resume, end, throwError as object (destructure)
 - [ ] Allow calling generators from within effects
 - [ ] Understand state effect and find how it actually works in koka
 - [ ] Improve handler composition (State effect example doesnt support composition)
