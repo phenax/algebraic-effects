@@ -7,29 +7,32 @@ import globalHandlers from './operations';
 // createRunner :: (Object Function) -> Runner
 const createRunner = (handlers = {}) => {
   // TODO: Validate if all handlers are specified
+
+  const valueHandler = handlers._ || VALUE_HANDLER;
+
   const effectRunner = (generator, ...args) => new Promise((resolve, reject) => {
     const g = generator(...args);
 
+    // throwError :: * -> ()
     const throwError = x => {
       g.return(x);
       reject(x);
     };
+
+    // end  :: * -> ()
     const end = x => {
       g.return(x);
       resolve(x);
     };
-    const resume = (...data) => {
-      const { value, done } = g.next(...data);
+
+    // resume :: * -> ()
+    const resume = x => {
+      const { value, done } = g.next(x);
 
       const call = (...a) => effectRunner(...a).then(resume).catch(throwError);
       const flowOperators = { resume, end, throwError, call };
 
-      const valueHandler = (() => {
-        const runValueOp = handlers._ || VALUE_HANDLER;
-        return runValueOp(flowOperators);
-      })();
-
-      if (done) return valueHandler(value);
+      if (done) return valueHandler(flowOperators)(value);
 
       if (isOperation(value)) {
         const runOp = handlers[value.name] || globalHandlers[value.name];
@@ -41,7 +44,7 @@ const createRunner = (handlers = {}) => {
 
         runOp(flowOperators)(...value.payload);
       } else {
-        valueHandler(value);
+        valueHandler(flowOperators)(value);
       }
     };
 
@@ -71,7 +74,7 @@ export const createEffect = (name, operations) => {
 
 // composeEffects :: ...Effect -> Effect
 export const composeEffects = (...effects) => {
-  const name = `Effect(${effects.map(({ name }) => name).join(', ')})`;
+  const name = effects.map(({ name }) => `${name}`.replace('.', '_')).join('.');
   const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
   return createEffect(name, operations);
 };
