@@ -1,6 +1,5 @@
 
 import { createEffect, composeEffects, composeHandlers } from '../src';
-import { sleep, call } from '../src/operations';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
@@ -9,11 +8,6 @@ describe('createEffect', () => {
 
   const ApiEffect = createEffect('ApiEffect', {
     fetch: ['url', 'request'],
-  });
-  
-  const State = createEffect('State', {
-    get: [],
-    set: ['x'],
   });
 
   describe('Effect type', () => {
@@ -85,21 +79,6 @@ describe('createEffect', () => {
       const response = yield ApiEffect.fetch('/some-api');
       yield response.data;
     };
-
-    const log = jest.fn();
-    const countdown = function *() {
-      const count = yield State.get();
-      log(count);
-      if(count > 0) {
-        yield State.set(count - 1);
-        yield sleep(10);
-        yield call(countdown);
-      }
-    };
-
-    beforeEach(() => {
-      log.mockClear();
-    });
   
     it('should resolve with the correct value for valid operation (fetch example)', done => {
       const api = ApiEffect.handler({
@@ -111,24 +90,6 @@ describe('createEffect', () => {
           expect(data).toBe('wow');
           done();
         })
-        .catch(done);
-    });
-
-    it('should count down to 0 (state example)', done => {
-      const state = initState => {
-        let current = initState;
-        return State.handler({
-          get: ({ resume }) => () => resume(current),
-          set: ({ resume }) => x => resume(current = x),
-        });
-      };
-
-      state(10)(countdown)
-        .then(() => {
-          const reversecount = Array(11).fill(null).map((_, i) => i).reverse();
-          expect(log.mock.calls.map(x => x[0])).toEqual(reversecount);
-        })
-        .then(() => done())
         .catch(done);
     });
   });
