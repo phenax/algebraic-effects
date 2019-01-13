@@ -9,7 +9,7 @@ Object.defineProperty(exports, "func", {
     return _utils.func;
   }
 });
-exports.run = exports.composeHandlers = exports.composeEffects = exports.createEffect = void 0;
+exports.run = exports.composeHandlers = exports.concat = exports.composeEffects = exports.createEffect = void 0;
 
 var _utils = require("./utils");
 
@@ -140,19 +140,24 @@ var composeEffects = function composeEffects() {
     return _objectSpread({}, acc, eff.operations);
   }, {});
   return createEffect(name, operations);
-}; // composeHandlers :: ...Runner -> Runner
+}; // concat :: (Runner, Runner) -> Runner
 
 
 exports.composeEffects = composeEffects;
+
+var concat = function concat(a, b) {
+  return a.concat(b);
+}; // composeHandlers :: ...Runner -> Runner
+
+
+exports.concat = concat;
 
 var composeHandlers = function composeHandlers() {
   for (var _len3 = arguments.length, runners = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
     runners[_key3] = arguments[_key3];
   }
 
-  return runners.reduce(function (acc, r) {
-    return acc.concat(r);
-  });
+  return runners.reduce(concat);
 }; // run :: Runner
 
 
