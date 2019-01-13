@@ -12,21 +12,24 @@ const createRunner = (handlers = {}) => {
 
   const effectRunner = (generator, ...args) => new Promise((resolve, reject) => {
     const g = generator(...args);
+    effectRunner.isCancelled = false;
 
     // throwError :: * -> ()
     const throwError = x => {
       g.return(x);
-      reject(x);
+      !effectRunner.isCancelled && reject(x);
     };
 
     // end  :: * -> ()
     const end = x => {
       g.return(x);
-      resolve(x);
+      !effectRunner.isCancelled && resolve(x);
     };
 
     // resume :: * -> ()
     const resume = x => {
+      if(effectRunner.isCancelled) return;
+
       const { value, done } = g.next(x);
 
       const call = (...a) => effectRunner(...a).then(resume).catch(throwError);
@@ -51,9 +54,18 @@ const createRunner = (handlers = {}) => {
     return resume();
   });
 
-  effectRunner.concat = run1 => createRunner({ ...handlers, ...run1.handlers });
+  effectRunner.isCancelled = false;
   effectRunner.handlers = handlers;
+
+  // concat :: Runner -> Runner
+  effectRunner.concat = run1 => createRunner({ ...handlers, ...run1.handlers });
+
+  // run :: Runner
   effectRunner.run = effectRunner;
+
+  // cancel :: () -> ()
+  effectRunner.cancel = () => (effectRunner.isCancelled = true);
+
   return effectRunner;
 };
 

@@ -1,5 +1,6 @@
 
 import { createEffect, composeEffects, composeHandlers } from '../src';
+import { sleep } from '../src/operations';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
@@ -19,6 +20,32 @@ describe('createEffect', () => {
       expect(ApiEffect.fetch).toBeInstanceOf(Function);
       expect(ApiEffect.fetch().name).toBe('fetch');
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
+    });
+  });
+
+  describe('createRunner#cancel', () => {
+    const DummyEff = createEffect('DummyEff', { myFn: [] });
+
+    it('should', done => {
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield sleep(500);
+        yield DummyEff.myFn();
+        yield 'Yo';
+      };
+      
+      const myFn = jest.fn();
+      const run = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
+
+      setTimeout(() => {
+        run.cancel();
+        expect(myFn).toBeCalledTimes(1);
+        done();
+      }, 100);
+
+      run(action)
+        .then(() => done('Shouldnt have reached here'))
+        .catch(done);
     });
   });
 

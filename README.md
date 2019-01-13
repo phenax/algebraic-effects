@@ -174,6 +174,7 @@ State.of(0)
 ```
 
 
+
 #### Using Exception effect
 You can use the Exception effect to handle error flows in your application. This gives you more control of the flow of the program than the traditional throw with `try/catch`.
 
