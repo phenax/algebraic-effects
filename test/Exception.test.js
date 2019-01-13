@@ -28,8 +28,8 @@ describe('Exception', () => {
 
   it('should convert operation to Either', done => {
     const toEither = Exception.handler({
-      _: (_, end) => x => end({ right: x }),
-      throw: (_, end) => e => end({ left: e.message }),
+      _: ({ end }) => x => end({ right: x }),
+      throw: ({ end }) => e => end({ left: e.message }),
     });
 
     const p1 = toEither(divide, 12, 6).then(result => {

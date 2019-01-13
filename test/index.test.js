@@ -40,11 +40,11 @@ describe('createEffect', () => {
       const Effect = composeEffects(ApiEffect, ConsoleEff);
 
       const eff = Effect.handler({
-        log: resume => ({ data }) => {
+        log: ({ resume }) => ({ data }) => {
           expect(data).toBe('wow');
           resume();
         },
-        fetch: resume => () => resume({ data: 'wow' }),
+        fetch: ({ resume }) => () => resume({ data: 'wow' }),
       });
 
       eff(action)
@@ -63,10 +63,10 @@ describe('createEffect', () => {
     it('should compose Api and IO effects', done => {
       const logg = jest.fn();
       const api = ApiEffect.handler({
-        fetch: resume => () => resume('Hello'),
+        fetch: ({ resume }) => () => resume('Hello'),
       });
       const konsole = ConsoleEff.handler({
-        log: resume => d => resume(logg(d)),
+        log: ({ resume }) => d => resume(logg(d)),
       });
 
       const eff = composeHandlers(api, konsole);
@@ -104,7 +104,7 @@ describe('createEffect', () => {
   
     it('should resolve with the correct value for valid operation (fetch example)', done => {
       const api = ApiEffect.handler({
-        fetch: resume => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
       });
 
       api(action)
@@ -119,9 +119,10 @@ describe('createEffect', () => {
       const state = initState => {
         let current = initState;
         return State.handler({
-          get: resume => () => resume(current),
-          set: resume => x => resume(current = x),
-          call: (resume, _, throwE) => g => state(current)(g).then(resume).catch(throwE),
+          get: ({ resume }) => () => resume(current),
+          set: ({ resume }) => x => resume(current = x),
+          call: ({ resume, throwError }) => g =>
+            state(current)(g).then(resume).catch(throwError),
         });
       };
 

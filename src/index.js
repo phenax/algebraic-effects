@@ -21,16 +21,19 @@ const createRunner = (handlers = {}) => {
     const resume = (...data) => {
       const { value, done } = g.next(...data);
 
+      const flowOperators = { resume, end, throwError };
+
       const valueHandler = (() => {
         const runValueOp = handlers._ || VALUE_HANDLER;
-        return runValueOp(resume, end, throwError);
+        return runValueOp(flowOperators);
       })();
 
       if (done) return valueHandler(value);
 
       if (isOperation(value)) {
         const runOp = handlers[value.name] || globalHandlers[value.name];
-        runOp(resume, end, throwError)(...value.payload);
+        if (!runOp) throw new Error(`Invalid operation executed. The operation "${value.name}", was not defined in the effect`);
+        runOp(flowOperators)(...value.payload);
       } else {
         valueHandler(value);
       }
