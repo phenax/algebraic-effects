@@ -26,6 +26,15 @@ import { createEffect, func } from 'algebraic-effects';
 import { sleep } from 'algebraic-effects/operations';
 ```
 
+#### Reference
+* [Docs](https://github.com/phenax/algebraic-effects/tree/master/docs)
+* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/docs/lingo.md)
+* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/docs/core.md)
+* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/docs/operations.md)
+* [State effect](https://github.com/phenax/algebraic-effects/tree/master/docs/State.md)
+* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/docs/Exception.md)
+
+
 
 ## TODO
 - [x] Add compose or extend functionality to effects and runners
