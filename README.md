@@ -24,6 +24,8 @@ import { createEffect } from 'algebraic-effects';
 import { sleep } from 'algebraic-effects/operations';
 ```
 
+
+
 #### Custom effect
 
 ```js
@@ -109,22 +111,28 @@ Exception.try(divide, 5, 0)
   .catch(e => console.error(e));
 ```
 
-Custom handler for exceptions
+
+
+#### Custom handler for Exception effect
+
 ```js
 import Exception from 'algebraic-effects/Exception';
+import Either from 'crocks/Either'; // Using Either from crocks
 
 const divide = function *(a, b) {
   if (b === 0) yield Exception.throw(new Error('Invalid operation'));
   yield a / b;
 };
 
-const myTry = Exception.handler({
-  throw: (resume, end, throwError) => error => end({ error }),
-  _: (_, end) => value => end({ value }),
+const toEither = Exception.handler({
+  throw: (_, end) => error => end(Either.Left(error.message)),
+  _: (_, end) => value => end(Either.Right(value)),
 });
 
-const { value, error } = await myTry(divide, 5, 2);
+await toEither(divide, 5, 2); // Either.Right 2.5
+await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 ```
+
 
 
 ## TODO
