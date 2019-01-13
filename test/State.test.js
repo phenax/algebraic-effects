@@ -1,12 +1,14 @@
 
+import { createEffect}  from '../src';
 import State from '../src/State';
 import { sleep, call } from '../src/operations';
 
 describe('State', () => {
-  const log = jest.fn();
+  const Logger = createEffect('Logger', { log: ['count'] });
+
   const countdown = function *() {
     const count = yield State.get();
-    log(count);
+    yield Logger.log(count);
     if(count > 0) {
       yield State.set(count - 1);
       yield sleep(10);
@@ -14,12 +16,13 @@ describe('State', () => {
     }
   };
 
-  beforeEach(() => {
-    log.mockClear();
-  });
+  it('should count down to 0 from 10', done => {
+    const log = jest.fn();
+    const logger = Logger.handler({ log: ({ resume }) => d => resume(log(d)) });
 
-  it('should resolve with the correct value for valid operation', done => {
-    State.of(10)(countdown)
+    State.of(10)
+      .concat(logger)
+      .run(countdown)
       .then(() => {
         const reversecount = Array(11).fill(null).map((_, i) => i).reverse();
         expect(log.mock.calls.map(x => x[0])).toEqual(reversecount);
