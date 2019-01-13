@@ -57,6 +57,57 @@ There are 3 flow operators that you can use to control the flow of your program.
 
 ### Using handlers
 
+```js
+const withMyEff = MyEffect.handler({
+  increment: ({ resume }) => (a) => resume(a + 1), // Will increment and return a + 1 after the yield
+  imDone: ({ end }) => (a) => end(a), // Will end the program and return a
+  throw: ({ throwError }) => () => throwError(new Error()), // Will throw out of the program for you to catch
+  _: ({ end }) => a => end(a), // Default behavior. This will be called for any yielded value thats not an effect operation and at the end of the program.
+});
+```
+
+
+
+## Composing effects and handlers
+
+To compose handlers, you can use the `concat` method or the `composeHandlers` function.
+You can also compose entire effects using `composeEffects` function which is used in a similar way.
+
+```js
+import { createEffect, composeHandlers } from 'algebraic-effects';
+
+const ApiEffect = createEffect('ApiEffect', { search: func(['q']) });
+const ConsoleEffect = createEffect('ConsoleEffect', { log: func(['...data']) });
+
+const withApi = ApiEffect.handler({
+  search: ({ resume, throwError }) => q =>
+    fetch(`/search?q=${q}`).then(resume).catch(throwError),
+});
+
+const withConsole = ConsoleEffect.handler({
+  log: ({ resume }) => (...data) => resume(console.log(...data)),
+});
+
+function* searchUsers(query) {
+  const users = yield ApiEffect.search(query);
+  yield ConsoleEffect.log('Users', users);
+  yield users.map(user => user.name);
+}
+
+// Now compose the handlers as ...
+
+const names = await withConsole.concat(withApi).run(searchUsers, 'Akshay');
+
+// OR
+
+const handler = withConsole.concat(withApi);
+const names = await handler(searchUsers, 'Akshay');
+
+// OR
+
+const handler = composeHandlers(withConsole, withApi);
+const names = await handler(searchUsers, 'Akshay');
+```
 
 
 
