@@ -25,4 +25,21 @@ describe('Exception', () => {
         done();
       });
   });
+
+  it('should convert operation to Either', done => {
+    const toEither = Exception.handler({
+      _: (_, end) => x => end({ right: x }),
+      throw: (_, end) => e => end({ left: e.message }),
+    });
+
+    const p1 = toEither(divide, 12, 6).then(result => {
+      expect(result.right).toBe(2);
+    });
+    
+    const p2 = toEither(divide, 12, 0).then(result => {
+      expect(result.left).toBe('Invalid operation');
+    });
+
+    p1.then(() => p2).then(() => done()).catch(done);
+  });
 });
