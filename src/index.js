@@ -21,7 +21,8 @@ const createRunner = (handlers = {}) => {
     const resume = (...data) => {
       const { value, done } = g.next(...data);
 
-      const flowOperators = { resume, end, throwError };
+      const call = (...a) => runner(...a).then(resume).catch(throwError);
+      const flowOperators = { resume, end, throwError, call };
 
       const valueHandler = (() => {
         const runValueOp = handlers._ || VALUE_HANDLER;
@@ -44,7 +45,7 @@ const createRunner = (handlers = {}) => {
 
   runner.concat = run1 => createRunner({ ...handlers, ...run1.handlers });
   runner.handlers = handlers;
-  runner.run = run;
+  runner.run = runner;
   return runner;
 };
 

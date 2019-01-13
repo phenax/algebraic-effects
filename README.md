@@ -142,9 +142,10 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 - [x] Add compose or extend functionality to effects and runners
 - [x] Cant handler end state with _
 - [x] Make operation handlers get resume, end, throwError as object (destructure)
-- [ ] Allow calling generators from within effects
+- [x] Allow calling generators from within effects
 - [ ] Understand state effect and find how it actually works in koka
-- [ ] Improve handler composition (State effect example doesnt support composition)
+- [ ] Improve handler composition
 - [ ] Add type signature checks
 - [ ] Add name to runner to identify which Effects were composed
-- [ ] ?Move global handlers to their own meaningful effect and let people compose it themselves
+
+- [ ] ?Move global handlers to their own meaningful effect and let people compose it themselves or make Exception effect global

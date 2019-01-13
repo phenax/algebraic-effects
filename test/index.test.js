@@ -1,6 +1,6 @@
 
 import { createEffect, composeEffects, composeHandlers } from '../src';
-import { sleep } from '../src/operations';
+import { sleep, call } from '../src/operations';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {
@@ -14,7 +14,6 @@ describe('createEffect', () => {
   const State = createEffect('State', {
     get: [],
     set: ['x'],
-    call: ['fn'],
   });
 
   describe('Effect type', () => {
@@ -94,7 +93,7 @@ describe('createEffect', () => {
       if(count > 0) {
         yield State.set(count - 1);
         yield sleep(10);
-        yield State.call(countdown);
+        yield call(countdown);
       }
     };
 
@@ -121,8 +120,6 @@ describe('createEffect', () => {
         return State.handler({
           get: ({ resume }) => () => resume(current),
           set: ({ resume }) => x => resume(current = x),
-          call: ({ resume, throwError }) => g =>
-            state(current)(g).then(resume).catch(throwError),
         });
       };
 
