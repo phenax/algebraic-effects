@@ -91,8 +91,11 @@ export const composeEffects = (...effects) => {
   return createEffect(name, operations);
 };
 
+// concat :: (Runner, Runner) -> Runner
+export const concat = (a, b) => a.concat(b);
+
 // composeHandlers :: ...Runner -> Runner
-export const composeHandlers = (...runners) => runners.reduce((acc, r) => acc.concat(r));
+export const composeHandlers = (...runners) => runners.reduce(concat);
 
 // run :: Runner
 export const run = createRunner();

@@ -27,67 +27,6 @@ import { sleep } from 'algebraic-effects/operations';
 ```
 
 
-
-#### Using State effect
-State effect allows you to maintain state in your program accross multiple calls.
-
-```js
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
-
-const countdown = function*() {
-  const count = yield State.get();
-
-  if(count > 0) {
-    yield State.set(count - 1); // Decrement count
-    yield sleep(1000); // Add a delay of 1 second
-    yield call(countdown); // Call the function recursively
-  }
-}
-
-State.of(10)(countdown)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
-```
-
-
-
-#### Create your own Effect for I/O
-In the example below, we have created a I/O effect with the operations `getInput` and `showMessage`. The behavior of those operations are not defined with the type as this just acts as the interface marking control flow to the actual effect.
-
-You can write your program without worrying about the behavior of those effects.
-
-You can then call the `handler` method to attach behavior/control flow to the operations.
-
-```js
-const IOEffect = createEffect('IOEffect', {
-  getInput: func(['label'], 'name'),
-  showMessage: func(['message']),
-});
-
-// greetUser :: Program (String) IOEffect
-function* greetUser(greetText) {
-  const name = yield IOEffect.getInput('What is your name?'); // Will show the modal to a user and halt the execution till the user submits their response.
-  yield IOEffect.showMessage(`Hello, ${name}! ${greetText}`);
-}
-
-// io :: Runner
-const io = IOEffect.handler({
-  // Some showModal function that accepts an onSubmit callback
-  getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
-  showMessage: ({ resume }) => message => {
-    // Some renderMessage function that renders a text
-    renderMessage(message);
-    resume();
-  };
-});
-
-io(greetUser, 'Welcome!');
-// Shows a modal with the text "What is your name?" and an input form.
-// When you click on the submit, it renders a message that reads. "Hello Akshay! Welcome!"
-```
-
-
-
 #### Compose handlers
 To compose handlers, you can use the `concat` method or the `composeHandlers` function.
 You can also compose entire effects using `composeEffects` function which is used in a similar way.
@@ -95,129 +34,42 @@ You can also compose entire effects using `composeEffects` function which is use
 ```js
 import { createEffect, composeHandlers } from 'algebraic-effects';
 
-const ApiEff = createEffect('ApiEff', { search: func(['q']) });
-const ConsoleEff = createEffect('ConsoleEff', { log: func(['...data']) });
+const ApiEffect = createEffect('ApiEffect', { search: func(['q']) });
+const ConsoleEffect = createEffect('ConsoleEffect', { log: func(['...data']) });
 
-const api = ApiEff.handler({
+const withApi = ApiEffect.handler({
   search: ({ resume, throwError }) => q =>
     fetch(`/search?q=${q}`).then(resume).catch(throwError),
 });
 
-const konsole = ConsoleEff.handler({
-  log: ({ resume }) => (label, data) => {
-    console.log(data);
-    resume(data); // Return data
-  },
+const withConsole = ConsoleEffect.handler({
+  log: ({ resume }) => (...data) => resume(console.log(...data)),
 });
 
 function* searchUsers(query) {
-  const users = yield ApiEff.search(query);
-  yield ConsoleEff.log('Users', users);
+  const users = yield ApiEffect.search(query);
+  yield ConsoleEffect.log('Users', users);
   yield users.map(user => user.name);
 }
 
 // Now compose the handlers as ...
 
-const names = await konsole.concat(api).run(searchUsers, 'Akshay');
+const names = await withConsole.concat(withApi).run(searchUsers, 'Akshay');
 
 // OR
 
-const handler = konsole.concat(api);
+const handler = withConsole.concat(withApi);
 const names = await handler(searchUsers, 'Akshay');
 
 // OR
 
-const handler = composeHandlers(konsole, api);
+const handler = composeHandlers(withConsole, withApi);
 const names = await handler(searchUsers, 'Akshay');
 ```
 
 
 
-#### Composing with State effect
-You can compose State effect with custom effects to make a really cool api
 
-```js
-import { createEffect } from 'algebraic-effects';
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
-
-const CounterButtonEff = createEffect('CounterButtonEff', {
-  takeButtonClick: func(),
-});
-
-const ConsoleEff = createEffect('ConsoleEff', {
-  log: func(['data']),
-});
-
-const clickCounter = function*() {
-  yield CounterButtonEff.takeButtonClick();
-
-  const count = yield State.get();
-  yield State.set(count + 1);
-
-  yield ConsoleEff.log(`Button clicked ${count} times!`);
-
-  yield call(clickCounter);
-}
-
-const buttonEff = CounterButtonEff.handler({
-  takeButtonClick: ({ resume }) => () =>
-    document.getElementById('button').addEventListener('click', resume),
-});
-const logEff = ConsoleEff.handler({
-  log: ({ resume }) => data => resume(console.log(data)),
-}),
-
-State.of(0)
-  .concat(buttonEff)
-  .concat(logEff)
-  .run(clickCounter)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
-```
-
-
-
-#### Using Exception effect
-You can use the Exception effect to handle error flows in your application. This gives you more control of the flow of the program than the traditional throw with `try/catch`.
-
-```js
-import Exception from 'algebraic-effects/Exception';
-
-const divide = function *(a, b) {
-  if (b === 0) yield Exception.throw(new Error('Invalid operation'));
-  yield a / b;
-};
-
-Exception.try(divide, 5, 2)
-  .then(result => console.log('5 / 2 ===', result));
-
-Exception.try(divide, 5, 0)
-  .catch(e => console.error(e));
-```
-
-
-
-#### Custom handler for Exception effect (toEither)
-
-```js
-import Exception from 'algebraic-effects/Exception';
-import Either from 'crocks/Either'; // Using Either from crocks
-
-// divide :: Program (Number, Number) Excecption Number
-const divide = function *(a, b) {
-  if (b === 0) yield Exception.throw(new Error('Invalid operation'));
-  yield a / b;
-};
-
-// toEither :: (Program (...a) (Exception b), ...a) -> Promise (Either Error b)
-const toEither = Exception.handler({
-  throw: ({ end }) => error => end(Either.Left(error.message)),
-  _: ({ end }) => value => end(Either.Right(value)),
-});
-
-await toEither(divide, 5, 2); // Either.Right 2.5
-await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
-```
 
 
 
@@ -229,6 +81,15 @@ await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
 - [x] Add import points for Exception, State, operations
+- [ ] Documentation
+- [ ] Add more effect classes
+  - [ ] Console
+  - [ ] Fetch
+  - [ ] Random Number
+  - [ ] ?Storage (key value)
+  - [ ] ?Something for dom
+  - [ ] ?Location
+  - [ ] ... other browser apis
 - [ ] Improve handler composition
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed
