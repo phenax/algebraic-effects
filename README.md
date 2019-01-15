@@ -79,4 +79,4 @@ State.of(10)(countdown)
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed
 
-- [ ] ?Move global handlers to their own meaningful effect and let people compose it themselves or make Exception effect global
+- [ ] ?Use something lazy instead of promises (Like Async)
