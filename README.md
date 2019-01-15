@@ -43,6 +43,7 @@ import { sleep } from 'algebraic-effects/operations';
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
+- [ ] Calling child program with a different composition of effects. (a more flexible `call` operation)
 - [ ] ?From regular function with exceptions to program
 - [ ] Documentation ...
 - [ ] Add more effect classes ...
