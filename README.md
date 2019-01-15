@@ -43,16 +43,17 @@ import { sleep } from 'algebraic-effects/operations';
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
-- [ ] Documentation
-- [ ] Add more effect classes
+- [ ] ?From regular function with exceptions to program
+- [ ] Documentation ...
+- [ ] Add more effect classes ...
   - [ ] Console
   - [ ] Fetch
   - [ ] Random Number
   - [ ] ?Storage (key value)
   - [ ] ?Something for dom
   - [ ] ?Location
-  - [ ] ... other browser apis
-- [ ] Improve handler composition
+  - [ ] ?... other browser apis
+- [ ] Improve effect and handler composition ...
   - [ ] Operation collisions workaround
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed
