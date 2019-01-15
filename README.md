@@ -63,7 +63,6 @@ State.of(10)(countdown)
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
-- [ ] Calling child program with a different composition of effects. (a more flexible `call` operation)
 - [ ] ?From regular function with exceptions to program
 - [ ] Documentation ...
 - [ ] Add more effect classes ...
@@ -78,5 +77,9 @@ State.of(10)(countdown)
   - [ ] Operation collisions workaround
   - [ ] Involve the effect itself in the composition
   - [ ] Add name to runner to identify which Effects were composed
+
+- [ ] Running programs inside programs
+  - [ ] Race between programs
+  - [ ] Parallel execution of programs
 
 - [ ] ?Use something lazy instead of promises (Like Async)

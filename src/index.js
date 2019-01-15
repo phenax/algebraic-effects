@@ -41,7 +41,7 @@ const createRunner = (handlers = {}) => {
         const runOp = handlers[value.name] || globalHandlers[value.name];
 
         if (!runOp) {
-          throwError(new Error(`Invalid operation executed. The operation "${value.name}", was not defined in the effect`));
+          throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
           return;
         }
 
