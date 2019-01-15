@@ -76,7 +76,6 @@ const logEff = ConsoleEff.handler({
 State.of(0)
   .concat(buttonEff)
   .concat(logEff)
-  .run(clickCounter)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
+  .run(clickCounter);
 ```
 
