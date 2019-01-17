@@ -57,8 +57,9 @@ const createRunner = (handlers = {}) => {
   effectRunner.isCancelled = false;
   effectRunner.handlers = handlers;
 
-  // concat :: Runner -> Runner
+  // concat, with :: Runner -> Runner
   effectRunner.concat = run1 => createRunner({ ...handlers, ...run1.handlers });
+  effectRunner.with = effectRunner.concat;
 
   // run :: Runner
   effectRunner.run = effectRunner;

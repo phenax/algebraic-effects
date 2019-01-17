@@ -8,7 +8,7 @@ describe('createEffect', () => {
   });
 
   const ApiEffect = createEffect('ApiEffect', {
-    fetch: func(['url', '?request'], 'promise *'),
+    fetch: func(['url', '?request'], '*'),
   });
 
   describe('Effect type', () => {
@@ -23,10 +23,58 @@ describe('createEffect', () => {
     });
   });
 
+  describe('createRunner#with & createRunner#concat', () => {
+    const DummyEff = createEffect('DummyEff', { myFn: func() });
+
+    it('should compose handler with another handler using .with', done => {
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield ConsoleEff.log();
+        yield 'Yo';
+      };
+      
+      const myFn = jest.fn();
+      const logg = jest.fn();
+      const dummy = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
+      const konsole = ConsoleEff.handler({ log: ({ resume }) => d => resume(logg(d)) });
+
+      dummy.with(konsole)
+        .run(action)
+        .then(() => {
+          expect(myFn).toBeCalledTimes(1);
+          expect(logg).toBeCalledTimes(1);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should compose handler with another handler using .concat', done => {
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield ConsoleEff.log();
+        yield 'Yo';
+      };
+      
+      const myFn = jest.fn();
+      const logg = jest.fn();
+      const dummy = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
+      const konsole = ConsoleEff.handler({ log: ({ resume }) => d => resume(logg(d)) });
+
+      dummy.concat(konsole)
+        .run(action)
+        .then(() => {
+          expect(myFn).toBeCalledTimes(1);
+          expect(logg).toBeCalledTimes(1);
+          done();
+        })
+        .catch(done);
+    });
+  });
+
   describe('createRunner#cancel', () => {
     const DummyEff = createEffect('DummyEff', { myFn: func() });
 
-    it('should', done => {
+    it('should cancel runner if .cancel is called', done => {
       const action = function *() {
         yield DummyEff.myFn();
         yield sleep(500);
