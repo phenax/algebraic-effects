@@ -26,7 +26,7 @@
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
-  - [ ] Run program in background
+  - [x] Run program in background
 
 - [ ] ?Use something lazy instead of promises (Like Async)
 

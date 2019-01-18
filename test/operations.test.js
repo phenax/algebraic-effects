@@ -1,6 +1,6 @@
 
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, addGlobalOperation } from '../src/operations';
+import { sleep, awaitPromise, resolve, call, race, parallel, background, addGlobalOperation } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -172,6 +172,38 @@ describe('Global operations', () => {
       run(myProgramParallel)
         .then(result => {
           expect(result).toEqual(['A', 'B']);
+          done();
+        })
+        .catch(done);
+    });
+  });
+
+  describe('background', () => {
+    const logfn = jest.fn();
+    function* returnDelayAfterDelay(delay) {
+      yield sleep(delay);
+      logfn(delay);
+      return delay;
+    }
+
+    afterEach(() => {
+      logfn.mockClear();
+    });
+
+    it('should run program in background', done => {
+      function* myProgramParallel() {
+        logfn('Start');
+        yield call(returnDelayAfterDelay, 31);
+        logfn('DoneSync');
+        yield background(returnDelayAfterDelay, 32);
+        logfn('RunninBg');
+        yield call(returnDelayAfterDelay, 33);
+      }
+
+      run(myProgramParallel)
+        .then(() => {
+          expect(logfn.mock.calls.map(x => x[0]))
+            .toEqual(['Start', 31, 'DoneSync', 'RunninBg', 32, 33]);
           done();
         })
         .catch(done);
