@@ -63,6 +63,7 @@ State.of(10)(countdown)
 - [x] Allow calling generators from within effects
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
+- [x] Custom global operations
 - [ ] ?From regular function with exceptions to program
 - [ ] Documentation ...
 - [ ] Add more effect classes ...

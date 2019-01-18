@@ -1,6 +1,6 @@
 
-import { run } from '../src';
-import { sleep, awaitPromise, resolve, call, race } from '../src/operations';
+import { run, func } from '../src';
+import { sleep, awaitPromise, resolve, call, race, addGlobalOperation } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -148,6 +148,32 @@ describe('Global operations', () => {
       run(myProgramRace)
         .then(result => {
           expect(result).toBe('B wins');
+          done();
+        })
+        .catch(done);
+    });
+  });
+
+  describe('Custom global operations', () => {
+    const logfn = jest.fn();
+
+    const log = addGlobalOperation('log', func(['...data']),
+      ({ resume }) => (...data) => resume(logfn(...data)));
+
+    function* program(x) {
+      yield log('Data', x);
+      return x;
+    }
+
+    afterEach(() => {
+      logfn.mockClear();
+    });
+
+    it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
+      run(program, 5)
+        .then(x => {
+          expect(x).toBe(5);
+          expect(logfn).toBeCalledWith('Data', 5);
           done();
         })
         .catch(done);
