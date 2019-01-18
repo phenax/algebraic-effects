@@ -4,6 +4,7 @@ import { createEffect, func } from '.';
 const State = createEffect('State', {
   get: func([], 'a'),
   set: func(['a']),
+  update: func(['a -> a'], 'a'),
 });
 
 // State.of :: a -> Runner a
@@ -13,6 +14,7 @@ State.of = initState => {
   return State.handler({
     get: ({ resume }) => () => resume(current),
     set: ({ resume }) => x => resume(current = x),
+    update: ({ resume }) => fn => resume(current = fn(current)),
   });
 };
 

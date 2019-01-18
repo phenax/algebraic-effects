@@ -8,8 +8,7 @@
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
 - [x] Custom global operations
-- [ ] ?From regular function with exceptions to program
-- [ ] Map/Over method for State effect
+- [x] Map/Over method for State effect
 
 - Add more effect classes ...
   - [ ] Console
@@ -34,3 +33,4 @@
 - [ ] Custom global operations
 - [ ] Cancellation
 - [ ] Call, Race, etc global operations
+- [ ] State effect update operation
