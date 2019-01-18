@@ -4,25 +4,27 @@ import { Operation, func } from './utils';
 // handlePromise :: (...a -> Promise b) -> FlowOperators -> (...a) -> Promise b
 const handlePromise = fn => o => (...args) => fn(o)(...args).then(o.resume).catch(o.throwError);
 
-const globalOperations = {
+const globalOpHandlers = {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),
   awaitPromise: handlePromise(() => x => x),
-  call: ({ call }) => call,
+  call: handlePromise(({ call }) => (p, ...a) => call(p, ...a)),
   resolve: ({ end }) => v => end(v),
-  race: handlePromise(({ call }) => programs =>
-    Promise.race(programs.map(p => call(p)))),
+  race: handlePromise(({ call }) => programs => Promise.race(programs.map(p => call(p)))),
+  parallel: handlePromise(({ call }) => programs => Promise.all(programs.map(p => call(p)))),
 };
-export default globalOperations;
+export default globalOpHandlers;
 
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
-export const awaitPromise = Operation('awaitPromise', func(['promise a'], 'a'));
-export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
 export const resolve = Operation('resolve', func(['*']));
-export const race = Operation('race', func(['*']));
+export const awaitPromise = Operation('awaitPromise', func(['promise a'], 'a'));
+
+export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
+export const race = Operation('race', func(['...(generator ...a b)'], 'b'));
+export const parallel = Operation('parallel', func(['...(generator ...a b)'], '[b]'));
 
 // addGlobalOperation :: (String, Function, Runner) -> Operation
 export const addGlobalOperation = (name, signature, handler) => {
-  globalOperations[name] = handler;
+  globalOpHandlers[name] = handler;
   return Operation(name, signature);
 };

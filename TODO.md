@@ -23,8 +23,10 @@
   - [x] Add name to runner to identify which Effects were composed
 
 - Running programs inside programs
+  - [x] Synchronously call program
   - [x] Race between programs
-  - [ ] Parallel execution of programs
+  - [x] Parallel execution of programs
+  - [ ] Run program in background
 
 - [ ] ?Use something lazy instead of promises (Like Async)
 

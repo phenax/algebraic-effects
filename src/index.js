@@ -39,7 +39,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
     const resume = x => {
       if(effectRunner.isCancelled) return program.return(null);
 
-      const call = (...a) => effectRunner(...a).then(resume).catch(throwError);
+      const call = (p, ...a) => effectRunner(p, ...a);
       const flowOperators = { resume, end, throwError, call };
       
       const { value, done } = program.next(x);

@@ -154,6 +154,30 @@ describe('Global operations', () => {
     });
   });
 
+  describe('parallel', () => {
+    function* programA(delay) {
+      yield sleep(delay);
+      return 'A';
+    }
+    function* programB(delay) {
+      yield sleep(delay);
+      return 'B';
+    }
+
+    function* myProgramParallel() {
+      return yield parallel([ programA(100), programB(50) ]);
+    }
+
+    it('should run programs in parallel and resolve with a list of results', done => {
+      run(myProgramParallel)
+        .then(result => {
+          expect(result).toEqual(['A', 'B']);
+          done();
+        })
+        .catch(done);
+    });
+  });
+
   describe('Custom global operations', () => {
     const logfn = jest.fn();
 
