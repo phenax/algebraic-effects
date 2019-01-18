@@ -1,7 +1,6 @@
 
 import { Operation, func } from './utils';
 
-
 // handlePromise :: (...a -> Promise b) -> FlowOperators -> (...a) -> Promise b
 const handlePromise = fn => o => (...args) => fn(o)(...args).then(o.resume).catch(o.throwError);
 

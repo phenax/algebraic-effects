@@ -9,6 +9,7 @@
 - [x] Add type signature checks
 - [x] Custom global operations
 - [ ] ?From regular function with exceptions to program
+- [ ] Map/Over method for State effect
 
 - Add more effect classes ...
   - [ ] Console
@@ -20,9 +21,7 @@
   - [ ] ?... other browser apis
 
 - Improve effect and handler composition ...
-  - [ ] Operation collisions workaround
-  - [ ] Involve the effect itself in the composition
-  - [ ] Add name to runner to identify which Effects were composed
+  - [x] Add name to runner to identify which Effects were composed
 
 - Running programs inside programs
   - [x] Race between programs

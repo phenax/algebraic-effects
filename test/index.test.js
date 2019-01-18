@@ -21,6 +21,13 @@ describe('createEffect', () => {
       expect(ApiEffect.fetch('/').name).toBe('fetch');
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
     });
+
+    it('should have runner effect name', () => {
+      const runner = ApiEffect.handler({
+        fetch: () => () => {},
+      });
+      expect(runner.effectName).toBe('ApiEffect');
+    });
   });
 
   describe('createRunner#with & createRunner#concat', () => {
@@ -38,8 +45,11 @@ describe('createEffect', () => {
       const dummy = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
       const konsole = ConsoleEff.handler({ log: ({ resume }) => d => resume(logg(d)) });
 
-      dummy.with(konsole)
-        .run(action)
+      const run = dummy.with(konsole);
+
+      expect(run.effectName).toBe('DummyEff.ConsoleEff');
+
+      run(action)
         .then(() => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
@@ -54,14 +64,17 @@ describe('createEffect', () => {
         yield ConsoleEff.log();
         yield 'Yo';
       };
-      
+
       const myFn = jest.fn();
       const logg = jest.fn();
       const dummy = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
       const konsole = ConsoleEff.handler({ log: ({ resume }) => d => resume(logg(d)) });
 
-      dummy.concat(konsole)
-        .run(action)
+      const run = dummy.concat(konsole);
+
+      expect(run.effectName).toBe('DummyEff.ConsoleEff');
+
+      run(action)
         .then(() => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);

@@ -5,10 +5,8 @@ import globalHandlers from './operations';
 // type Program = GeneratorFunction
 // type Runner = (Program, ...a) -> Promise
 
-// createRunner :: (Object Function) -> Runner
-const createRunner = (handlers = {}) => {
-  // TODO: Validate if all handlers are specified
-
+// createRunner :: (Object Function, { effect :: String }) -> Runner
+const createRunner = (handlers = {}, { effect } = {}) => {
   const valueHandler = handlers._ || VALUE_HANDLER;
 
   const effectRunner = (program, ...args) => new Promise((resolve, reject) => {
@@ -29,13 +27,12 @@ const createRunner = (handlers = {}) => {
 
     // resume :: * -> ()
     const resume = x => {
-      if(effectRunner.isCancelled) return;
-
-      const { value, done } = g.next(x);
+      if(effectRunner.isCancelled) return g.return(null);
 
       const call = (...a) => effectRunner(...a).then(resume).catch(throwError);
       const flowOperators = { resume, end, throwError, call };
-
+      
+      const { value, done } = g.next(x);
       if (done) return valueHandler(flowOperators)(value);
 
       if (isOperation(value)) {
@@ -56,10 +53,14 @@ const createRunner = (handlers = {}) => {
   });
 
   effectRunner.isCancelled = false;
+  effectRunner.effectName = effect || 'Unknown';
   effectRunner.handlers = handlers;
 
   // concat, with :: Runner -> Runner
-  effectRunner.concat = run1 => createRunner({ ...handlers, ...run1.handlers });
+  effectRunner.concat = run1 => createRunner(
+    { ...handlers, ...run1.handlers },
+    { effect: `${effectRunner.effectName}.${run1.effectName}` },
+  );
   effectRunner.with = effectRunner.concat;
 
   // run :: Runner
@@ -72,19 +73,15 @@ const createRunner = (handlers = {}) => {
 };
 
 // createEffect :: (String, Object *) -> Effect
-export const createEffect = (name, operations) => {
-  const effectful = {
-    name,
-    operations,
-    handler: createRunner,
-  };
-
-  Object.keys(operations).forEach(name => {
-    effectful[name] = Operation(name, operations[name]);
-  });
-
-  return effectful;
-};
+export const createEffect = (name, operations) => ({
+  name,
+  operations,
+  handler: handlers => createRunner(handlers, { effect: name }),
+  ...Object.keys(operations).reduce((acc, name) => ({
+    ...acc,
+    [name]: Operation(name, operations[name]),
+  }), {})
+});
 
 // composeEffects :: ...Effect -> Effect
 export const composeEffects = (...effects) => {
@@ -93,11 +90,8 @@ export const composeEffects = (...effects) => {
   return createEffect(name, operations);
 };
 
-// concat :: (Runner, Runner) -> Runner
-export const concat = (a, b) => a.concat(b);
-
 // composeHandlers :: ...Runner -> Runner
-export const composeHandlers = (...runners) => runners.reduce(concat);
+export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
 
 // run :: Runner
 export const run = createRunner();
