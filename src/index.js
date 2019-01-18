@@ -2,7 +2,8 @@
 import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
 import globalHandlers from './operations';
 
-// type Runner = (GeneratorFunction, ...a) -> Promise
+// type Program = GeneratorFunction
+// type Runner = (Program, ...a) -> Promise
 
 // createRunner :: (Object Function) -> Runner
 const createRunner = (handlers = {}) => {
@@ -10,8 +11,8 @@ const createRunner = (handlers = {}) => {
 
   const valueHandler = handlers._ || VALUE_HANDLER;
 
-  const effectRunner = (generator, ...args) => new Promise((resolve, reject) => {
-    const g = generator(...args);
+  const effectRunner = (program, ...args) => new Promise((resolve, reject) => {
+    const g = program(...args);
     effectRunner.isCancelled = false;
 
     // throwError :: * -> ()

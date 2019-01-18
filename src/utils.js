@@ -20,14 +20,12 @@ const validateArguments = (args, values) => {
 
 // type Operation = ...a -> { name :: String, payload :: a }
 
-export const Operation = (name, [ args ] = []) =>
-  (...payload) => {
+export const Operation = (name, [ args ] = []) => (...payload) => {
+  if (!validateArguments(args, payload)) {
+    throw new Error(`The operation ${name} expected ${args.length} arguments, but got ${payload.length} arguments`);
+  }
 
-    if (!validateArguments(args, payload)) {
-      throw new Error(`The operation ${name} expected ${args.length} arguments, but got ${payload.length} arguments`);
-    }
-
-    return { name, payload, $$type: OPERATION };
-  };
+  return { name, payload, $$type: OPERATION };
+};
 
 export const func = (args, ret) => [args, ret];
