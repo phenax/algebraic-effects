@@ -21,12 +21,28 @@ describe('createEffect', () => {
       expect(ApiEffect.fetch('/').name).toBe('fetch');
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
     });
+  });
 
+  describe('Runner', () => {
     it('should have runner effect name', () => {
       const runner = ApiEffect.handler({
         fetch: () => () => {},
       });
       expect(runner.effectName).toBe('ApiEffect');
+    });
+
+    it('should reject promise the op fails arg check', done => {
+      function* action() {
+        yield ApiEffect.fetch();
+      }
+      
+      ApiEffect.handler({ fetch: () => () => {} })
+        .run(action)
+        .then(() => done('Shoundt have ben called'))
+        .catch(e => {
+          expect(e.message).toContain('ArgumentError');
+          done();
+        });
     });
   });
 
