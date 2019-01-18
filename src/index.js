@@ -5,34 +5,44 @@ import globalHandlers from './operations';
 // type Program = GeneratorFunction
 // type Runner = (Program, ...a) -> Promise
 
+const isIterator = p => !!p[Symbol.iterator];
+
+const runProgram = (program, ...args) => {
+  const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
+  if (!isIterator(p))
+    throw new Error('Cant run program. Invalid generator');
+  return p;
+};
+
 // createRunner :: (Object Function, { effect :: String }) -> Runner
 const createRunner = (handlers = {}, { effect } = {}) => {
   const valueHandler = handlers._ || VALUE_HANDLER;
 
-  const effectRunner = (program, ...args) => new Promise((resolve, reject) => {
-    const g = program(...args);
+  const effectRunner = (program_, ...args) => new Promise((resolve, reject) => {
+    const program = runProgram(program_, ...args);
+
     effectRunner.isCancelled = false;
 
     // throwError :: * -> ()
     const throwError = x => {
-      g.return(x);
+      program.return(x);
       !effectRunner.isCancelled && reject(x);
     };
 
     // end  :: * -> ()
     const end = x => {
-      g.return(x);
+      program.return(x);
       !effectRunner.isCancelled && resolve(x);
     };
 
     // resume :: * -> ()
     const resume = x => {
-      if(effectRunner.isCancelled) return g.return(null);
+      if(effectRunner.isCancelled) return program.return(null);
 
       const call = (...a) => effectRunner(...a).then(resume).catch(throwError);
       const flowOperators = { resume, end, throwError, call };
       
-      const { value, done } = g.next(x);
+      const { value, done } = program.next(x);
       if (done) return valueHandler(flowOperators)(value);
 
       if (isOperation(value)) {

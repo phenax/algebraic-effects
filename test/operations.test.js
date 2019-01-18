@@ -1,6 +1,6 @@
 
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, addGlobalOperation } from '../src/operations';
+import { sleep, awaitPromise, resolve, call, race, parallel, addGlobalOperation } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -130,21 +130,21 @@ describe('Global operations', () => {
   });
 
   describe('race', () => {
-    function* programA() {
-      yield sleep(200);
+    function* programA(delay) {
+      yield sleep(delay);
       return 'A';
     }
-    function* programB() {
-      yield sleep(100);
+    function* programB(delay) {
+      yield sleep(delay);
       return 'B';
     }
 
     function* myProgramRace() {
-      const winner = yield race([ programA, programB ]);
+      const winner = yield race([ programA(100), programB(50) ]);
       return `${winner} wins`;
     }
 
-    it('should call another program with the same set of effects', done => {
+    it('should race both programs and resolve with the fastest one', done => {
       run(myProgramRace)
         .then(result => {
           expect(result).toBe('B wins');
