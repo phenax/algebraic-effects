@@ -30,6 +30,7 @@
 - [ ] ?Use something lazy instead of promises (Like Async)
 
 ### Documentations
+- [ ] Explain motivation and inspiration
 - [ ] Custom global operations
 - [ ] Cancellation
 - [ ] Call, Race, etc global operations

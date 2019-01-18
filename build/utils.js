@@ -29,7 +29,8 @@ exports.VALUE_HANDLER = VALUE_HANDLER;
 
 var isOperation = function isOperation(x) {
   return x && x.$$type === OPERATION;
-};
+}; // validateArguments :: ([String], [*]) -> Boolean
+
 
 exports.isOperation = isOperation;
 
@@ -37,8 +38,7 @@ var validateArguments = function validateArguments(args, values) {
   if (!args) return true;
   var dynamicArgs = args.filter(function (a) {
     return /^(\.{3}|\?)/.test(a);
-  }); // Dynamic args (...)
-
+  });
   if (dynamicArgs.length) return args.length - dynamicArgs.length <= values.length;
   return args.length === values.length;
 }; // type Operation = ...a -> { name :: String, payload :: a }
@@ -54,10 +54,7 @@ var Operation = function Operation(name) {
       payload[_key] = arguments[_key];
     }
 
-    if (!validateArguments(args, payload)) {
-      throw new Error("The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
-    }
-
+    if (!validateArguments(args, payload)) throw new Error("The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
     return {
       name: name,
       payload: payload,

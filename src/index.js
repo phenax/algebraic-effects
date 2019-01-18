@@ -94,6 +94,6 @@ export const composeEffects = (...effects) => {
 export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
 
 // run :: Runner
-export const run = createRunner();
+export const run = createRunner({}, { effect: 'GlobalRunner' });
 
 export { func };
