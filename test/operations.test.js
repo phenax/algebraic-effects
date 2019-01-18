@@ -1,6 +1,6 @@
 
 import { run } from '../src';
-import { sleep, awaitPromise } from '../src/operations';
+import { sleep, awaitPromise, resolve, call, race } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -67,6 +67,90 @@ describe('Global operations', () => {
           expect(e).toBe('rror');
           done();
         });
+    });
+  });
+
+  describe('resolve', () => {
+    function* gimmeXReturned(x) {
+      yield resolve(x);
+    }
+
+    it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
+      run(gimmeXReturned, 5)
+        .then(x => {
+          expect(x).toBe(5);
+          done();
+        })
+        .catch(done);
+    });
+  });
+
+  describe('call', () => {
+    const logfn = jest.fn();
+    function* finalCountdown(x) {
+      if(x <= 0) return x;
+      yield sleep(500);
+      logfn(x);
+      yield call(finalCountdown, x - 1);
+    }
+
+    function* programB() {
+      yield sleep(100);
+      logfn('B');
+    }
+
+    function* programA() {
+      logfn('A');
+      yield call(programB);
+    }
+
+    afterEach(() => {
+      logfn.mockClear();
+    });
+
+    it('should call itself recursively (program recusrsion)', done => {
+      run(finalCountdown, 3)
+        .then(() => {
+          expect(logfn).toBeCalledTimes(3);
+          expect(logfn.mock.calls.map(x => x[0])).toEqual([ 3, 2, 1 ]);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should call another program with the same set of effects', done => {
+      run(programA)
+        .then(() => {
+          expect(logfn).toBeCalledTimes(2);
+          expect(logfn.mock.calls.map(x => x[0])).toEqual([ 'A', 'B' ]);
+          done();
+        })
+        .catch(done);
+    });
+  });
+
+  describe('race', () => {
+    function* programA() {
+      yield sleep(200);
+      return 'A';
+    }
+    function* programB() {
+      yield sleep(100);
+      return 'B';
+    }
+
+    function* myProgramRace() {
+      const winner = yield race([ programA, programB ]);
+      return `${winner} wins`;
+    }
+
+    it('should call another program with the same set of effects', done => {
+      run(myProgramRace)
+        .then(result => {
+          expect(result).toBe('B wins');
+          done();
+        })
+        .catch(done);
     });
   });
 });

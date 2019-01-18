@@ -16,5 +16,6 @@ export default {
   awaitPromise: handlePromise(() => x => x),
   call: ({ call }) => call,
   resolve: ({ end }) => v => end(v),
-  race: handlePromise(({ call }) => (...programs) => Promise.race(programs.map(p => call(p)))),
+  race: handlePromise(({ call }) => programs =>
+    Promise.race(programs.map(p => call(p)))),
 };
