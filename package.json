@@ -8,24 +8,9 @@
     "build": "node ./scripts/build.js",
     "watch": "yarn build --watch",
     "lint": "eslint ./packages/**/src/*.js",
-    "test": "jest --watch",
-    "test:ci": "jest --coverage",
+    "test": "jest --config ./scripts/jest.config.js --watch",
+    "test:ci": "jest --config ./scripts/jest.config.js --coverage",
     "coverage:ci": "codecov"
-  },
-  "jest": {
-    "browser": true,
-    "coverageDirectory": "./coverage/",
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "packages/**/*.{js}",
-      "!**/node_modules/**"
-    ],
-    "roots": [
-      "packages/"
-    ],
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    }
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
