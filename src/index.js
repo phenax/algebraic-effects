@@ -50,7 +50,8 @@ const createRunner = (handlers = {}, { effect } = {}) => {
         if(resultPromise.isCancelled) return program.return(null);
 
         const call = (p, ...a) => effectRunner(p, ...a);
-        const flowOperators = { resume, end, throwError, call };
+        const promise = promise => promise.then(resume).catch(throwError);
+        const flowOperators = { resume, end, throwError, call, promise };
 
         const { value, done } = nextValue(program, x);
         if (done) return valueHandler(flowOperators)(value);
