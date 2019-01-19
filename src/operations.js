@@ -13,7 +13,6 @@ const globalOpHandlers = {
   parallel: handlePromise(({ call }) => programs => Promise.all(programs.map(p => call(p)))),
   background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a)),
 };
-export default globalOpHandlers;
 
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
@@ -30,3 +29,5 @@ export const addGlobalOperation = (name, signature, handler) => {
   globalOpHandlers[name] = handler;
   return Operation(name, signature);
 };
+
+export default globalOpHandlers;

@@ -35,12 +35,24 @@ describe('createEffect', () => {
       function* action() {
         yield ApiEffect.fetch();
       }
-      
+
       ApiEffect.handler({ fetch: () => () => {} })
         .run(action)
         .then(() => done('Shoundt have ben called'))
         .catch(e => {
           expect(e.message).toContain('ArgumentError');
+          done();
+        });
+    });
+
+    it('should reject promise for invalid program', done => {
+      const notAGenerator = () => {};
+      
+      ApiEffect.handler({ fetch: () => () => {} })
+        .run(notAGenerator)
+        .then(() => done('shdnt be here'))
+        .catch(e => {
+          expect(e.message).toContain('Invalid generator');
           done();
         });
     });
@@ -110,17 +122,17 @@ describe('createEffect', () => {
         yield DummyEff.myFn();
         yield 'Yo';
       };
-      
+
       const myFn = jest.fn();
-      const run = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) });
+      const promise = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) }).run(action);
 
       setTimeout(() => {
-        run.cancel();
+        promise.cancel();
         expect(myFn).toBeCalledTimes(1);
         done();
       }, 100);
 
-      run(action)
+      promise
         .then(() => done('Shouldnt have reached here'))
         .catch(done);
     });

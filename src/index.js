@@ -7,6 +7,7 @@ import globalHandlers from './operations';
 
 const isIterator = p => !!p[Symbol.iterator];
 
+// runProgram :: (Program, ...a) -> Iterator
 const runProgram = (program, ...args) => {
   const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
   if (!isIterator(p))
@@ -18,51 +19,64 @@ const runProgram = (program, ...args) => {
 const createRunner = (handlers = {}, { effect } = {}) => {
   const valueHandler = handlers._ || VALUE_HANDLER;
 
-  const effectRunner = (program_, ...args) => new Promise((resolve, reject) => {
-    const program = runProgram(program_, ...args);
+  const effectRunner = (p, ...args) => {
+    const resultPromise = new Promise((resolve, reject) => {
+      const program = runProgram(p, ...args);
+  
+      // throwError :: * -> ()
+      const throwError = x => {
+        program.return(x);
+        !resultPromise.isCancelled && reject(x);
+      };
+  
+      // end  :: * -> ()
+      const end = x => {
+        program.return(x);
+        !resultPromise.isCancelled && resolve(x);
+      };
 
-    effectRunner.isCancelled = false;
-
-    // throwError :: * -> ()
-    const throwError = x => {
-      program.return(x);
-      !effectRunner.isCancelled && reject(x);
-    };
-
-    // end  :: * -> ()
-    const end = x => {
-      program.return(x);
-      !effectRunner.isCancelled && resolve(x);
-    };
-
-    // resume :: * -> ()
-    const resume = x => {
-      if(effectRunner.isCancelled) return program.return(null);
-
-      const call = (p, ...a) => effectRunner(p, ...a);
-      const flowOperators = { resume, end, throwError, call };
-      
-      const { value, done } = program.next(x);
-      if (done) return valueHandler(flowOperators)(value);
-
-      if (isOperation(value)) {
-        const runOp = handlers[value.name] || globalHandlers[value.name];
-
-        if (!runOp) {
-          throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
-          return;
+      const nextValue = (program, returnVal) => {
+        try {
+          return program.next(returnVal);
+        } catch(e) {
+          throwError(e);
+          return { done: true };
         }
+      };
+  
+      // resume :: * -> ()
+      const resume = x => {
+        if(resultPromise.isCancelled) return program.return(null);
 
-        runOp(flowOperators)(...value.payload);
-      } else {
-        valueHandler(flowOperators)(value);
-      }
-    };
+        const call = (p, ...a) => effectRunner(p, ...a);
+        const flowOperators = { resume, end, throwError, call };
 
-    return resume();
-  });
+        const { value, done } = nextValue(program, x);
+        if (done) return valueHandler(flowOperators)(value);
+  
+        if (isOperation(value)) {
+          const runOp = handlers[value.name] || globalHandlers[value.name];
 
-  effectRunner.isCancelled = false;
+          if (!runOp) {
+            throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
+            return;
+          }
+  
+          runOp(flowOperators)(...value.payload);
+        } else {
+          valueHandler(flowOperators)(value);
+        }
+      };
+
+      setTimeout(resume, 0);
+    });
+
+    resultPromise.isCancelled = false;
+    resultPromise.cancel = () => (resultPromise.isCancelled = true);
+
+    return resultPromise;
+  };
+
   effectRunner.effectName = effect || 'Unknown';
   effectRunner.handlers = handlers;
 
@@ -75,9 +89,6 @@ const createRunner = (handlers = {}, { effect } = {}) => {
 
   // run :: Runner
   effectRunner.run = effectRunner;
-
-  // cancel :: () -> ()
-  effectRunner.cancel = () => (effectRunner.isCancelled = true);
 
   return effectRunner;
 };
@@ -95,7 +106,7 @@ export const createEffect = (name, operations) => ({
 
 // composeEffects :: ...Effect -> Effect
 export const composeEffects = (...effects) => {
-  const name = effects.map(({ name }) => `${name}`.replace('.', '_')).join('.');
+  const name = effects.map(({ name }) => `${name}`).join('.');
   const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
   return createEffect(name, operations);
 };
