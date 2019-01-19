@@ -5,20 +5,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "babel src --out-dir build",
+    "build": "node ./scripts/build.js",
     "watch": "yarn build --watch",
     "lint": "eslint ./packages/**/src/*.js",
     "test": "jest --watch",
     "test:ci": "jest --coverage",
     "coverage:ci": "codecov"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-class-properties"
-    ]
   },
   "jest": {
     "browser": true,
@@ -45,6 +37,9 @@
     "babel-jest": "^23.6.0",
     "codecov": "^3.1.0",
     "eslint": "^5.12.0",
-    "jest": "^23.6.0"
+    "fs-extra": "^7.0.1",
+    "glob": "^7.1.3",
+    "jest": "^23.6.0",
+    "ramda": "^0.26.1"
   }
 }
