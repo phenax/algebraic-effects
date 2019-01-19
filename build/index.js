@@ -98,11 +98,16 @@ var createRunner = function createRunner() {
           return effectRunner.apply(void 0, [p].concat(a));
         };
 
+        var promise = function promise(_promise) {
+          return _promise.then(resume).catch(throwError);
+        };
+
         var flowOperators = {
           resume: resume,
           end: end,
           throwError: throwError,
-          call: call
+          call: call,
+          promise: promise
         };
 
         var _nextValue = nextValue(program, x),
