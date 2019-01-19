@@ -1,24 +1,13 @@
 {
-  "name": "algebraic-effects",
-  "version": "0.0.1-test.1",
-  "description": "Algebraic effects in react using generators",
-  "main": "index.js",
-  "repository": "https://github.com/phenax/algebraic-effects",
-  "author": "Akshay Nair <phenax5@gmail.com>",
-  "license": "MIT",
-  "keywords": [
-    "functional",
-    "algebraic",
-    "algebraic-effects",
-    "generators",
-    "functional-programming",
-    "fp",
-    "js"
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
     "build": "babel src --out-dir build",
     "watch": "yarn build --watch",
-    "lint": "eslint ./src",
+    "lint": "eslint ./packages/**/src/*.js",
     "test": "jest --watch",
     "test:ci": "jest --coverage",
     "coverage:ci": "codecov"
@@ -30,6 +19,21 @@
     "plugins": [
       "@babel/plugin-proposal-class-properties"
     ]
+  },
+  "jest": {
+    "browser": true,
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "packages/**/*.{js}",
+      "!**/node_modules/**"
+    ],
+    "roots": [
+      "packages/"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    }
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
