@@ -10,7 +10,8 @@
     "lint": "eslint ./packages/**/src/*.js",
     "test": "jest --config ./scripts/jest.config.js --watch",
     "test:ci": "jest --config ./scripts/jest.config.js --coverage",
-    "coverage:ci": "codecov"
+    "coverage:ci": "codecov",
+    "prepublish": "yarn build"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
