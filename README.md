@@ -12,7 +12,7 @@ Algebraic effects in javascript using generators inspired by [koka](https://gith
 
 ## Install
 
-#### To add the project to your project
+### To add the project to your project
 ```bash
 yarn add algebraic-effects
 ```
@@ -29,13 +29,13 @@ yarn add algebraic-effects
 
 ## Usage
 
-#### Import it to your file
+### Import it to your file
 ```js
 import { createEffect, func } from 'algebraic-effects';
 import { sleep } from 'algebraic-effects/operations';
 ```
 
-#### Simple state effect example
+### Simple state effect example
 
 ```js
 import State from 'algebraic-effects/State';
@@ -47,10 +47,76 @@ const countdown = function*() {
   if(count > 0) {
     yield State.set(count - 1); // Decrement count
     yield sleep(1000); // Add a delay of 1 second
-    yield call(countdown); // Call the program
+    yield call(countdown); // Recursively call the program again.
   }
 }
 
 State.of(10)(countdown)
   .then(() => alert('HAPPY NEW YEAR!!!!'));
 ```
+
+
+### Custom effects
+
+* Declare your effects
+```js
+import { createEffect, func } from 'algebraic-effects';
+
+export const ConsoleEffect = createEffect('ConsoleEffect', {
+  log: func(['...data']),
+});
+
+export const ApiEffect = createEffect('ApiEffect', {
+  fetchUser: func(['userid'], 'user'),
+  markUserAsViewed: func(['userid']),
+});
+```
+`func` function allows you to document the operation signature.
+
+
+
+* Write your program
+```js
+const fetchProfile = function*(uid) {
+  const user = yield ApiEffect.fetchUser(uid);
+
+  yield ConsoleEffect.log('>> Fetched user user', uid);
+
+  if(user.isPublic) {
+    yield ApiEffect.markUserAsViewed(user.id);
+    yield ConsoleEffect.log('>> Marked', uid, 'as viewed');
+    return user;
+  }
+
+  return { id: uid, name: user.name, isPrivate: true };
+}
+```
+
+
+* Implement effect operation behavior
+```js
+const logger = ConsoleEffect.handler({
+  log: ({ resume }) => (...args) => {
+    console.log(...args);
+    resume();
+  },
+});
+
+const api = ApiEffect.handler({
+  markUserAsViewed: ({ resume, throwError }) =>
+    uid => fetchJson(`/user/${uid}/mark-as-viewed`).then(() => resume()).catch(throwError),
+  fetchUser: ({ promise }) => uid => promise(fetchJson(`/user/${uid}`)),
+});
+```
+`promise` is a shorthand for doing `.then(resume).catch(throwError)`
+
+
+* Calling your program
+```js
+api.with(logger) // Compose your effect handlers togather and run them
+  .run(fetchProfile)
+  .then(user => {
+    // You've got the user now
+  })
+```
+
