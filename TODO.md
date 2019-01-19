@@ -16,7 +16,7 @@
 - Add more effect classes ...
   - [ ] Console
   - [ ] Fetch
-  - [ ] Random Number
+  - [x] Random Number
   - [ ] ?Storage (key value)
   - [ ] ?Something for dom
   - [ ] ?Location
@@ -34,3 +34,4 @@
 - [ ] Cancellation
 - [ ] Call, Race, etc global operations
 - [ ] State effect update operation
+- [ ] Random effect

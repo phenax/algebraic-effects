@@ -31,7 +31,22 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 // type Program = GeneratorFunction
 // type Runner = (Program, ...a) -> Promise
-// createRunner :: (Object Function, { effect :: String }) -> Runner
+var isIterator = function isIterator(p) {
+  return !!p[Symbol.iterator];
+}; // runProgram :: (Program, ...a) -> Iterator
+
+
+var runProgram = function runProgram(program) {
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(void 0, args) : program;
+  if (!isIterator(p)) throw new Error('Cant run program. Invalid generator');
+  return p;
+}; // createRunner :: (Object Function, { effect :: String }) -> Runner
+
+
 var createRunner = function createRunner() {
   var handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -40,32 +55,47 @@ var createRunner = function createRunner() {
 
   var valueHandler = handlers._ || _utils.VALUE_HANDLER;
 
-  var effectRunner = function effectRunner(program) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
+  var effectRunner = function effectRunner(p) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+      args[_key2 - 1] = arguments[_key2];
     }
 
-    return new Promise(function (resolve, reject) {
-      var g = program.apply(void 0, args);
-      effectRunner.isCancelled = false; // throwError :: * -> ()
+    var resultPromise = new Promise(function (resolve, reject) {
+      var program = runProgram.apply(void 0, [p].concat(args)); // throwError :: * -> ()
 
       var throwError = function throwError(x) {
-        g.return(x);
-        !effectRunner.isCancelled && reject(x);
+        program.return(x);
+        !resultPromise.isCancelled && reject(x);
       }; // end  :: * -> ()
 
 
       var end = function end(x) {
-        g.return(x);
-        !effectRunner.isCancelled && resolve(x);
+        program.return(x);
+        !resultPromise.isCancelled && resolve(x);
+      }; // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
+
+
+      var nextValue = function nextValue(program, returnVal) {
+        try {
+          return program.next(returnVal);
+        } catch (e) {
+          throwError(e);
+          return {
+            done: true
+          };
+        }
       }; // resume :: * -> ()
 
 
       var resume = function resume(x) {
-        if (effectRunner.isCancelled) return g.return(null);
+        if (resultPromise.isCancelled) return program.return(null);
 
-        var call = function call() {
-          return effectRunner.apply(void 0, arguments).then(resume).catch(throwError);
+        var call = function call(p) {
+          for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+            a[_key3 - 1] = arguments[_key3];
+          }
+
+          return effectRunner.apply(void 0, [p].concat(a));
         };
 
         var flowOperators = {
@@ -75,9 +105,9 @@ var createRunner = function createRunner() {
           call: call
         };
 
-        var _g$next = g.next(x),
-            value = _g$next.value,
-            done = _g$next.done;
+        var _nextValue = nextValue(program, x),
+            value = _nextValue.value,
+            done = _nextValue.done;
 
         if (done) return valueHandler(flowOperators)(value);
 
@@ -95,12 +125,18 @@ var createRunner = function createRunner() {
         }
       };
 
-      return resume();
+      setTimeout(resume, 0);
     });
+    resultPromise.isCancelled = false;
+
+    resultPromise.cancel = function () {
+      return resultPromise.isCancelled = true;
+    };
+
+    return resultPromise;
   };
 
-  effectRunner.isCancelled = false;
-  effectRunner.effectName = effect || 'Unknown';
+  effectRunner.effectName = effect || 'GlobalEffect';
   effectRunner.handlers = handlers; // concat, with :: Runner -> Runner
 
   effectRunner.concat = function (run1) {
@@ -111,12 +147,7 @@ var createRunner = function createRunner() {
 
   effectRunner.with = effectRunner.concat; // run :: Runner
 
-  effectRunner.run = effectRunner; // cancel :: () -> ()
-
-  effectRunner.cancel = function () {
-    return effectRunner.isCancelled = true;
-  };
-
+  effectRunner.run = effectRunner;
   return effectRunner;
 }; // createEffect :: (String, Object *) -> Effect
 
@@ -139,13 +170,13 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeEffects = function composeEffects() {
-  for (var _len2 = arguments.length, effects = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-    effects[_key2] = arguments[_key2];
+  for (var _len4 = arguments.length, effects = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+    effects[_key4] = arguments[_key4];
   }
 
   var name = effects.map(function (_ref2) {
     var name = _ref2.name;
-    return "".concat(name).replace('.', '_');
+    return "".concat(name);
   }).join('.');
   var operations = effects.reduce(function (acc, eff) {
     return _objectSpread({}, acc, eff.operations);
@@ -157,8 +188,8 @@ var composeEffects = function composeEffects() {
 exports.composeEffects = composeEffects;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len3 = arguments.length, runners = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-    runners[_key3] = arguments[_key3];
+  for (var _len5 = arguments.length, runners = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+    runners[_key5] = arguments[_key5];
   }
 
   return runners.reduce(function (a, b) {
@@ -168,7 +199,5 @@ var composeHandlers = function composeHandlers() {
 
 
 exports.composeHandlers = composeHandlers;
-var run = createRunner({}, {
-  effect: 'GlobalRunner'
-});
+var run = createRunner();
 exports.run = run;

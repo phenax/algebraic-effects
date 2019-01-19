@@ -44,23 +44,30 @@ var validateArguments = function validateArguments(args, values) {
 }; // type Operation = ...a -> { name :: String, payload :: a }
 
 
-var Operation = function Operation(name) {
-  var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [],
-      _ref3 = _slicedToArray(_ref2, 1),
-      args = _ref3[0];
+var Operation = function Operation(name, _ref2) {
+  var _ref3 = _slicedToArray(_ref2, 2),
+      args = _ref3[0],
+      returnType = _ref3[1];
 
-  return function () {
+  var op = function op() {
     for (var _len = arguments.length, payload = new Array(_len), _key = 0; _key < _len; _key++) {
       payload[_key] = arguments[_key];
     }
 
-    if (!validateArguments(args, payload)) throw new Error("The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
+    if (!validateArguments(args, payload)) throw new Error("ArgumentError. The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
     return {
       name: name,
       payload: payload,
-      $$type: OPERATION
+      $$type: OPERATION,
+      toString: toString
     };
   };
+
+  op.toString = function () {
+    return "func ".concat(name, "(").concat(args.join(', '), ") -> ").concat(returnType);
+  };
+
+  return op;
 };
 
 exports.Operation = Operation;

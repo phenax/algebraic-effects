@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addGlobalOperation = exports.race = exports.resolve = exports.call = exports.awaitPromise = exports.sleep = exports.default = void 0;
+exports.default = exports.addGlobalOperation = exports.background = exports.parallel = exports.race = exports.call = exports.awaitPromise = exports.resolve = exports.sleep = void 0;
 
 var _utils = require("./utils");
 
@@ -16,7 +16,7 @@ var handlePromise = function handlePromise(fn) {
   };
 };
 
-var globalOperations = {
+var globalOpHandlers = {
   sleep: function sleep(_ref) {
     var resume = _ref.resume;
     return function (duration) {
@@ -28,10 +28,16 @@ var globalOperations = {
       return x;
     };
   }),
-  call: function call(_ref2) {
-    var _call = _ref2.call;
-    return _call;
-  },
+  call: handlePromise(function (_ref2) {
+    var call = _ref2.call;
+    return function (p) {
+      for (var _len = arguments.length, a = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        a[_key - 1] = arguments[_key];
+      }
+
+      return call.apply(void 0, [p].concat(a));
+    };
+  }),
   resolve: function resolve(_ref3) {
     var end = _ref3.end;
     return function (v) {
@@ -45,26 +51,49 @@ var globalOperations = {
         return call(p);
       }));
     };
-  })
-};
-var _default = globalOperations; // * :: Operation
+  }),
+  parallel: handlePromise(function (_ref5) {
+    var call = _ref5.call;
+    return function (programs) {
+      return Promise.all(programs.map(function (p) {
+        return call(p);
+      }));
+    };
+  }),
+  background: function background(_ref6) {
+    var call = _ref6.call,
+        resume = _ref6.resume;
+    return function (p) {
+      for (var _len2 = arguments.length, a = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        a[_key2 - 1] = arguments[_key2];
+      }
 
-exports.default = _default;
+      return resume(call.apply(void 0, [p].concat(a)));
+    };
+  }
+}; // * :: Operation
+
 var sleep = (0, _utils.Operation)('sleep', (0, _utils.func)(['duration']));
 exports.sleep = sleep;
+var resolve = (0, _utils.Operation)('resolve', (0, _utils.func)(['*']));
+exports.resolve = resolve;
 var awaitPromise = (0, _utils.Operation)('awaitPromise', (0, _utils.func)(['promise a'], 'a'));
 exports.awaitPromise = awaitPromise;
 var call = (0, _utils.Operation)('call', (0, _utils.func)(['generator ...a b', '...a'], 'b'));
 exports.call = call;
-var resolve = (0, _utils.Operation)('resolve', (0, _utils.func)(['*']));
-exports.resolve = resolve;
-var race = (0, _utils.Operation)('race', (0, _utils.func)(['*'])); // addGlobalOperation :: (String, Function, Runner) -> Operation
-
+var race = (0, _utils.Operation)('race', (0, _utils.func)(['...(generator ...a b)'], 'b'));
 exports.race = race;
+var parallel = (0, _utils.Operation)('parallel', (0, _utils.func)(['...(generator ...a b)'], '[b]'));
+exports.parallel = parallel;
+var background = (0, _utils.Operation)('background', (0, _utils.func)(['...(generator ...a b)'], '[b]')); // addGlobalOperation :: (String, Function, Runner) -> Operation
+
+exports.background = background;
 
 var addGlobalOperation = function addGlobalOperation(name, signature, handler) {
-  globalOperations[name] = handler;
+  globalOpHandlers[name] = handler;
   return (0, _utils.Operation)(name, signature);
 };
 
 exports.addGlobalOperation = addGlobalOperation;
+var _default = globalOpHandlers;
+exports.default = _default;
