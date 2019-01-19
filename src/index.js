@@ -35,6 +35,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
         !resultPromise.isCancelled && resolve(x);
       };
 
+      // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
       const nextValue = (program, returnVal) => {
         try {
           return program.next(returnVal);
@@ -77,7 +78,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
     return resultPromise;
   };
 
-  effectRunner.effectName = effect || 'Unknown';
+  effectRunner.effectName = effect || 'GlobalEffect';
   effectRunner.handlers = handlers;
 
   // concat, with :: Runner -> Runner
@@ -115,6 +116,6 @@ export const composeEffects = (...effects) => {
 export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
 
 // run :: Runner
-export const run = createRunner({}, { effect: 'GlobalRunner' });
+export const run = createRunner();
 
 export { func };

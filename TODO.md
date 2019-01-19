@@ -8,7 +8,10 @@
 - [x] Add ability to cancel a runner
 - [x] Add type signature checks
 - [x] Custom global operations
+- [x] Add name to runner to identify which Effects were composed
 - [x] Map/Over method for State effect
+- [ ] ?Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
+
 
 - Add more effect classes ...
   - [ ] Console
@@ -19,16 +22,11 @@
   - [ ] ?Location
   - [ ] ?... other browser apis
 
-- Improve effect and handler composition ...
-  - [x] Add name to runner to identify which Effects were composed
-
 - Running programs inside programs
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
   - [x] Run program in background
-
-- [ ] ?Use something lazy instead of promises (Like Async)
 
 ### Documentations
 - [ ] Explain motivation and inspiration
