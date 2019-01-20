@@ -7,7 +7,7 @@ Algebraic effects in javascript using generators inspired by [koka](https://gith
 <!-- [![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects) -->
 
 
-[Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/docs)
+[Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
 
 
 ## Install
@@ -19,12 +19,12 @@ yarn add algebraic-effects
 
 
 ## Docs
-* [Gettting started](https://github.com/phenax/algebraic-effects/tree/master/docs)
-* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/docs/lingo.md)
-* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/docs/core.md)
-* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/docs/operations.md)
-* [State effect](https://github.com/phenax/algebraic-effects/tree/master/docs/State.md)
-* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/docs/Exception.md)
+* [Gettting started](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
+* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/lingo.md)
+* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/core.md)
+* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/operations.md)
+* [State effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/State.md)
+* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/Exception.md)
 
 
 ## Usage
