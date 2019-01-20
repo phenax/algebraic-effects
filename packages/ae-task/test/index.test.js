@@ -3,6 +3,24 @@ import Task from '../src';
 
 describe('Task', () => {
 
+  describe('Task.fromPromise', () => {
+    it('should convert a promise factory into a task', done => {
+      Task.fromPromise(() => Promise.resolve(5))
+        .fork(done, (n) => {
+          expect(n).toBe(5);
+          done();
+        });
+    });
+
+    it('should convert a promise factory into a task', done => {
+      Task.fromPromise(() => Promise.reject(5))
+        .fork((n) => {
+          expect(n).toBe(5);
+          done();
+        }, done);
+    });
+  });
+
   describe('#resolveWith, #rejectWith', () => {
     it('should ignore previous operations and just resolve with a value', done => {
       const t = Task.resolved(5).map(x => x * 2).resolveWith(9);

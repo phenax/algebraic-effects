@@ -49,5 +49,6 @@ Task.empty = () => Task(() => {});
 Task.resolved = data => Task((_, resolve) => resolve(data));
 Task.rejected = data => Task(reject => reject(data));
 Task.of = Task.resolved;
+Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej));
 
 export default Task;
