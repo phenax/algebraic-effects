@@ -20,17 +20,14 @@ const Task = (taskFn) => {
     }
   };
 
-  const fold = (mapErr, mapVal) =>
-    Task((_, res) => fork(compose(res, mapErr), compose(res, mapVal)));
+  const fold = (mapErr, mapVal) => Task((_, res) => fork(compose(res, mapErr), compose(res, mapVal)));
 
-  const bimap = (mapErr, mapVal) =>
-    Task((rej, res) => fork(compose(rej, mapErr), compose(res, mapVal)));
+  const bimap = (mapErr, mapVal) => Task((rej, res) => fork(compose(rej, mapErr), compose(res, mapVal)));
+
+  const chain = fn => Task((reject, resolve) => fork(reject, b => fn(b).fork(reject, resolve)));
 
   const map = fn => bimap(identity, fn);
   const mapRejected = fn => bimap(fn, identity);
-
-  const chain = fn =>
-    Task((reject, resolve) => fork(reject, b => fn(b).fork(reject, resolve)));
 
   const instance = {
     fork,
@@ -39,8 +36,8 @@ const Task = (taskFn) => {
     bimap,
     fold,
     chain,
-    resolveWith: Task.resolve,
-    rejectWith: Task.reject,
+    resolveWith: Task.resolved,
+    rejectWith: Task.rejected,
     empty: Task.empty,
   };
 
@@ -48,8 +45,8 @@ const Task = (taskFn) => {
 };
 
 Task.empty = () => Task(() => {});
-Task.resolve = data => Task((_, resolve) => resolve(data));
-Task.reject = data => Task(reject => reject(data));
-Task.of = Task.resolve;
+Task.resolved = data => Task((_, resolve) => resolve(data));
+Task.rejected = data => Task(reject => reject(data));
+Task.of = Task.resolved;
 
 export default Task;
