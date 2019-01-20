@@ -1,0 +1,20 @@
+{
+  "name": "@algebraic-effects/core",
+  "version": "0.0.1-test.0",
+  "description": "Algebraic effects in react using generators",
+  "main": "index.js",
+  "isBuildTarget": true,
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "functional",
+    "algebraic",
+    "algebraic-effects",
+    "generators",
+    "functional-programming",
+    "fp",
+    "effects",
+    "saga"
+  ]
+}

@@ -3,43 +3,50 @@
 Algebraic effects in javascript using generators inspired by [koka](https://github.com/koka-lang/koka)
 
 <!-- [![CircleCI](https://img.shields.io/circleci/project/github/phenax/algebraic-effects/master.svg?style=for-the-badge)](https://circleci.com/gh/phenax/algebraic-effects) -->
-<!-- [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/algebraic-effects.svg?style=for-the-badge)](https://www.npmjs.com/package/algebraic-effects) -->
+[![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/algebraic-effects.svg?style=for-the-badge)](https://www.npmjs.com/package/algebraic-effects)
 <!-- [![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects) -->
 
 
-[Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/docs)
+[Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
 
 
 ## Install
 
 ### To add the project to your project
 ```bash
-yarn add algebraic-effects
+yarn add @algebraic-effects/core
+```
+
+If you want effects like Exception, State, Random, etc.
+```bash
+yarn add @algebraic-effects/core @algebraic-effects/effects
 ```
 
 
 ## Docs
-* [Gettting started](https://github.com/phenax/algebraic-effects/tree/master/docs)
-* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/docs/lingo.md)
-* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/docs/core.md)
-* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/docs/operations.md)
-* [State effect](https://github.com/phenax/algebraic-effects/tree/master/docs/State.md)
-* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/docs/Exception.md)
+* [Gettting started](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
+* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/lingo.md)
+* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/core.md)
+* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/operations.md)
+* [State effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/State.md)
+* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/Exception.md)
 
 
 ## Usage
 
+
 ### Import it to your file
 ```js
-import { createEffect, func } from 'algebraic-effects';
-import { sleep } from 'algebraic-effects/operations';
+import { createEffect, func } from '@algebraic-effects/core';
+import { sleep } from '@algebraic-effects/core/operations';
 ```
+
 
 ### Simple state effect example
 
 ```js
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
+import { State } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
 
 const countdown = function*() {
   const count = yield State.get();
@@ -56,11 +63,11 @@ State.of(10)(countdown)
 ```
 
 
-### Custom effects
+### Creating your own effects
 
 * Declare your effects
 ```js
-import { createEffect, func } from 'algebraic-effects';
+import { createEffect, func } from '@algebraic-effects/core';
 
 export const ConsoleEffect = createEffect('ConsoleEffect', {
   log: func(['...data']),

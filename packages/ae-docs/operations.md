@@ -11,7 +11,7 @@ sleep :: Operation (Number) ()
 ```
 
 ```js
-import { sleep } from 'algebraic-effects/operations';
+import { sleep } from '@algebraic-effects/core/operations';
 
 // Program that returns 5 after 1 second
 const program = function*() {
@@ -29,7 +29,7 @@ call :: Operation (Program,...a) ()
 ```
 
 ```js
-import { sleep, call } from 'algebraic-effects/operations';
+import { sleep, call } from '@algebraic-effects/core/operations';
 
 // Program that logs `Hello ${n}` every 1 second
 const program = function*(count) {
@@ -49,7 +49,7 @@ awaitPromise :: Operation (Promise a) a
 ```
 
 ```js
-import { awaitPromise } from 'algebraic-effects/operations';
+import { awaitPromise } from '@algebraic-effects/core/operations';
 
 // Program that calls your api and logs it to console
 const program = function*() {

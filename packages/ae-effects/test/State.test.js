@@ -1,6 +1,6 @@
 
 import State from '../src/State';
-import { sleep, call } from '../src/operations';
+import { sleep, call } from '@algebraic-effects/core/operations';
 
 describe('State', () => {
   const logFn = jest.fn();

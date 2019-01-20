@@ -1,4 +1,4 @@
-import { createEffect, func } from '.';
+import { createEffect, func } from '@algebraic-effects/core';
 
 // State :: Effect
 const State = createEffect('State', {

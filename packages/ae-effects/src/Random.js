@@ -1,5 +1,5 @@
 
-import { createEffect, func } from '.';
+import { createEffect, func } from '@algebraic-effects/core';
 
 // Including min and max i.e. [min, max]
 // getRandomInt :: (Number, Number) -> Number

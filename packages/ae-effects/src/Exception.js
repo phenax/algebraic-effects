@@ -1,5 +1,5 @@
 
-import { createEffect, func } from '.';
+import { createEffect, func } from '@algebraic-effects/core';
 
 // Exception :: Effect
 const Exception = createEffect('Exception', {

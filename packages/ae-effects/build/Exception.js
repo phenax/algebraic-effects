@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _ = require(".");
+var _core = require("@algebraic-effects/core");
 
 // Exception :: Effect
-var Exception = (0, _.createEffect)('Exception', {
-  throw: (0, _.func)(['error'])
+var Exception = (0, _core.createEffect)('Exception', {
+  throw: (0, _core.func)(['error'])
 }); // Exception.try :: Runner
 
 Exception.try = Exception.handler({
