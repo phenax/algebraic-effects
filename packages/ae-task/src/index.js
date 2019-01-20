@@ -14,19 +14,14 @@ const Task = (taskFn) => {
     let isDone = false;
 
     const guard = cb => a => {
-      const result = isCancelled || isDone ? null : cb(a);
+      isCancelled || isDone ? null : cb(a);
       isDone = true;
-      return result;
     };
 
     const globalCleanup = () => (isCancelled = true);
+    const cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
 
-    try {
-      const cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
-      return compose(globalCleanup, cleanup);
-    } catch(e) {
-      return (guard(onFailure)(e), globalCleanup);
-    }
+    return compose(globalCleanup, cleanup);
   };
 
   // fold :: (e -> b, a -> b) -> Task () b
@@ -80,5 +75,16 @@ Task.race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
 
 Task.series = tasks =>
   tasks.reduce((task, t) => task.chain(d => t.map(x => [...d, x])), Task.resolved([]));
+
+Task.parallel = tasks => Task((reject, resolve) => {
+  const cummulatedData = [];
+  const onResolve = index => data => {
+    cummulatedData[index] = { data };
+    if(cummulatedData.filter(Boolean).length === tasks.length)
+      resolve(cummulatedData.map(d => d.data));
+  };
+
+  tasks.forEach((task, index) => task.fork(reject, onResolve(index)));
+});
 
 export default Task;

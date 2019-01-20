@@ -1,7 +1,7 @@
 
 import Task from '../src';
 
-const delay = (duration, cancel) => Task((reject, resolve) => {
+const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
   const timerid = setTimeout(() => resolve(), duration);
   return () => cancel && cancel(timerid);
 });
@@ -44,12 +44,41 @@ describe('Task', () => {
       });
     });
 
-    it('should reject with the first one that fails', done => {
+    it('should reject with the first one (lowest index) that fails', done => {
       const t1 = delay(50).map(() => 1);
       const t2 = delay(80).rejectWith(2);
       const t3 = delay(100).rejectWith(3);
       Task.series([ t1, t2, t3 ]).fork(n => {
         expect(n).toBe(2);
+        done();
+      }, () => done('Shoudnbe here'));
+    });
+  });
+
+  describe('Task.parallel', () => {
+    it('should run all tasks in parallel', done => {
+      const t1 = delay(100).map(() => 1);
+      const t2 = delay(20).map(() => 2);
+      const t3 = delay(120).map(() => 3);
+      const t4 = delay(90).map(() => 4);
+
+      const startTime = Date.now();
+      Task.parallel([ t1, t2, t3, t4 ]).fork(done, arr => {
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(120);
+        expect(Date.now() - startTime).toBeLessThan(200);
+        expect(arr).toEqual([ 1, 2, 3, 4 ]);
+        done();
+      });
+    });
+
+    it('should reject with the first one (first in time) that fails', done => {
+      const t1 = delay(100).map(() => 1);
+      const t2 = delay(20).map(() => 2);
+      const t3 = delay(120).map(() => 3);
+      const t4 = delay(90).rejectWith(4);
+
+      Task.series([ t1, t2, t3, t4 ]).fork(n => {
+        expect(n).toBe(4);
         done();
       }, () => done('Shoudnbe here'));
     });
@@ -201,12 +230,9 @@ describe('Task', () => {
       }, () => done('Shouldnt be here'));
     });
 
-    it('should throw error if result is not a task', done => {
+    it('should throw error if result is not a task', () => {
       const t = Task.resolved(5).chain(x => 2 * x);
-      t.fork(e => {
-        expect(e.message).toContain('TypeError');
-        done();
-      }, () => done('Shouldnt be here'));
+      expect(() => t.fork(() => {}, () => {})).toThrowError();
     });
   });
 
@@ -281,14 +307,14 @@ describe('Task', () => {
         );
     });
 
-    it('should cancel', done => {
-      const cancel = delay(50).fork(done, () => done('shouldnt have reached here'));
+    it('should cancel without cancel handler', done => {
+      const cancel = delay(50, () => {}).fork(done, () => done('shouldnt have reached here'));
       cancel();
       setTimeout(() => done(), 150);
     });
 
-    it('should cancel with clearTimeout', done => {
-      const cancel = delay(50, clearTimeout).fork(done, () => done('shouldnt have reached here'));
+    it('should cancel', done => {
+      const cancel = delay(50).fork(done, () => done('shouldnt have reached here'));
       cancel();
       setTimeout(() => done(), 150);
     });

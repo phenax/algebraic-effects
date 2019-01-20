@@ -40,9 +40,8 @@ var Task = function Task(taskFn) {
 
     var guard = function guard(cb) {
       return function (a) {
-        var result = isCancelled || isDone ? null : cb(a);
+        isCancelled || isDone ? null : cb(a);
         isDone = true;
-        return result;
       };
     };
 
@@ -50,12 +49,8 @@ var Task = function Task(taskFn) {
       return isCancelled = true;
     };
 
-    try {
-      var cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
-      return compose(globalCleanup, cleanup);
-    } catch (e) {
-      return guard(onFailure)(e), globalCleanup;
-    }
+    var cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
+    return compose(globalCleanup, cleanup);
   }; // fold :: (e -> b, a -> b) -> Task () b
 
 
@@ -155,6 +150,27 @@ Task.series = function (tasks) {
       });
     });
   }, Task.resolved([]));
+};
+
+Task.parallel = function (tasks) {
+  return Task(function (reject, resolve) {
+    var cummulatedData = [];
+
+    var onResolve = function onResolve(index) {
+      return function (data) {
+        cummulatedData[index] = {
+          data: data
+        };
+        if (cummulatedData.filter(Boolean).length === tasks.length) resolve(cummulatedData.map(function (d) {
+          return d.data;
+        }));
+      };
+    };
+
+    tasks.forEach(function (task, index) {
+      return task.fork(reject, onResolve(index));
+    });
+  });
 };
 
 var _default = Task;
