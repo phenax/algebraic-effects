@@ -39,6 +39,7 @@ const Task = (taskFn) => {
     resolveWith: Task.resolved,
     rejectWith: Task.rejected,
     empty: Task.empty,
+    toPromise: () => new Promise((res, rej) => fork(rej, res)),
   };
 
   return instance;

@@ -154,6 +154,36 @@ describe('Task', () => {
     });
   });
 
+  describe('#toPromise', () => {
+    it('should return a resolved promise', done => {
+      const t = Task.resolved(5)
+        .map(x => x + 1)
+        .chain(x => Task.resolved(2 * x))
+        .map(x => x + 5);
+
+      t.toPromise()
+        .then(d => {
+          expect(d).toBe(17);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should return a resolved promise', done => {
+      const t = Task.rejected(5)
+        .map(x => x + 1)
+        .chain(x => Task.resolved(2 * x))
+        .map(x => x + 5);
+
+      t.toPromise()
+        .then(() => done('shoundt be here'))
+        .catch(n => {
+          expect(n).toBe(5);
+          done();
+        });
+    });
+  });
+
   describe('Timeout example (integrated test)', () => {
     const delay = (duration, cancel) => Task((reject, resolve) => {
       const timerid = setTimeout(() => resolve(), duration);
