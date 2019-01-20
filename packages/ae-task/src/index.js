@@ -78,6 +78,7 @@ Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej))
 // Task.race :: [Task e a] -> Task e a
 Task.race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
 
-// Task.parallel = tasks => Task((rej, res) => tasks.reduce(() => t.fork(rej, res)));
+Task.series = tasks =>
+  tasks.reduce((task, t) => task.chain(d => t.map(x => [...d, x])), Task.resolved([]));
 
 export default Task;

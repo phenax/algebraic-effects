@@ -30,6 +30,31 @@ describe('Task', () => {
     });
   });
 
+  describe('Task.series', () => {
+    it('should run all tasks in series', done => {
+      const t1 = delay(50).map(() => 1);
+      const t2 = delay(70).map(() => 2);
+      const t3 = delay(90).map(() => 3);
+
+      const startTime = Date.now();
+      Task.series([ t1, t2, t3 ]).fork(done, arr => {
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(200);
+        expect(arr).toEqual([ 1, 2, 3 ]);
+        done();
+      });
+    });
+
+    it('should reject with the first one that fails', done => {
+      const t1 = delay(50).map(() => 1);
+      const t2 = delay(80).rejectWith(2);
+      const t3 = delay(100).rejectWith(3);
+      Task.series([ t1, t2, t3 ]).fork(n => {
+        expect(n).toBe(2);
+        done();
+      }, () => done('Shoudnbe here'));
+    });
+  });
+
   describe('Task.fromPromise', () => {
     it('should convert a promise factory into a task', done => {
       Task.fromPromise(() => Promise.resolve(5))

@@ -5,6 +5,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 // compose :: (...Function) -> Function
 var compose = function compose() {
   for (var _len = arguments.length, fns = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -137,8 +145,17 @@ Task.race = function (tasks) {
       return t.fork(rej, res);
     });
   });
-}; // Task.parallel = tasks => Task((rej, res) => tasks.reduce(() => t.fork(rej, res)));
+};
 
+Task.series = function (tasks) {
+  return tasks.reduce(function (task, t) {
+    return task.chain(function (d) {
+      return t.map(function (x) {
+        return [].concat(_toConsumableArray(d), [x]);
+      });
+    });
+  }, Task.resolved([]));
+};
 
 var _default = Task;
 exports.default = _default;
