@@ -39,4 +39,4 @@
 - [ ] All flow operators
 
 ### Scripts
-- [ ] Version upgrade in publish script should upgrade matching dependencies as well
+- [x] Version upgrade in publish script should upgrade matching dependencies as well

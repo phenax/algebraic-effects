@@ -1,6 +1,6 @@
 const fsextra = require('fs-extra');
 const path = require('path');
-const { map, filter } = require('ramda');
+const { map, filter, compose } = require('ramda');
 const rootProjectPackageJson = require('../package.json');
 
 const { getPackages, PACKAGE_ROOT, PROJECT_ROOT, toPackagePaths, getPackageJson, resolveAll, errorHandler, ask, runCommand } = require('./utils');
@@ -38,16 +38,34 @@ const loginUser = () =>
 const publishPackage = dir =>
   runCommand('npm', ['publish', '--access=public', ...forwardArgs], { cwd: dir });
 
-const savePackageJson = (pjson, dir) => fsextra.writeFile(path.join(dir, 'package.json'), JSON.stringify(pjson, 0, 2));
+const savePackageJson = (pjson, dir) =>
+  fsextra.writeFile(path.join(dir, 'package.json'), JSON.stringify(pjson, 0, 2));
+
+const updatePackageDepVersion = (type, packages, version) => _pJson => {
+  const pJson = {..._pJson};
+  if (pJson[type]) {
+    Object.keys(pJson[type])
+      .filter(dep => packages.find(([{ name }]) => name === dep))
+      .forEach(dep => (pJson[type][dep] = version));
+  }
+  return pJson;
+};
 
 const updatePackageVersion = (version, packages) => {
   if (!version) return Promise.resolve();
-  if (!isVersionValid(version))
-    return Promise.reject(new Error(`Invalid version ${version}`));
+  if (!isVersionValid(version)) return Promise.reject(new Error(`Invalid version ${version}`));
 
   return Promise.resolve(packages.map(dir => [fetchPackageJson(dir), dir]))
     .then(pJsons => [ ...pJsons, [rootProjectPackageJson, PROJECT_ROOT] ])
-    .then(map(([ pJson, dir ]) => [ { ...pJson, version }, dir ]))
+    .then(packages => packages.map(([ _pJson, dir ]) => {
+      const pJson = compose(
+        updatePackageDepVersion('peerDependencies', packages, version),
+        updatePackageDepVersion('optionalDependencies', packages, version),
+        updatePackageDepVersion('devDependencies', packages, version),
+        updatePackageDepVersion('dependencies', packages, version),
+      )({ ..._pJson, version });
+      return [ pJson, dir ];
+    }))
     .then(map(([pJson, dir]) => savePackageJson(pJson, dir)))
     .then(resolveAll);
 };

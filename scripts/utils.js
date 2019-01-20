@@ -48,6 +48,7 @@ const runCommand = (command, args = [], optns = {}) => new Promise((resolve, rej
 module.exports = {
   getPackageJson,
   PACKAGE_ROOT,
+  PROJECT_ROOT,
   toPackagePaths,
   fromNodeCalllback,
   resolveAll,
