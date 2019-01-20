@@ -1,6 +1,8 @@
 
 // compose :: (...Function) -> Function
-const compose = (...fns) => fns.reduce((a, b) => (...args) => a(b(...args)));
+const compose = function() {
+  return [...arguments].reduce((a, b) => (...args) => a(b(...args)));
+};
 
 // identity :: a -> a
 const identity = x => x;
@@ -74,14 +76,16 @@ Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej))
 Task.race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
 
 Task.series = tasks =>
-  tasks.reduce((task, t) => task.chain(d => t.map(x => [...d, x])), Task.resolved([]));
+  tasks.reduce((task, t) => task.chain(d => t.map(x => d.concat([x]))), Task.resolved([]));
 
 Task.parallel = tasks => Task((reject, resolve) => {
-  const cummulatedData = [];
+  let resolvedCount = 0;
+  const resolvedData = [];
+
   const onResolve = index => data => {
-    cummulatedData[index] = { data };
-    if(cummulatedData.filter(Boolean).length === tasks.length)
-      resolve(cummulatedData.map(d => d.data));
+    resolvedData[index] = data;
+    resolvedCount += 1;
+    if(resolvedCount === tasks.length) resolve(resolvedData);
   };
 
   tasks.forEach((task, index) => task.fork(reject, onResolve(index)));

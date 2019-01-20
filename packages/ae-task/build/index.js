@@ -5,21 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 // compose :: (...Function) -> Function
 var compose = function compose() {
-  for (var _len = arguments.length, fns = new Array(_len), _key = 0; _key < _len; _key++) {
-    fns[_key] = arguments[_key];
-  }
-
-  return fns.reduce(function (a, b) {
+  return Array.prototype.slice.call(arguments).reduce(function (a, b) {
     return function () {
       return a(b.apply(void 0, arguments));
     };
@@ -146,7 +134,7 @@ Task.series = function (tasks) {
   return tasks.reduce(function (task, t) {
     return task.chain(function (d) {
       return t.map(function (x) {
-        return [].concat(_toConsumableArray(d), [x]);
+        return d.concat([x]);
       });
     });
   }, Task.resolved([]));
@@ -154,16 +142,14 @@ Task.series = function (tasks) {
 
 Task.parallel = function (tasks) {
   return Task(function (reject, resolve) {
-    var cummulatedData = [];
+    var resolvedCount = 0;
+    var resolvedData = [];
 
     var onResolve = function onResolve(index) {
       return function (data) {
-        cummulatedData[index] = {
-          data: data
-        };
-        if (cummulatedData.filter(Boolean).length === tasks.length) resolve(cummulatedData.map(function (d) {
-          return d.data;
-        }));
+        resolvedData[index] = data;
+        resolvedCount += 1;
+        if (resolvedCount === tasks.length) resolve(resolvedData);
       };
     };
 
