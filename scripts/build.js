@@ -4,7 +4,7 @@ const path = require('path');
 const babel = require('@babel/core');
 const { map, filter, flatten, compose, uniq, prop } = require('ramda');
 
-const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages } = require('./utils');
+const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages, errorHandler } = require('./utils');
 
 const babelConfig = require('../babel.config');
 
@@ -58,7 +58,7 @@ const build = packages =>
     .then(map(saveCodeFile))
     .then(resolveAll)
     .catch(e => {
-      console.error(e);
+      errorHandler(e);
       return Promise.reject(e);
     });
 
