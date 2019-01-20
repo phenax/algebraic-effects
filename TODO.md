@@ -12,6 +12,7 @@
 - [x] Map/Over method for State effect
 - [x] Change package name to @algebraic-effects scope
 - [x] Migrate to yarn workspaces
+- [ ] Move static functions of Tasks out to a another entry point
 - [ ] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 
 - Add more effect classes ...
