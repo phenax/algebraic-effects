@@ -7,11 +7,18 @@ const identity = x => x;
 
 // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task
 const Task = (taskFn) => {
-  let isCancelled = false;
-  const guard = cb => a => isCancelled ? null : cb(a);
-  const globalCleanup = () => (isCancelled = true);
-
   const fork = (onFailure, onSuccess) => {
+    let isCancelled = false;
+    let isDone = false;
+
+    const guard = cb => a => {
+      const result = isCancelled || isDone ? null : cb(a);
+      isDone = true;
+      return result;
+    };
+
+    const globalCleanup = () => (isCancelled = true);
+
     try {
       const cleanup = taskFn(guard(onFailure), guard(onSuccess));
       return compose(globalCleanup, cleanup || identity);
@@ -50,5 +57,7 @@ Task.resolved = data => Task((_, resolve) => resolve(data));
 Task.rejected = data => Task(reject => reject(data));
 Task.of = Task.resolved;
 Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej));
+Task.race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
+// Task.parallel = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
 
 export default Task;

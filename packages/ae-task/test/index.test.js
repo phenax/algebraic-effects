@@ -1,7 +1,34 @@
 
 import Task from '../src';
 
+const delay = (duration, cancel) => Task((reject, resolve) => {
+  const timerid = setTimeout(() => resolve(), duration);
+  return () => cancel && cancel(timerid);
+});
+
 describe('Task', () => {
+
+  describe('Task.race', () => {
+    it('should race to the finish line and resolve with the first', done => {
+      const t1 = delay(200).map(() => 1);
+      const t2 = delay(100).map(() => 2);
+      const t3 = delay(300).map(() => 3);
+      Task.race([ t1, t2, t3 ]).fork(done, (n) => {
+        expect(n).toBe(2);
+        done();
+      });
+    });
+
+    it('should race to the finish line and reject with the first', done => {
+      const t1 = delay(200).map(() => 1);
+      const t2 = delay(100).rejectWith(2);
+      const t3 = delay(300).rejectWith(3);
+      Task.race([ t1, t2, t3 ]).fork(n => {
+        expect(n).toBe(2);
+        done();
+      }, () => done('Shoudnbe here'));
+    });
+  });
 
   describe('Task.fromPromise', () => {
     it('should convert a promise factory into a task', done => {
@@ -203,11 +230,6 @@ describe('Task', () => {
   });
 
   describe('Timeout example (integrated test)', () => {
-    const delay = (duration, cancel) => Task((reject, resolve) => {
-      const timerid = setTimeout(() => resolve(), duration);
-      return () => cancel && cancel(timerid);
-    });
-
     it('should delay (combination test of map, chain and fork)', done => {
       const start = Date.now();
       delay(100)
