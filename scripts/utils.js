@@ -2,11 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const glob = require('glob');
+const readline = require('readline');
+const { spawn } = require('child_process');
 const { map } = require('ramda');
 
 const PROJECT_ROOT = path.join(__dirname, '..');
 const PACKAGE_ROOT = path.join(PROJECT_ROOT, 'packages/');
-
 
 const getPackageJson = dir => JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
 
@@ -28,6 +29,22 @@ const errorHandler = e => {
   console.log();
 };
 
+const ask = question => {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => rl.question(question, result => {
+    resolve(result);
+    rl.close();
+  }));
+};
+
+const runCommand = (command, args = [], optns = {}) => new Promise((resolve, reject) => {
+  console.log(chalk.gray(`>> Running ${command} ${args.join(' ')}`));
+  const p = spawn(command, args, { detached: false, stdio: 'inherit', ...optns });
+  p.on('error', reject);
+  p.on('close', resolve);
+  p.on('exit', resolve);
+});
+
 module.exports = {
   getPackageJson,
   PACKAGE_ROOT,
@@ -37,4 +54,6 @@ module.exports = {
   globber,
   getPackages,
   errorHandler,
+  ask,
+  runCommand,
 };
