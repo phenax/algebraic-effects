@@ -37,3 +37,6 @@
 - [ ] State effect update operation
 - [ ] Random effect
 - [ ] All flow operators
+
+### Scripts
+- [ ] Version upgrade in publish script should upgrade matching dependencies as well

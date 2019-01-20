@@ -1,0 +1,24 @@
+{
+  "name": "@algebraic-effects/effects",
+  "version": "0.0.0",
+  "description": "Common effects for working with algebraic effects",
+  "main": "index.js",
+  "isBuildTarget": true,
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@algebraic-effects/core": "latest"
+  },
+  "keywords": [
+    "functional",
+    "algebraic",
+    "effects", 
+    "generators",
+    "fp",
+    "state",
+    "exception",
+    "random",
+    "console"
+  ]
+}
