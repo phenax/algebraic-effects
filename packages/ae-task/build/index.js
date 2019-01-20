@@ -21,50 +21,49 @@ var compose = function compose() {
 
 var identity = function identity(x) {
   return x;
-}; // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task
+}; // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task e a
 
 
 var Task = function Task(taskFn) {
-  var isCancelled = false;
-
-  var guard = function guard(cb) {
-    return function (a) {
-      return isCancelled ? null : cb(a);
-    };
-  };
-
-  var globalCleanup = function globalCleanup() {
-    return isCancelled = true;
-  };
-
+  // fork :: (e -> (), b -> ()) -> CancelFunction
   var fork = function fork(onFailure, onSuccess) {
+    var isCancelled = false;
+    var isDone = false;
+
+    var guard = function guard(cb) {
+      return function (a) {
+        var result = isCancelled || isDone ? null : cb(a);
+        isDone = true;
+        return result;
+      };
+    };
+
+    var globalCleanup = function globalCleanup() {
+      return isCancelled = true;
+    };
+
     try {
-      var cleanup = taskFn(guard(onFailure), guard(onSuccess));
-      return compose(globalCleanup, cleanup || identity);
+      var cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
+      return compose(globalCleanup, cleanup);
     } catch (e) {
       return guard(onFailure)(e), globalCleanup;
     }
-  };
+  }; // fold :: (e -> b, a -> b) -> Task () b
+
 
   var fold = function fold(mapErr, mapVal) {
     return Task(function (_, res) {
       return fork(compose(res, mapErr), compose(res, mapVal));
     });
-  };
+  }; // bimap :: (e -> e', a -> a') -> Task e' a'
+
 
   var bimap = function bimap(mapErr, mapVal) {
     return Task(function (rej, res) {
       return fork(compose(rej, mapErr), compose(res, mapVal));
     });
-  };
+  }; // chain :: (a -> Task a') -> Task e a'
 
-  var map = function map(fn) {
-    return bimap(identity, fn);
-  };
-
-  var mapRejected = function mapRejected(fn) {
-    return bimap(fn, identity);
-  };
 
   var chain = function chain(fn) {
     return Task(function (reject, resolve) {
@@ -72,38 +71,74 @@ var Task = function Task(taskFn) {
         return fn(b).fork(reject, resolve);
       });
     });
+  }; // map :: (a -> a') -> Task e a'
+
+
+  var map = function map(fn) {
+    return bimap(identity, fn);
+  }; // mapRejected :: (e -> e') -> Task e' a
+
+
+  var mapRejected = function mapRejected(fn) {
+    return bimap(fn, identity);
   };
 
-  var instance = {
+  return {
     fork: fork,
     map: map,
     mapRejected: mapRejected,
     bimap: bimap,
     fold: fold,
     chain: chain,
-    resolveWith: Task.resolve,
-    rejectWith: Task.reject,
-    empty: Task.empty
+    resolveWith: Task.resolved,
+    rejectWith: Task.rejected,
+    empty: Task.empty,
+    // toPromise :: () -> Promise e a
+    toPromise: function toPromise() {
+      return new Promise(function (res, rej) {
+        return fork(rej, res);
+      });
+    }
   };
-  return instance;
-};
+}; // Task.empty :: () -> Task
+
 
 Task.empty = function () {
   return Task(function () {});
-};
+}; // Task.resolved :: a -> Task () a
 
-Task.resolve = function (data) {
+
+Task.resolved = function (data) {
   return Task(function (_, resolve) {
     return resolve(data);
   });
-};
+}; // Task.rejected :: e -> Task e ()
 
-Task.reject = function (data) {
+
+Task.rejected = function (data) {
   return Task(function (reject) {
     return reject(data);
   });
-};
+}; // Task.of :: e -> Task e ()
 
-Task.of = Task.resolve;
+
+Task.of = Task.resolved; // Task.fromPromise :: (() -> Promise e a) -> Task e a
+
+Task.fromPromise = function (factory) {
+  return Task(function (rej, res) {
+    return factory().then(res).catch(rej);
+  });
+}; // Task.race :: [Task e a] -> Task e a
+
+
+Task.race = function (tasks) {
+  return Task(function (rej, res) {
+    return tasks.forEach(function (t) {
+      return t.fork(rej, res);
+    });
+  });
+}; // Task.parallel = tasks => Task((rej, res) => tasks.reduce(() => t.fork(rej, res)));
+
+
 var _default = Task;
 exports.default = _default;
