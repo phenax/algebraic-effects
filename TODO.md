@@ -10,8 +10,8 @@
 - [x] Custom global operations
 - [x] Add name to runner to identify which Effects were composed
 - [x] Map/Over method for State effect
-- [ ] Change package name to @algebraic-effects scope
-- [ ] Migrate to yarn workspaces
+- [x] Change package name to @algebraic-effects scope
+- [x] Migrate to yarn workspaces
 - [ ] ?Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 
 - Add more effect classes ...
