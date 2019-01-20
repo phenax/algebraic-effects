@@ -11,7 +11,8 @@
     "test": "jest --config ./scripts/jest.config.js --watch",
     "test:ci": "jest --config ./scripts/jest.config.js --coverage",
     "coverage:ci": "codecov",
-    "prepublish": "yarn build"
+    "prepublish-all": "yarn build",
+    "publish-all": "node ./scripts/publish.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

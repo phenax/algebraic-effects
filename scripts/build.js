@@ -1,33 +1,23 @@
-const fs = require('fs');
 const fsextra = require('fs-extra');
 const watch = require('node-watch');
 const path = require('path');
-const glob = require('glob');
 const babel = require('@babel/core');
 const { map, filter, flatten, compose, uniq, prop } = require('ramda');
 
+const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages } = require('./utils');
+
 const babelConfig = require('../babel.config');
 
-const PCKGS_ROOT = path.join(__dirname, '../packages/');
 const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.js$/, delay: 100 };
 
 const isWatchEnabled = process.argv.includes('--watch');
 
-const fromNodeCalllback = fn => (...args) => new Promise(
-  (resolve, reject) => fn(...args, (err, data) => err ? reject(err) : resolve(data))
-);
-const resolveAll = ps => Promise.all(ps);
-
-const globber = fromNodeCalllback(glob);
-const getPackages = () => fromNodeCalllback(fs.readdir)(PCKGS_ROOT);
-
-const toPackagePaths = map(p => path.join(PCKGS_ROOT, p));
 const toSrcPath = p => path.join(p, 'src');
 const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
 
 const isBuildable = dir => {
   try {
-    return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).isBuildTarget || false;
+    return getPackageJson(dir).isBuildTarget || false;
   } catch(e) {
     return false;
   }
