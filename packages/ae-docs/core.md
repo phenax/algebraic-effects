@@ -1,5 +1,5 @@
 
-# Core modules
+# Core modules (@algebraic-effects/core)
 
 ## Program
 A program is just a generator with effects
@@ -21,6 +21,14 @@ Create effect allows you to write your own custom effects
 createEffect :: (String, Object FuncDescription) -> Effect
 ```
 
+```js
+import { createEffect } from '@algebraic-effects/core';
+
+const IOEffect = createEffect('IOEffect', {
+  getInput: func(['question'], 'name'),
+  showMessage: func(['message']),
+});
+```
 
 ## func
 Describe your function signature. The only validation is for the length of arguments, the rest of the data is purely for documentation.
@@ -30,6 +38,8 @@ func :: ([String], String) -> FuncDescription
 ```
 
 ```js
+import { func } from '@algebraic-effects/core';
+
 func(['a', 'b'], 'result');
 func(['id', '?options'], 'user'); // Optional parameters
 func(['message', '...ids']); // Spread parameters + no return value
@@ -74,17 +84,17 @@ To compose handlers, you can use the `concat` method or the `composeHandlers` fu
 You can also compose entire effects using `composeEffects` function which is used in a similar way.
 
 ```js
-import { createEffect, composeHandlers } from 'algebraic-effects';
+import { createEffect, composeHandlers } from '@algebraic-effects/core';
 
 const ApiEffect = createEffect('ApiEffect', { search: func(['q']) });
 const ConsoleEffect = createEffect('ConsoleEffect', { log: func(['...data']) });
 
-const withApi = ApiEffect.handler({
+const api = ApiEffect.handler({
   search: ({ resume, throwError }) => q =>
     fetch(`/search?q=${q}`).then(resume).catch(throwError),
 });
 
-const withConsole = ConsoleEffect.handler({
+const consoleEff = ConsoleEffect.handler({
   log: ({ resume }) => (...data) => resume(console.log(...data)),
 });
 
@@ -96,16 +106,16 @@ function* searchUsers(query) {
 
 // Now compose the handlers as ...
 
-const names = await withConsole.concat(withApi).run(searchUsers, 'Akshay');
+const names = await api.with(consoleEff).run(searchUsers, 'Akshay');
 
 // OR
 
-const handler = withConsole.concat(withApi);
+const handler = api.with(consoleEff);
 const names = await handler(searchUsers, 'Akshay');
 
 // OR
 
-const handler = composeHandlers(withConsole, withApi);
+const handler = composeHandlers(api, consoleEff);
 const names = await handler(searchUsers, 'Akshay');
 ```
 

@@ -14,7 +14,12 @@ Algebraic effects in javascript using generators inspired by [koka](https://gith
 
 ### To add the project to your project
 ```bash
-yarn add algebraic-effects
+yarn add @algebraic-effects/core
+```
+
+If you want effects like Exception, State, Random, etc.
+```bash
+yarn add @algebraic-effects/core @algebraic-effects/effects
 ```
 
 
@@ -29,17 +34,19 @@ yarn add algebraic-effects
 
 ## Usage
 
+
 ### Import it to your file
 ```js
-import { createEffect, func } from 'algebraic-effects';
-import { sleep } from 'algebraic-effects/operations';
+import { createEffect, func } from '@algebraic-effects/core';
+import { sleep } from '@algebraic-effects/core/operations';
 ```
+
 
 ### Simple state effect example
 
 ```js
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
+import { State } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
 
 const countdown = function*() {
   const count = yield State.get();
@@ -56,11 +63,11 @@ State.of(10)(countdown)
 ```
 
 
-### Custom effects
+### Creating your own effects
 
 * Declare your effects
 ```js
-import { createEffect, func } from 'algebraic-effects';
+import { createEffect, func } from '@algebraic-effects/core';
 
 export const ConsoleEffect = createEffect('ConsoleEffect', {
   log: func(['...data']),

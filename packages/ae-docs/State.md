@@ -20,8 +20,8 @@ State.of :: a -> (Program<State> ...b c, ...b) -> Promise c
 State effect allows you to maintain state in your program accross multiple calls.
 
 ```js
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
+import { State } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
 
 const countdown = function*() {
   const count = yield State.get();
@@ -42,9 +42,9 @@ State.of(10)(countdown)
 You can compose State effect with custom effects to make a really cool api
 
 ```js
-import { createEffect } from 'algebraic-effects';
-import State from 'algebraic-effects/State';
-import { call, sleep } from 'algebraic-effects/operations';
+import { createEffect } from '@algebraic-effects/core';
+import { State } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
 
 const CounterButtonEff = createEffect('CounterButtonEff', {
   takeButtonClick: func(),

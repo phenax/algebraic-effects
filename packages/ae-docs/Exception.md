@@ -26,7 +26,7 @@ Throw operation models the behavior of breaking out of the flow of the program.
 You can use the Exception effect to handle error flows in your application. This gives you more control of the flow of the program than the traditional throw with `try/catch`.
 
 ```js
-import Exception from 'algebraic-effects/Exception';
+import { Exception } from '@algebraic-effects/core';
 
 const divide = function *(a, b) {
   if (b === 0) yield Exception.throw(new Error('Invalid operation'));
@@ -45,7 +45,7 @@ Exception.try(divide, 5, 0)
 ### Custom handler for Exception effect (toEither)
 
 ```js
-import Exception from 'algebraic-effects/Exception';
+import { Exception } from '@algebraic-effects/core';
 import Either from 'crocks/Either'; // Using Either from crocks
 
 // divide :: Program<Exception> (Number, Number) Number
