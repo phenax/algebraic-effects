@@ -32,6 +32,15 @@ const isVersionValid = ver => ver.split('-')[0].split('.').filter(x => /\d+/gi.t
 
 const askNextVersion = version => ask(`Next version [current: ${version}] -> `);
 
+const runLinter = () => 
+  runCommand('npm', ['run', 'lint'], { cwd: PROJECT_ROOT });
+
+const runBuild = () => 
+  runCommand('npm', ['run', 'build'], { cwd: PROJECT_ROOT });
+
+const runPackageTests = () => 
+  runCommand('npm', ['run', 'test:ci'], { cwd: PROJECT_ROOT });
+
 const loginUser = () => 
   runCommand('npm', ['login', '--scope', rootProjectPackageJson.scope], { cwd: PROJECT_ROOT });
 
@@ -70,7 +79,10 @@ const updatePackageVersion = (version, packages) => {
     .then(resolveAll);
 };
 
-getPackages()
+runLinter()
+  .then(() => runPackageTests())
+  .then(() => runBuild())
+  .then(() => getPackages())
   .then(toPackagePaths)
   .then(filter(isPublishable))
   .then(dirList => dirList.length ? dirList : Promise.reject(new Error('No publishable project found')))

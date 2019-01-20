@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.1-test.0",
   "scope": "@algebraic-effects",
   "workspaces": [
     "packages/*"
@@ -12,7 +12,6 @@
     "test": "jest --config ./scripts/jest.config.js --watch",
     "test:ci": "jest --config ./scripts/jest.config.js --coverage",
     "coverage:ci": "codecov",
-    "prepublish-all": "yarn build",
     "publish-all": "node ./scripts/publish.js"
   },
   "devDependencies": {

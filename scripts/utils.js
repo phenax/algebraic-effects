@@ -41,8 +41,9 @@ const runCommand = (command, args = [], optns = {}) => new Promise((resolve, rej
   console.log(chalk.gray(`>> Running ${command} ${args.join(' ')}`));
   const p = spawn(command, args, { detached: false, stdio: 'inherit', ...optns });
   p.on('error', reject);
-  p.on('close', resolve);
-  p.on('exit', resolve);
+  p.on('exit', code => {
+    code === 0 ? resolve() : reject(new Error(`Command ${command} ${args.join(' ')}, failed`));
+  });
 });
 
 module.exports = {
