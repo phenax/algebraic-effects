@@ -1,15 +1,12 @@
 {
-  "name": "@algebraic-effects/task",
+  "name": "@algebraic-effects/utils",
   "version": "0.0.2",
-  "description": "A lightweight task monad instead of promise",
+  "description": "Common utility functions",
   "main": "index.js",
   "isBuildTarget": true,
   "repository": "https://github.com/phenax/algebraic-effects",
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "@algebraic-effects/utils": "0.0.2"
-  },
   "keywords": [
     "functional",
     "algebraic",

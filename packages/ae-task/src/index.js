@@ -1,11 +1,4 @@
-
-// compose :: (...Function) -> Function
-const compose = function() {
-  return [...arguments].reduce((a, b) => (...args) => a(b(...args)));
-};
-
-// identity :: a -> a
-const identity = x => x;
+import { compose, identity } from '@algebraic-effects/utils';
 
 // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task e a
 const Task = (taskFn) => {
@@ -35,22 +28,20 @@ const Task = (taskFn) => {
   // chain :: (a -> Task a') -> Task e a'
   const chain = fn => Task((reject, resolve) => fork(reject, b => fn(b).fork(reject, resolve)));
 
-  // map :: (a -> a') -> Task e a'
-  const map = fn => bimap(identity, fn);
-
-  // mapRejected :: (e -> e') -> Task e' a
-  const mapRejected = fn => bimap(fn, identity);
-
   return {
     fork,
-    map,
-    mapRejected,
     bimap,
     fold,
     chain,
     resolveWith: Task.resolved,
     rejectWith: Task.rejected,
     empty: Task.empty,
+
+    // map :: (a -> a') -> Task e a'
+    map: fn => bimap(identity, fn),
+
+    // mapRejected :: (e -> e') -> Task e' a
+    mapRejected: fn => bimap(fn, identity),
 
     // toPromise :: () -> Promise e a
     toPromise: () => new Promise((res, rej) => fork(rej, res)),
@@ -71,24 +62,5 @@ Task.of = Task.resolved;
 
 // Task.fromPromise :: (() -> Promise e a) -> Task e a
 Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej));
-
-// Task.race :: [Task e a] -> Task e a
-Task.race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
-
-Task.series = tasks =>
-  tasks.reduce((task, t) => task.chain(d => t.map(x => d.concat([x]))), Task.resolved([]));
-
-Task.parallel = tasks => Task((reject, resolve) => {
-  let resolvedCount = 0;
-  const resolvedData = [];
-
-  const onResolve = index => data => {
-    resolvedData[index] = data;
-    resolvedCount += 1;
-    if(resolvedCount === tasks.length) resolve(resolvedData);
-  };
-
-  tasks.forEach((task, index) => task.fork(reject, onResolve(index)));
-});
 
 export default Task;
