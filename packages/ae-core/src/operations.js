@@ -1,4 +1,4 @@
-
+import { compose } from '@algebraic-effects/utils';
 import { Operation, func } from './utils';
 
 // handlePromise :: (...a -> Promise b) -> FlowOperators -> (...a) -> Promise b
@@ -11,7 +11,7 @@ const globalOpHandlers = {
   resolve: ({ end }) => v => end(v),
   race: handlePromise(({ call }) => programs => Promise.race(programs.map(p => call(p)))),
   parallel: handlePromise(({ call }) => programs => Promise.all(programs.map(p => call(p)))),
-  background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a)),
+  background: ({ call, resume }) => compose(resume, call),
 };
 
 // * :: Operation

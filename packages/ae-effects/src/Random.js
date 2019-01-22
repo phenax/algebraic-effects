@@ -1,5 +1,6 @@
 
 import { createEffect, func } from '@algebraic-effects/core';
+import { compose } from '@algebraic-effects/utils';
 
 // Including min and max i.e. [min, max]
 // getRandomInt :: (Number, Number) -> Number
@@ -13,7 +14,7 @@ const Random = createEffect('Random', {
 
 // Random.effect :: Runner
 Random.effect = Random.handler({
-  getInt: ({ resume }) => (min, max) => resume(getRandomInt(min, max)),
+  getInt: ({ resume }) => compose(resume, getRandomInt),
   fromArray: ({ resume }) => array => resume(array[getRandomInt(0, array.length - 1)]),
 });
 
