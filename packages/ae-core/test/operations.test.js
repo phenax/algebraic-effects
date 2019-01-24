@@ -18,23 +18,21 @@ describe('Global operations', () => {
     it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
       const startTime = Date.now();
       run(gimmeXReturned, 5)
-        .then(x => {
+        .fork(done, x => {
           expect(x).toBe(5);
           expect(Date.now() - startTime).toBeGreaterThan(400);
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should wait 900 ms before resolving promise with 5 (as yield value)', done => {
       const startTime = Date.now();
       run(gimmeXYielded, 5)
-        .then(x => {
+        .fork(done, x => {
           expect(x).toBe(5);
           expect(Date.now() - startTime).toBeGreaterThan(400);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -53,20 +51,18 @@ describe('Global operations', () => {
 
     it('should resolve normally for resolves promise', done => {
       run(runSuccPromise)
-        .then(x => {
+        .fork(done, x => {
           expect(x).toBe('Some data');
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should resolve normally for resolves promise', done => {
       run(runFailPromise)
-        .then(done)
-        .catch(e => {
+        .fork(e => {
           expect(e).toBe('rror');
           done();
-        });
+        }, done);
     });
   });
 
@@ -77,11 +73,10 @@ describe('Global operations', () => {
 
     it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
       run(gimmeXReturned, 5)
-        .then(x => {
+        .fork(done, x => {
           expect(x).toBe(5);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -110,22 +105,20 @@ describe('Global operations', () => {
 
     it('should call itself recursively (program recusrsion)', done => {
       run(finalCountdown, 3)
-        .then(() => {
+        .fork(done, () => {
           expect(logfn).toBeCalledTimes(3);
           expect(logfn.mock.calls.map(x => x[0])).toEqual([ 3, 2, 1 ]);
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should call another program with the same set of effects', done => {
       run(programA)
-        .then(() => {
+        .fork(done, () => {
           expect(logfn).toBeCalledTimes(2);
           expect(logfn.mock.calls.map(x => x[0])).toEqual([ 'A', 'B' ]);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -146,11 +139,10 @@ describe('Global operations', () => {
 
     it('should race both programs and resolve with the fastest one', done => {
       run(myProgramRace)
-        .then(result => {
+        .fork(done, result => {
           expect(result).toBe('B wins');
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -170,11 +162,10 @@ describe('Global operations', () => {
 
     it('should run programs in parallel and resolve with a list of results', done => {
       run(myProgramParallel)
-        .then(result => {
+        .fork(done, result => {
           expect(result).toEqual(['A', 'B']);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -201,12 +192,11 @@ describe('Global operations', () => {
       }
 
       run(myProgramParallel)
-        .then(() => {
+        .fork(done, () => {
           expect(logfn.mock.calls.map(x => x[0]))
             .toEqual(['Start', 31, 'DoneSync', 'RunninBg', 32, 33]);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -227,12 +217,11 @@ describe('Global operations', () => {
 
     it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
       run(program, 5)
-        .then(x => {
+        .fork(done, x => {
           expect(x).toBe(5);
           expect(logfn).toBeCalledWith('Data', 5);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 });

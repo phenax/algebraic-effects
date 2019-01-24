@@ -1,4 +1,4 @@
-
+import Task from '@algebraic-effects/task';
 import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
 import globalHandlers from './operations';
 
@@ -20,7 +20,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
   const valueHandler = handlers._ || VALUE_HANDLER;
 
   const effectRunner = (p, ...args) => {
-    const resultPromise = new Promise((resolve, reject) => {
+    const resultPromise = Task((reject, resolve) => {
       const program = runProgram(p, ...args);
   
       // throwError :: * -> ()
@@ -71,11 +71,11 @@ const createRunner = (handlers = {}, { effect } = {}) => {
       };
 
       setTimeout(resume, 0);
+
+      return () => (resultPromise.isCancelled = true);
     });
 
     resultPromise.isCancelled = false;
-    resultPromise.cancel = () => (resultPromise.isCancelled = true);
-
     return resultPromise;
   };
 
