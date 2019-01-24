@@ -38,24 +38,22 @@ describe('createEffect', () => {
 
       ApiEffect.handler({ fetch: () => () => {} })
         .run(action)
-        .then(() => done('Shoundt have ben called'))
-        .catch(e => {
+        .fork(e => {
           expect(e.message).toContain('ArgumentError');
           done();
-        });
+        }, () => done('Shoundt have ben called'));
     });
 
-    it('should reject promise for invalid program', done => {
-      const notAGenerator = () => {};
+    // it('should reject promise for invalid program', done => {
+    //   const notAGenerator = () => {};
       
-      ApiEffect.handler({ fetch: () => () => {} })
-        .run(notAGenerator)
-        .then(() => done('shdnt be here'))
-        .catch(e => {
-          expect(e.message).toContain('Invalid generator');
-          done();
-        });
-    });
+    //   const callProgram = () =>
+    //     ApiEffect.handler({ fetch: () => () => {} })
+    //       .run(notAGenerator)
+    //       .fork(() => done(), () => done('shdnt be here'));
+
+    //   expect(callProgram).toThrowError();
+    // });
   });
 
   describe('createRunner#with & createRunner#concat', () => {
@@ -78,12 +76,11 @@ describe('createEffect', () => {
       expect(run.effectName).toBe('DummyEff.ConsoleEff');
 
       run(action)
-        .then(() => {
+        .fork(done, () => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should compose handler with another handler using .concat', done => {
@@ -103,12 +100,11 @@ describe('createEffect', () => {
       expect(run.effectName).toBe('DummyEff.ConsoleEff');
 
       run(action)
-        .then(() => {
+        .fork(done, () => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -124,17 +120,21 @@ describe('createEffect', () => {
       };
 
       const myFn = jest.fn();
-      const promise = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) }).run(action);
+      const error = () => done('Shundt be called');
+      const task = DummyEff
+        .handler({ myFn: ({ resume }) => () => resume(myFn()) })
+        .run(action)
+        .fork(error, error);
 
       setTimeout(() => {
-        promise.cancel();
-        expect(myFn).toBeCalledTimes(1);
-        done();
+        task();
+        
+        setTimeout(() => {
+          expect(myFn).toBeCalledTimes(1);
+          done();
+        }, 500);
       }, 100);
 
-      promise
-        .then(() => done('Shouldnt have reached here'))
-        .catch(done);
     });
   });
 
@@ -157,8 +157,7 @@ describe('createEffect', () => {
       });
 
       eff(action)
-        .then(() => done())
-        .catch(done);
+        .fork(done, () => done());
     });
   });
 
@@ -181,12 +180,11 @@ describe('createEffect', () => {
       const eff = composeHandlers(api, konsole);
 
       eff(action)
-        .then(data => {
+        .fork(done, data => {
           expect(data).toBe('Hello');
           expect(logg).toBeCalledWith('Hello world');
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -202,11 +200,10 @@ describe('createEffect', () => {
       };
 
       api(action)
-        .then(data => {
+        .fork(done, data => {
           expect(data).toBe('wow');
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should resolve with the correct value for valid operation (fetch example)', done => {
@@ -221,12 +218,11 @@ describe('createEffect', () => {
       };
 
       api(action)
-        .then(() => done('Shouldve thrown error'))
-        .catch(e => {
+        .fork(e => {
           expect(e.message).toContain('Invalid operation');
           expect(e.message).toContain('"log"');
           done();
-        });
+        }, () => done('Shouldve thrown error'));
     });
   });
 });
