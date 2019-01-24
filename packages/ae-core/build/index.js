@@ -11,6 +11,8 @@ Object.defineProperty(exports, "func", {
 });
 exports.run = exports.composeHandlers = exports.composeEffects = exports.createEffect = void 0;
 
+var _task = _interopRequireDefault(require("@algebraic-effects/task"));
+
 var _utils = require("./utils");
 
 var _operations = _interopRequireDefault(require("./operations"));
@@ -60,7 +62,7 @@ var createRunner = function createRunner() {
       args[_key2 - 1] = arguments[_key2];
     }
 
-    var resultPromise = new Promise(function (resolve, reject) {
+    var resultPromise = (0, _task.default)(function (reject, resolve) {
       var program = runProgram.apply(void 0, [p].concat(args)); // throwError :: * -> ()
 
       var throwError = function throwError(x) {
@@ -131,13 +133,11 @@ var createRunner = function createRunner() {
       };
 
       setTimeout(resume, 0);
+      return function () {
+        return resultPromise.isCancelled = true;
+      };
     });
     resultPromise.isCancelled = false;
-
-    resultPromise.cancel = function () {
-      return resultPromise.isCancelled = true;
-    };
-
     return resultPromise;
   };
 

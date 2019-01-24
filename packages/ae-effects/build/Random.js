@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _core = require("@algebraic-effects/core");
 
+var _utils = require("@algebraic-effects/utils");
+
 // Including min and max i.e. [min, max]
 // getRandomInt :: (Number, Number) -> Number
 var getRandomInt = function getRandomInt(min, max) {
@@ -22,9 +24,7 @@ var Random = (0, _core.createEffect)('Random', {
 Random.effect = Random.handler({
   getInt: function getInt(_ref) {
     var resume = _ref.resume;
-    return function (min, max) {
-      return resume(getRandomInt(min, max));
-    };
+    return (0, _utils.compose)(resume, getRandomInt);
   },
   fromArray: function fromArray(_ref2) {
     var resume = _ref2.resume;
