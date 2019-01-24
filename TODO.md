@@ -12,10 +12,12 @@
 - [x] Map/Over method for State effect
 - [x] Change package name to @algebraic-effects scope
 - [x] Migrate to yarn workspaces
-- [ ] Move static functions of Tasks out to a another entry point
-- [ ] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
+- [x] Move static functions of Tasks out to a another entry point
+- [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 
 - Add more effect classes ...
+  - [x] Exception
+  - [x] State
   - [x] Random Number
   - [ ] Console
   - [ ] Fetch
@@ -31,10 +33,10 @@
   - [x] Run program in background
 
 ### Documentations
+- [x] Call, Race, etc global operations
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
 - [ ] Cancellation
-- [ ] Call, Race, etc global operations
 - [ ] State effect update operation
 - [ ] Random effect
 - [ ] All flow operators

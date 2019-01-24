@@ -25,7 +25,7 @@ const program = function*() {
 Call another program from within your program with the same effects
 
 ```haskell
-call :: Operation (Program,...a) ()
+call :: Operation (Program ...a b,...a) b
 ```
 
 ```js
@@ -38,6 +38,91 @@ const program = function*(count) {
   yield call(program, count - 1);
 };
 ```
+
+
+### background
+Call another program from within your program with the same effects in the background.
+
+```haskell
+background :: Operation (Program ...a b,...a) CancelFunction
+```
+
+```js
+import { sleep, background } from '@algebraic-effects/core/operations';
+
+// waitFor n seconds and log the duration to console
+const waitFor = function*(delay) {
+  yield sleep(delay);
+  yield ConsoleEffect.log(delay);
+}
+
+// Program will log in the following sequence
+// >> 'Start', 31, 'Synchronous', 'Running in background', 32, 33
+const program = function*() {
+  yield ConsoleEffect.log('Start');
+  yield call(waitFor, 31);
+  yield ConsoleEffect.log('Synchronous');
+  yield background(waitFor, 32);
+  yield ConsoleEffect.log('Running in background');
+  yield call(waitFor, 33);
+};
+```
+
+
+
+### race
+Call multiple programs at the same time and yields out with the first one that completes.
+
+```haskell
+race :: Operation [Program () b] b
+```
+
+```js
+import { sleep, race } from '@algebraic-effects/core/operations';
+
+function* programA() {
+  yield sleep(100);
+  return 'A';
+}
+function* programB(key) {
+  yield sleep(50);
+  return `B-${key}`;
+}
+
+// Program will resolve with `B-wow wins` as programB has a shorter delay and returns earlier
+function* myProgramRace() {
+  // You can pass in the generator or the return value of a generator call (iterator instance)
+  const winner = yield race([ programA, programB('wow') ]);
+  return `${winner} wins`;
+}
+```
+
+
+### parallel
+Call multiple programs at the same time and waits for each one of them to complete before moving forward.
+
+```haskell
+parallel :: Operation [Program () b] b
+```
+
+```js
+import { sleep, parallel } from '@algebraic-effects/core/operations';
+
+function* programA() {
+  yield sleep(100);
+  return 'A';
+}
+function* programB() {
+  yield sleep(50);
+  return `B`;
+}
+
+// Program will resolve with ['A', 'B']
+function* program() {
+  return yield parallel([ programA, programB ]);
+}
+```
+
 
 
 ### awaitPromise
