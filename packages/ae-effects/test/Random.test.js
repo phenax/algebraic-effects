@@ -16,14 +16,13 @@ describe('Random', () => {
   
     it('should result in a random integer every time', done => {
       Random.effect(randomizor, 0, 20)
-        .then(() => {
+        .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
             expect(x).toBeGreaterThanOrEqual(0);
             expect(x).toBeLessThanOrEqual(20);
           });
           done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -39,13 +38,12 @@ describe('Random', () => {
     it('should result in a random value from the given array', done => {
       const list = [2342, 112, 'afshkjsz', 'wpw', true, {}, []];
       Random.effect(randomizor, list)
-        .then(() => {
+        .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
             expect(list).toContain(x);
           });
           done();
-        })
-        .catch(done);
+        });
     });
   });
 });
