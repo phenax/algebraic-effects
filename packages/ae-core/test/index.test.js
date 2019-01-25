@@ -44,16 +44,17 @@ describe('createEffect', () => {
         }, () => done('Shoundt have ben called'));
     });
 
-    // it('should reject promise for invalid program', done => {
-    //   const notAGenerator = () => {};
-      
-    //   const callProgram = () =>
-    //     ApiEffect.handler({ fetch: () => () => {} })
-    //       .run(notAGenerator)
-    //       .fork(() => done(), () => done('shdnt be here'));
+    it('should reject promise for invalid program', done => {
+      const notAGenerator = () => {};
 
-    //   expect(callProgram).toThrowError();
-    // });
+      const callProgram = jest.fn(() =>
+        ApiEffect.handler({ fetch: () => () => {} })
+          .run(notAGenerator)
+          .fork(() => {}, () => {}));
+
+      expect(callProgram).toThrowError();
+      done();
+    });
   });
 
   describe('createRunner#with & createRunner#concat', () => {
