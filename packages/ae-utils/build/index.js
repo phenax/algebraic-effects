@@ -3,10 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.identity = exports.compose = exports.pointfreeMethod = void 0;
+exports.identity = exports.compose = exports.pointfree = void 0;
 
-// pointfreeMethod :: String -> (...a) -> Object(with methodName :: ...a -> b) -> b
-var pointfreeMethod = function pointfreeMethod(methodName) {
+// pointfree :: String -> (...a) -> Object(with methodName :: ...a -> b) -> b
+var pointfree = function pointfree(methodName) {
   return function () {
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
@@ -19,7 +19,7 @@ var pointfreeMethod = function pointfreeMethod(methodName) {
 }; // compose :: (...Function) -> Function
 
 
-exports.pointfreeMethod = pointfreeMethod;
+exports.pointfree = pointfree;
 
 var compose = function compose() {
   return Array.prototype.slice.call(arguments).reduce(function (a, b) {

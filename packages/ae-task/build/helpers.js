@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.parallel = exports.series = exports.race = exports.toPromise = exports.empty = exports.rejectWith = exports.resolveWith = exports.mapRejected = exports.fold = exports.fork = exports.bimap = exports.map = void 0;
+exports.toPromise = exports.mapRejected = exports.fold = exports.fork = exports.bimap = exports.map = exports.parallel = exports.series = exports.race = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -11,27 +11,7 @@ var _ = _interopRequireDefault(require("."));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// Point-free methods
-var map = (0, _utils.pointfreeMethod)('map');
-exports.map = map;
-var bimap = (0, _utils.pointfreeMethod)('bimap');
-exports.bimap = bimap;
-var fork = (0, _utils.pointfreeMethod)('fork');
-exports.fork = fork;
-var fold = (0, _utils.pointfreeMethod)('fold');
-exports.fold = fold;
-var mapRejected = (0, _utils.pointfreeMethod)('mapRejected');
-exports.mapRejected = mapRejected;
-var resolveWith = (0, _utils.pointfreeMethod)('resolveWith');
-exports.resolveWith = resolveWith;
-var rejectWith = (0, _utils.pointfreeMethod)('rejectWith');
-exports.rejectWith = rejectWith;
-var empty = (0, _utils.pointfreeMethod)('empty');
-exports.empty = empty;
-var toPromise = (0, _utils.pointfreeMethod)('toPromise'); // race :: [Task e a] -> Task e a
-
-exports.toPromise = toPromise;
-
+// race :: [Task e a] -> Task e a
 var race = function race(tasks) {
   return (0, _.default)(function (rej, res) {
     return tasks.forEach(function (t) {
@@ -73,6 +53,19 @@ var parallel = function parallel(tasks) {
       return task.fork(reject, onResolve(index));
     });
   });
-};
+}; // Point-free methods
+
 
 exports.parallel = parallel;
+var map = (0, _utils.pointfree)('map');
+exports.map = map;
+var bimap = (0, _utils.pointfree)('bimap');
+exports.bimap = bimap;
+var fork = (0, _utils.pointfree)('fork');
+exports.fork = fork;
+var fold = (0, _utils.pointfree)('fold');
+exports.fold = fold;
+var mapRejected = (0, _utils.pointfree)('mapRejected');
+exports.mapRejected = mapRejected;
+var toPromise = (0, _utils.pointfree)('toPromise')();
+exports.toPromise = toPromise;

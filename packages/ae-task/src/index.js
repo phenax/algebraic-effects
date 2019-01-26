@@ -33,9 +33,9 @@ const Task = (taskFn) => {
     bimap,
     fold,
     chain,
-    resolveWith: Task.resolved,
-    rejectWith: Task.rejected,
-    empty: Task.empty,
+    resolveWith: Task.Resolved, // TODO: Fix this to reolve/reject after the previous operations
+    rejectWith: Task.Rejected,
+    empty: Task.Empty,
 
     // map :: (a -> a') -> Task e a'
     map: fn => bimap(identity, fn),
@@ -45,20 +45,23 @@ const Task = (taskFn) => {
 
     // toPromise :: () -> Promise e a
     toPromise: () => new Promise((res, rej) => fork(rej, res)),
+
+    // toString :: () -> String
+    toString: () => 'Task e a',
   };
 };
 
-// Task.empty :: () -> Task
-Task.empty = () => Task(() => {});
+// Task.Empty :: () -> Task
+Task.Empty = () => Task(() => {});
 
-// Task.resolved :: a -> Task () a
-Task.resolved = data => Task((_, resolve) => resolve(data));
+// Task.Resolved :: a -> Task () a
+Task.Resolved = data => Task((_, resolve) => resolve(data));
 
-// Task.rejected :: e -> Task e ()
-Task.rejected = data => Task(reject => reject(data));
+// Task.Rejected :: e -> Task e ()
+Task.Rejected = data => Task(reject => reject(data));
 
 // Task.of :: e -> Task e ()
-Task.of = Task.resolved;
+Task.of = Task.Resolved;
 
 // Task.fromPromise :: (() -> Promise e a) -> Task e a
 Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej));

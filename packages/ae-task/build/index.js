@@ -58,9 +58,10 @@ var Task = function Task(taskFn) {
     bimap: bimap,
     fold: fold,
     chain: chain,
-    resolveWith: Task.resolved,
-    rejectWith: Task.rejected,
-    empty: Task.empty,
+    resolveWith: Task.Resolved,
+    // TODO: Fix this to reolve/reject after the previous operations
+    rejectWith: Task.Rejected,
+    empty: Task.Empty,
     // map :: (a -> a') -> Task e a'
     map: function map(fn) {
       return bimap(_utils.identity, fn);
@@ -74,31 +75,35 @@ var Task = function Task(taskFn) {
       return new Promise(function (res, rej) {
         return fork(rej, res);
       });
+    },
+    // toString :: () -> String
+    toString: function toString() {
+      return 'Task e a';
     }
   };
-}; // Task.empty :: () -> Task
+}; // Task.Empty :: () -> Task
 
 
-Task.empty = function () {
+Task.Empty = function () {
   return Task(function () {});
-}; // Task.resolved :: a -> Task () a
+}; // Task.Resolved :: a -> Task () a
 
 
-Task.resolved = function (data) {
+Task.Resolved = function (data) {
   return Task(function (_, resolve) {
     return resolve(data);
   });
-}; // Task.rejected :: e -> Task e ()
+}; // Task.Rejected :: e -> Task e ()
 
 
-Task.rejected = function (data) {
+Task.Rejected = function (data) {
   return Task(function (reject) {
     return reject(data);
   });
 }; // Task.of :: e -> Task e ()
 
 
-Task.of = Task.resolved; // Task.fromPromise :: (() -> Promise e a) -> Task e a
+Task.of = Task.Resolved; // Task.fromPromise :: (() -> Promise e a) -> Task e a
 
 Task.fromPromise = function (factory) {
   return Task(function (rej, res) {

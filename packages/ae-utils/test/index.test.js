@@ -1,16 +1,16 @@
-import { pointfreeMethod, compose, identity } from '../src';
+import { pointfree, compose, identity } from '../src';
 
-describe('pointfreeMethod', () => {
+describe('pointfree', () => {
 
   it('should return a point-free version of a given method name', () => {
-    const pointfreeC = pointfreeMethod('c');
+    const pointfreeC = pointfree('c');
 
     const obj = { b: 'hello', c() { return this.b + ' world!'; }, };
     expect(pointfreeC()(obj)).toBe('hello world!');
   });
 
   it('should throw error is object doesnt have method', () => {
-    const pointfreeC = pointfreeMethod('c');
+    const pointfreeC = pointfree('c');
     const obj = { b: 'hello' };
     expect(() => pointfreeC()(obj)).toThrowError();
   });

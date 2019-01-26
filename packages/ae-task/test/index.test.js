@@ -27,7 +27,7 @@ describe('Task', () => {
 
   describe('#resolveWith, #rejectWith', () => {
     it('should ignore previous operations and just resolve with a value', done => {
-      const t = Task.resolved(5).map(x => x * 2).resolveWith(9);
+      const t = Task.of(5).map(x => x * 2).resolveWith(9);
       t.fork(done, n => {
         expect(n).toBe(9);
         done();
@@ -35,7 +35,7 @@ describe('Task', () => {
     });
 
     it('should ignore previous operations and reject with value', done => {
-      const t = Task.rejected(5).map(x => x * 2).mapRejected(x => x * 5).rejectWith(4);
+      const t = Task.Rejected(5).map(x => x * 2).mapRejected(x => x * 5).rejectWith(4);
       t.fork(n => {
         expect(n).toBe(4);
         done();
@@ -45,7 +45,7 @@ describe('Task', () => {
 
   describe('#fork', () => {
     it('should call the second callback (for resolved)', done => {
-      const t = Task.resolved(5);
+      const t = Task.of(5);
       t.fork(done, n => {
         expect(n).toBe(5);
         done();
@@ -53,7 +53,7 @@ describe('Task', () => {
     });
 
     it('should call the first callback (for rejected)', done => {
-      const t = Task.rejected(5);
+      const t = Task.Rejected(5);
       t.fork(n => {
         expect(n).toBe(5);
         done();
@@ -65,7 +65,7 @@ describe('Task', () => {
     const foldToObj = t => t.fold(error => ({ error }), value => ({ value }));
 
     it('should group both rejected and resolved response to one', done => {
-      foldToObj(Task.resolved(5)).fork(done, ({ error, value }) => {
+      foldToObj(Task.of(5)).fork(done, ({ error, value }) => {
         expect(error).toBeUndefined();
         expect(value).toBe(5);
         done();
@@ -74,7 +74,7 @@ describe('Task', () => {
 
     it('should call the first callback (for rejected)', done => {
       const e = new Error('Www');
-      foldToObj(Task.rejected(e)).fork(done, ({ error, value }) => {
+      foldToObj(Task.Rejected(e)).fork(done, ({ error, value }) => {
         expect(error).toBe(e);
         expect(value).toBeUndefined();
         done();
@@ -84,7 +84,7 @@ describe('Task', () => {
 
   describe('#map', () => {
     it('should map over the given value for resolved task', done => {
-      const t = Task.resolved(5).map(x => x * 2);
+      const t = Task.of(5).map(x => x * 2);
       t.fork(done, n => {
         expect(n).toBe(10);
         done();
@@ -92,7 +92,7 @@ describe('Task', () => {
     });
 
     it('should ignore for rejected task', done => {
-      const t = Task.rejected(5).map(x => x * 2);
+      const t = Task.Rejected(5).map(x => x * 2);
       t.fork(n => {
         expect(n).toBe(5);
         done();
@@ -102,7 +102,7 @@ describe('Task', () => {
 
   describe('#mapRejected', () => {
     it('should ignore for resolved task', done => {
-      const t = Task.rejected(5).mapRejected(x => x * 2);
+      const t = Task.Rejected(5).mapRejected(x => x * 2);
       t.fork(n => {
         expect(n).toBe(10);
         done();
@@ -110,7 +110,7 @@ describe('Task', () => {
     });
 
     it('should map over the given value for rejected task', done => {
-      const t = Task.resolved(5).mapRejected(x => x * 2);
+      const t = Task.of(5).mapRejected(x => x * 2);
       t.fork(done, n => {
         expect(n).toBe(5);
         done();
@@ -122,14 +122,14 @@ describe('Task', () => {
     const mapper = t => t.bimap(x => x * 2, y => y * 3);
 
     it('should map over the given value for resolved task', done => {
-      mapper(Task.resolved(5)).fork(done, n => {
+      mapper(Task.of(5)).fork(done, n => {
         expect(n).toBe(15);
         done();
       });
     });
 
     it('should ignore for rejected task', done => {
-      mapper(Task.rejected(5)).fork(n => {
+      mapper(Task.Rejected(5)).fork(n => {
         expect(n).toBe(10);
         done();
       }, () => done('Shouldnt be here'));
@@ -138,7 +138,7 @@ describe('Task', () => {
 
   describe('#chain', () => {
     it('should map over the given value and merge nested task for resolved task', done => {
-      const t = Task.resolved(5).chain(x => Task.resolved(2 * x));
+      const t = Task.of(5).chain(x => Task.of(2 * x));
       t.fork(done, n => {
         expect(n).toBe(10);
         done();
@@ -146,7 +146,7 @@ describe('Task', () => {
     });
 
     it('should ignore for rejected task', done => {
-      const t = Task.rejected(5).chain(x => Task.resolved(2 * x));
+      const t = Task.Rejected(5).chain(x => Task.of(2 * x));
       t.fork(n => {
         expect(n).toBe(5);
         done();
@@ -154,16 +154,16 @@ describe('Task', () => {
     });
 
     it('should throw error if result is not a task', () => {
-      const t = Task.resolved(5).chain(x => 2 * x);
+      const t = Task.of(5).chain(x => 2 * x);
       expect(() => t.fork(() => {}, () => {})).toThrowError();
     });
   });
 
   describe('#empty', () => {
     it('should ignore previous operations and never resolve or reject', done => {
-      const t = Task.resolved(5)
+      const t = Task.of(5)
         .map(x => x + 1)
-        .chain(x => Task.resolved(2 * x))
+        .chain(x => Task.of(2 * x))
         .empty()
         .map(x => x + 5);
 
@@ -175,9 +175,9 @@ describe('Task', () => {
 
   describe('#toPromise', () => {
     it('should return a resolved promise', done => {
-      const t = Task.resolved(5)
+      const t = Task.of(5)
         .map(x => x + 1)
-        .chain(x => Task.resolved(2 * x))
+        .chain(x => Task.of(2 * x))
         .map(x => x + 5);
 
       t.toPromise()
@@ -189,9 +189,9 @@ describe('Task', () => {
     });
 
     it('should return a resolved promise', done => {
-      const t = Task.rejected(5)
+      const t = Task.Rejected(5)
         .map(x => x + 1)
-        .chain(x => Task.resolved(2 * x))
+        .chain(x => Task.of(2 * x))
         .map(x => x + 5);
 
       t.toPromise()
@@ -220,7 +220,7 @@ describe('Task', () => {
 
     it('should reject', done => {
       const err = new Error('Eoww');
-      Task.rejected(err)
+      Task.Rejected(err)
         .fork(
           e => {
             expect(e).toBe(err);
