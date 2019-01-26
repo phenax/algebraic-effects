@@ -59,7 +59,7 @@ const countdown = function*() {
 }
 
 State.of(10)(countdown)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
+  .fork(() => {}, () => alert('HAPPY NEW YEAR!!!!'));
 ```
 
 
@@ -122,7 +122,7 @@ const api = ApiEffect.handler({
 ```js
 api.with(logger) // Compose your effect handlers togather and run them
   .run(fetchProfile)
-  .then(user => {
+  .fork(handleError, user => {
     // You've got the user now
   })
 ```

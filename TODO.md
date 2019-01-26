@@ -21,11 +21,6 @@
   - [x] State
   - [x] Random Number
   - [ ] Console
-  - [ ] Fetch
-  - [ ] ?Storage (key value)
-  - [ ] ?Something for dom
-  - [ ] ?Location
-  - [ ] ?... other browser apis
 
 - Running programs inside programs
   - [x] Synchronously call program
@@ -38,11 +33,11 @@
 - [x] Task monad
 - [x] Migrate all doc to use Task
 - [ ] Explain motivation and inspiration
-- [ ] Custom global operations
 - [ ] Cancellation
 - [ ] State effect update operation
 - [ ] Random effect
 - [ ] All flow operators
+- [ ] Custom global operations
 
 ### Scripts
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
