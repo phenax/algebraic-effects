@@ -103,11 +103,12 @@ Task.Rejected = function (data) {
 }; // Task.of :: e -> Task e ()
 
 
-Task.of = Task.Resolved; // Task.fromPromise :: (() -> Promise e a) -> Task e a
+Task.of = Task.Resolved; // Task.fromPromise :: ((...*) -> Promise e a, ...*) -> Task e a
 
 Task.fromPromise = function (factory) {
+  var _arguments = arguments;
   return Task(function (rej, res) {
-    return factory().then(res).catch(rej);
+    return factory.apply(null, Array.prototype.slice.call(_arguments, 1)).then(res).catch(rej);
   });
 };
 

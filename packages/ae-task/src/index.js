@@ -63,7 +63,12 @@ Task.Rejected = data => Task(reject => reject(data));
 // Task.of :: e -> Task e ()
 Task.of = Task.Resolved;
 
-// Task.fromPromise :: (() -> Promise e a) -> Task e a
-Task.fromPromise = factory => Task((rej, res) => factory().then(res).catch(rej));
+// Task.fromPromise :: ((...*) -> Promise e a, ...*) -> Task e a
+Task.fromPromise = function(factory) {
+  return Task((rej, res) =>
+    factory.apply(null, Array.prototype.slice.call(arguments, 1))
+      .then(res)
+      .catch(rej));
+};
 
 export default Task;

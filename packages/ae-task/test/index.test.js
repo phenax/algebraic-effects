@@ -8,15 +8,15 @@ const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
 
 describe('Task', () => {
   describe('Task.fromPromise', () => {
-    it('should convert a promise factory into a task', done => {
-      Task.fromPromise(() => Promise.resolve(5))
+    it('should convert a rejected promise factory into a task (with args)', done => {
+      Task.fromPromise(n => Promise.resolve(5 + n), 5)
         .fork(done, (n) => {
-          expect(n).toBe(5);
+          expect(n).toBe(10);
           done();
         });
     });
 
-    it('should convert a promise factory into a task', done => {
+    it('should convert a resolved promise factory into a task', done => {
       Task.fromPromise(() => Promise.reject(5))
         .fork((n) => {
           expect(n).toBe(5);
