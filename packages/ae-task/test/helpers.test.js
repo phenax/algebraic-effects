@@ -59,7 +59,7 @@ describe('helpers', () => {
 
       const startTime = Date.now();
       series([ t1, t2, t3 ]).fork(done, arr => {
-        expect(Date.now() - startTime).toBeGreaterThanOrEqual(200);
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(180);
         expect(arr).toEqual([ 1, 2, 3 ]);
         done();
       });

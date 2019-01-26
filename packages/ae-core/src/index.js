@@ -15,9 +15,16 @@ const runProgram = (program, ...args) => {
   return p;
 };
 
+const operationName = (effect, op) => `${effect}[${op}]`;
+
 // createRunner :: (Object Function, { effect :: String }) -> Runner
-const createRunner = (handlers = {}, { effect } = {}) => {
-  const valueHandler = handlers._ || VALUE_HANDLER;
+const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
+  const valueHandler = _handlers._ || VALUE_HANDLER;
+
+  const handlers = isComposed ? _handlers : Object.keys(_handlers).reduce((acc, key) => ({
+    ...acc,
+    [operationName(effect, key)]: _handlers[key],
+  }), {});
 
   const effectRunner = (p, ...args) => {
     const task = Task((reject, resolve) => {
@@ -85,7 +92,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
   // concat, with :: Runner -> Runner
   effectRunner.concat = run1 => createRunner(
     { ...handlers, ...run1.handlers },
-    { effect: `${effectRunner.effectName}.${run1.effectName}` },
+    { effect: `${effectRunner.effectName}.${run1.effectName}`, isComposed: true },
   );
   effectRunner.with = effectRunner.concat;
 
@@ -100,18 +107,11 @@ export const createEffect = (name, operations) => ({
   name,
   operations,
   handler: handlers => createRunner(handlers, { effect: name }),
-  ...Object.keys(operations).reduce((acc, name) => ({
+  ...Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
-    [name]: Operation(name, operations[name]),
+    [opName]: Operation(operationName(name, opName), operations[opName]),
   }), {})
 });
-
-// composeEffects :: ...Effect -> Effect
-export const composeEffects = (...effects) => {
-  const name = effects.map(({ name }) => `${name}`).join('.');
-  const operations = effects.reduce((acc, eff) => ({ ...acc, ...eff.operations }), {});
-  return createEffect(name, operations);
-};
 
 // composeHandlers :: ...Runner -> Runner
 export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
