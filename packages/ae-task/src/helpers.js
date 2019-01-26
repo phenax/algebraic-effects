@@ -1,4 +1,3 @@
-import { pointfree } from '@algebraic-effects/utils';
 import Task from '.';
 
 // rejectAfter :: (Number, e) -> Task.Rejected e
@@ -27,20 +26,14 @@ export const parallel = tasks => Task((reject, resolve) => {
   let resolvedCount = 0;
   const resolvedData = [];
 
-  const onResolve = index => data => {
+  const onResolve = (index, data) => {
     resolvedData[index] = data;
     resolvedCount += 1;
-    if(resolvedCount === tasks.length) resolve(resolvedData);
+    if(resolvedCount === tasks.length) return resolve(resolvedData);
   };
 
-  tasks.forEach((task, index) => task.fork(reject, onResolve(index)));
+  tasks.forEach((task, index) => task.fork(reject, onResolve.bind(null, index)));
 });
 
-
 // Point-free methods
-export const map = pointfree('map');
-export const bimap = pointfree('bimap');
-export const fork = pointfree('fork');
-export const fold = pointfree('fold');
-export const mapRejected = pointfree('mapRejected');
-export const toPromise = pointfree('toPromise')();
+export * from './pointfree';

@@ -7,10 +7,12 @@ exports.default = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
+var _pointfree = require("./pointfree");
+
 // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task e a
 var Task = function Task(taskFn) {
-  // fork :: (e -> (), b -> ()) -> CancelFunction
-  var fork = function fork(onFailure, onSuccess) {
+  // forkTask :: (e -> (), b -> ()) -> CancelFunction
+  var forkTask = function forkTask(onFailure, onSuccess) {
     var isCancelled = false;
     var isDone = false;
 
@@ -33,28 +35,26 @@ var Task = function Task(taskFn) {
 
   var fold = function fold(mapErr, mapVal) {
     return Task(function (_, res) {
-      return fork((0, _utils.compose)(res, mapErr), (0, _utils.compose)(res, mapVal));
+      return forkTask((0, _utils.compose)(res, mapErr), (0, _utils.compose)(res, mapVal));
     });
   }; // bimap :: (e -> e', a -> a') -> Task e' a'
 
 
   var bimap = function bimap(mapErr, mapVal) {
     return Task(function (rej, res) {
-      return fork((0, _utils.compose)(rej, mapErr), (0, _utils.compose)(res, mapVal));
+      return forkTask((0, _utils.compose)(rej, mapErr), (0, _utils.compose)(res, mapVal));
     });
   }; // chain :: (a -> Task a') -> Task e a'
 
 
   var chain = function chain(fn) {
-    return Task(function (reject, resolve) {
-      return fork(reject, function (b) {
-        return fn(b).fork(reject, resolve);
-      });
+    return Task(function (rej, res) {
+      return forkTask(rej, (0, _utils.compose)((0, _pointfree.fork)(rej, res), fn));
     });
   };
 
   return {
-    fork: fork,
+    fork: forkTask,
     bimap: bimap,
     fold: fold,
     chain: chain,
@@ -73,12 +73,8 @@ var Task = function Task(taskFn) {
     // toPromise :: () -> Promise e a
     toPromise: function toPromise() {
       return new Promise(function (res, rej) {
-        return fork(rej, res);
+        return forkTask(rej, res);
       });
-    },
-    // toString :: () -> String
-    toString: function toString() {
-      return 'Task e a';
     }
   };
 }; // Task.Empty :: () -> Task

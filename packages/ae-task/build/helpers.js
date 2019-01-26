@@ -3,11 +3,29 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.toPromise = exports.mapRejected = exports.fold = exports.fork = exports.bimap = exports.map = exports.parallel = exports.series = exports.race = exports.resolveAfter = exports.rejectAfter = void 0;
-
-var _utils = require("@algebraic-effects/utils");
+var _exportNames = {
+  rejectAfter: true,
+  resolveAfter: true,
+  race: true,
+  series: true,
+  parallel: true
+};
+exports.parallel = exports.series = exports.race = exports.resolveAfter = exports.rejectAfter = void 0;
 
 var _2 = _interopRequireDefault(require("."));
+
+var _pointfree = require("./pointfree");
+
+Object.keys(_pointfree).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _pointfree[key];
+    }
+  });
+});
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -65,31 +83,17 @@ var parallel = function parallel(tasks) {
     var resolvedCount = 0;
     var resolvedData = [];
 
-    var onResolve = function onResolve(index) {
-      return function (data) {
-        resolvedData[index] = data;
-        resolvedCount += 1;
-        if (resolvedCount === tasks.length) resolve(resolvedData);
-      };
+    var onResolve = function onResolve(index, data) {
+      resolvedData[index] = data;
+      resolvedCount += 1;
+      if (resolvedCount === tasks.length) return resolve(resolvedData);
     };
 
     tasks.forEach(function (task, index) {
-      return task.fork(reject, onResolve(index));
+      return task.fork(reject, onResolve.bind(null, index));
     });
   });
 }; // Point-free methods
 
 
 exports.parallel = parallel;
-var map = (0, _utils.pointfree)('map');
-exports.map = map;
-var bimap = (0, _utils.pointfree)('bimap');
-exports.bimap = bimap;
-var fork = (0, _utils.pointfree)('fork');
-exports.fork = fork;
-var fold = (0, _utils.pointfree)('fold');
-exports.fold = fold;
-var mapRejected = (0, _utils.pointfree)('mapRejected');
-exports.mapRejected = mapRejected;
-var toPromise = (0, _utils.pointfree)('toPromise')();
-exports.toPromise = toPromise;

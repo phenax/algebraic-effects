@@ -1,10 +1,11 @@
 import { compose, identity } from '@algebraic-effects/utils';
+import { fork } from './pointfree';
 
 // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task e a
 const Task = (taskFn) => {
 
-  // fork :: (e -> (), b -> ()) -> CancelFunction
-  const fork = (onFailure, onSuccess) => {
+  // forkTask :: (e -> (), b -> ()) -> CancelFunction
+  const forkTask = (onFailure, onSuccess) => {
     let isCancelled = false;
     let isDone = false;
 
@@ -20,16 +21,16 @@ const Task = (taskFn) => {
   };
 
   // fold :: (e -> b, a -> b) -> Task () b
-  const fold = (mapErr, mapVal) => Task((_, res) => fork(compose(res, mapErr), compose(res, mapVal)));
+  const fold = (mapErr, mapVal) => Task((_, res) => forkTask(compose(res, mapErr), compose(res, mapVal)));
 
   // bimap :: (e -> e', a -> a') -> Task e' a'
-  const bimap = (mapErr, mapVal) => Task((rej, res) => fork(compose(rej, mapErr), compose(res, mapVal)));
+  const bimap = (mapErr, mapVal) => Task((rej, res) => forkTask(compose(rej, mapErr), compose(res, mapVal)));
 
   // chain :: (a -> Task a') -> Task e a'
-  const chain = fn => Task((reject, resolve) => fork(reject, b => fn(b).fork(reject, resolve)));
+  const chain = fn => Task((rej, res) => forkTask(rej, compose(fork(rej, res), fn)));
 
   return {
-    fork,
+    fork: forkTask,
     bimap,
     fold,
     chain,
@@ -44,10 +45,7 @@ const Task = (taskFn) => {
     mapRejected: fn => bimap(fn, identity),
 
     // toPromise :: () -> Promise e a
-    toPromise: () => new Promise((res, rej) => fork(rej, res)),
-
-    // toString :: () -> String
-    toString: () => 'Task e a',
+    toPromise: () => new Promise((res, rej) => forkTask(rej, res)),
   };
 };
 

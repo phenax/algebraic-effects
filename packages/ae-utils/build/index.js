@@ -8,12 +8,9 @@ exports.identity = exports.compose = exports.pointfree = void 0;
 // pointfree :: String -> (...a) -> Object(with methodName :: ...a -> b) -> b
 var pointfree = function pointfree(methodName) {
   return function () {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
+    var _arguments = arguments;
     return function (x) {
-      return x[methodName].apply(x, args);
+      return x[methodName].apply(x, _arguments);
     };
   };
 }; // compose :: (...Function) -> Function

@@ -1,5 +1,5 @@
 import Task from '../src';
-import { parallel, race, series, rejectAfter, resolveAfter } from '../src/helpers';
+import { parallel, race, series, rejectAfter, resolveAfter, map, fork } from '../src/helpers';
 
 describe('helpers', () => {
   const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
@@ -85,7 +85,7 @@ describe('helpers', () => {
 
       const startTime = Date.now();
       parallel([ t1, t2, t3, t4 ]).fork(done, arr => {
-        expect(Date.now() - startTime).toBeGreaterThanOrEqual(120);
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(117);
         expect(Date.now() - startTime).toBeLessThan(200);
         expect(arr).toEqual([ 1, 2, 3, 4 ]);
         done();
@@ -102,6 +102,35 @@ describe('helpers', () => {
         expect(n).toBe(4);
         done();
       }, () => done('Shoudnbe here'));
+    });
+  });
+
+  describe('pointfree parallel', () => {
+    it('should run all tasks in parallel', done => {
+      const t1 = map(() => 1)(delay(100));
+      const t2 = map(() => 2)(delay(20));
+      const t3 = map(() => 3)(delay(120));
+      const t4 = map(() => 4)(delay(90));
+
+      const startTime = Date.now();
+      fork(done, arr => {
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(120);
+        expect(Date.now() - startTime).toBeLessThan(200);
+        expect(arr).toEqual([ 1, 2, 3, 4 ]);
+        done();
+      })(parallel([ t1, t2, t3, t4 ]));
+    });
+
+    it('should reject with the first one (first in time) that fails', done => {
+      const t1 = map(() => 1)(delay(100));
+      const t2 = map(() => 2)(delay(20));
+      const t3 = map(() => 3)(delay(120));
+      const t4 = delay(90).rejectWith(4);
+
+      fork(n => {
+        expect(n).toBe(4);
+        done();
+      }, () => done('Shoudnbe here'))(series([ t1, t2, t3, t4 ]));
     });
   });
 });
