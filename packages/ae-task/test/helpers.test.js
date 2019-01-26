@@ -114,7 +114,7 @@ describe('helpers', () => {
 
       const startTime = Date.now();
       fork(done, arr => {
-        expect(Date.now() - startTime).toBeGreaterThanOrEqual(120);
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(115);
         expect(Date.now() - startTime).toBeLessThan(200);
         expect(arr).toEqual([ 1, 2, 3, 4 ]);
         done();
