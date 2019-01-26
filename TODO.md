@@ -34,8 +34,8 @@
 
 ### Documentations
 - [x] Call, Race, etc global operations
-- [ ] Task monad
-- [ ] Migrate all doc to use Task
+- [x] Task monad
+- [x] Migrate all doc to use Task
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
 - [ ] Cancellation

@@ -31,7 +31,7 @@ describe('createEffect', () => {
       expect(runner.effectName).toBe('ApiEffect');
     });
 
-    it('should reject promise the op fails arg check', done => {
+    it('should reject task the op fails arg check', done => {
       function* action() {
         yield ApiEffect.fetch();
       }
@@ -44,7 +44,7 @@ describe('createEffect', () => {
         }, () => done('Shoundt have ben called'));
     });
 
-    it('should reject promise for invalid program', done => {
+    it('should reject task for invalid program', done => {
       const notAGenerator = () => {};
 
       const callProgram = jest.fn(() =>

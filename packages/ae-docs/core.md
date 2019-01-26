@@ -144,7 +144,7 @@ function* greetUser(greetText) {
 }
 
 // io :: Runner
-const withIO = IOEffect.handler({
+const io = IOEffect.handler({
   // Some showModal function that accepts an onSubmit callback
   getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
   showMessage: ({ resume }) => message => {
@@ -154,7 +154,7 @@ const withIO = IOEffect.handler({
   };
 });
 
-withIO(greetUser, 'Welcome!');
+io.run(greetUser, 'Welcome!');
 // Shows a modal with the text "What is your name?" and an input form.
 // When you click on the submit, it renders a message that reads. "Hello Akshay! Welcome!"
 ```

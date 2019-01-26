@@ -3,7 +3,7 @@ import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
 import globalHandlers from './operations';
 
 // type Program = GeneratorFunction
-// type Runner = (Program, ...a) -> Promise
+// type Runner = (Program ...a b, ...a) -> Task e b
 
 const isIterator = p => !!p[Symbol.iterator];
 
@@ -20,19 +20,19 @@ const createRunner = (handlers = {}, { effect } = {}) => {
   const valueHandler = handlers._ || VALUE_HANDLER;
 
   const effectRunner = (p, ...args) => {
-    const resultPromise = Task((reject, resolve) => {
+    const task = Task((reject, resolve) => {
       const program = runProgram(p, ...args);
   
       // throwError :: * -> ()
       const throwError = x => {
         program.return(x);
-        !resultPromise.isCancelled && reject(x);
+        !task.isCancelled && reject(x);
       };
   
       // end  :: * -> ()
       const end = x => {
         program.return(x);
-        !resultPromise.isCancelled && resolve(x);
+        !task.isCancelled && resolve(x);
       };
 
       // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
@@ -47,7 +47,7 @@ const createRunner = (handlers = {}, { effect } = {}) => {
   
       // resume :: * -> ()
       const resume = x => {
-        if(resultPromise.isCancelled) return program.return(null);
+        if(task.isCancelled) return program.return(null);
 
         const call = (p, ...a) => effectRunner(p, ...a);
         const promise = promise => promise.then(resume).catch(throwError);
@@ -72,11 +72,11 @@ const createRunner = (handlers = {}, { effect } = {}) => {
 
       setTimeout(resume, 0);
 
-      return () => (resultPromise.isCancelled = true);
+      return () => (task.isCancelled = true);
     });
 
-    resultPromise.isCancelled = false;
-    return resultPromise;
+    task.isCancelled = false;
+    return task;
   };
 
   effectRunner.effectName = effect || 'GlobalEffect';

@@ -2,12 +2,13 @@ import { race as raceTasks, parallel as runInParallel } from '@algebraic-effects
 import { identity } from '@algebraic-effects/utils';
 import { Operation, func } from './utils';
 
-// handleTask :: (...a -> Promise b) -> FlowOperators -> (...a) -> Promise b
+// handleTask :: (...a -> Task e b) -> FlowOperators -> (...a) -> CancelFunction
 const handleTask = fn => o => (...args) => fn(o)(...args).fork(o.throwError, o.resume);
 
 const globalOpHandlers = {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),
   awaitPromise: ({ resume, throwError }) => promise => promise.then(resume).catch(throwError),
+  runTask: ({ resume, throwError }) => t => t.fork(throwError, resume),
   call: handleTask(({ call }) => (p, ...a) => call(p, ...a)),
   resolve: ({ end }) => v => end(v),
   race: handleTask(({ call }) => programs => raceTasks(programs.map(p => call(p)))),
@@ -18,7 +19,8 @@ const globalOpHandlers = {
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
 export const resolve = Operation('resolve', func(['*']));
-export const awaitPromise = Operation('awaitPromise', func(['promise a'], 'a'));
+export const awaitPromise = Operation('awaitPromise', func(['promise e a'], 'a'));
+export const runTask = Operation('runTask', func(['task e a'], 'a'));
 
 export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
 export const race = Operation('race', func(['...(generator ...a b)'], 'b'));

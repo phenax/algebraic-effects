@@ -10,7 +10,7 @@ State effect allows you to maintain state accross multiple calls to your program
 * `State.of`
 You can pass it the initial state for your program and run it.
 ```haskell
-State.of :: a -> (Program<State> ...b c, ...b) -> Promise c
+State.of :: a -> (Program<State> ...b c, ...b) -> Task e c
 ```
 
 
@@ -34,7 +34,7 @@ const countdown = function*() {
 }
 
 State.of(10)(countdown)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
+  .fork(() => {}, () => alert('HAPPY NEW YEAR!!!!'));
 ```
 
 

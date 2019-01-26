@@ -32,7 +32,7 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 // type Program = GeneratorFunction
-// type Runner = (Program, ...a) -> Promise
+// type Runner = (Program ...a b, ...a) -> Task e b
 var isIterator = function isIterator(p) {
   return !!p[Symbol.iterator];
 }; // runProgram :: (Program, ...a) -> Iterator
@@ -62,18 +62,18 @@ var createRunner = function createRunner() {
       args[_key2 - 1] = arguments[_key2];
     }
 
-    var resultPromise = (0, _task.default)(function (reject, resolve) {
+    var task = (0, _task.default)(function (reject, resolve) {
       var program = runProgram.apply(void 0, [p].concat(args)); // throwError :: * -> ()
 
       var throwError = function throwError(x) {
         program.return(x);
-        !resultPromise.isCancelled && reject(x);
+        !task.isCancelled && reject(x);
       }; // end  :: * -> ()
 
 
       var end = function end(x) {
         program.return(x);
-        !resultPromise.isCancelled && resolve(x);
+        !task.isCancelled && resolve(x);
       }; // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
 
 
@@ -90,7 +90,7 @@ var createRunner = function createRunner() {
 
 
       var resume = function resume(x) {
-        if (resultPromise.isCancelled) return program.return(null);
+        if (task.isCancelled) return program.return(null);
 
         var call = function call(p) {
           for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
@@ -134,11 +134,11 @@ var createRunner = function createRunner() {
 
       setTimeout(resume, 0);
       return function () {
-        return resultPromise.isCancelled = true;
+        return task.isCancelled = true;
       };
     });
-    resultPromise.isCancelled = false;
-    return resultPromise;
+    task.isCancelled = false;
+    return task;
   };
 
   effectRunner.effectName = effect || 'GlobalEffect';

@@ -7,9 +7,9 @@ Exception effect allows you to create a throw operation to break out of the flow
 ### Functions
 
 * `Exception.try`
-It accepts a program (generator with effects) and returns a promise
+It accepts a program (generator with effects) and returns a task
 ```haskell
-try :: (Program ...a b, ...a) -> Promise b
+try :: (Program<Exception> ...a b, ...a) -> Task e b
 ```
 
 
@@ -34,10 +34,10 @@ const divide = function *(a, b) {
 };
 
 Exception.try(divide, 5, 2)
-  .then(result => console.log('5 / 2 ===', result));
+  .fork(() => {}, result => console.log('5 / 2 ===', result));
 
 Exception.try(divide, 5, 0)
-  .catch(e => console.error(e));
+  .catch(e => console.error(e), () => {});
 ```
 
 
@@ -54,7 +54,7 @@ const divide = function *(a, b) {
   yield a / b;
 };
 
-// toEither :: (Program<Exception> (...a)  b, ...a) -> Promise (Either Error b)
+// toEither :: (Program<Exception> (...a)  b, ...a) -> Task.Resolved (Either Error b)
 const toEither = Exception.handler({
   throw: ({ end }) => error => end(Either.Left(error.message)),
   _: ({ end }) => value => end(Either.Right(value)),

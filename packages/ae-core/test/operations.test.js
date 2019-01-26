@@ -15,7 +15,7 @@ describe('Global operations', () => {
       yield x;
     }
 
-    it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
+    it('should wait 900 ms before resolving task with 5 (as return value)', done => {
       const startTime = Date.now();
       run(gimmeXReturned, 5)
         .fork(done, x => {
@@ -25,7 +25,7 @@ describe('Global operations', () => {
         });
     });
 
-    it('should wait 900 ms before resolving promise with 5 (as yield value)', done => {
+    it('should wait 900 ms before resolving task with 5 (as yield value)', done => {
       const startTime = Date.now();
       run(gimmeXYielded, 5)
         .fork(done, x => {
@@ -71,7 +71,7 @@ describe('Global operations', () => {
       yield resolve(x);
     }
 
-    it('should wait 900 ms before resolving promise with 5 (as return value)', done => {
+    it('should wait 900 ms before resolving task with 5 (as return value)', done => {
       run(gimmeXReturned, 5)
         .fork(done, x => {
           expect(x).toBe(5);
