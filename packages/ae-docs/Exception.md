@@ -37,7 +37,7 @@ Exception.try(divide, 5, 2)
   .fork(() => {}, result => console.log('5 / 2 ===', result));
 
 Exception.try(divide, 5, 0)
-  .catch(e => console.error(e), () => {});
+  .fork(e => console.error(e), () => {});
 ```
 
 
@@ -60,6 +60,6 @@ const toEither = Exception.handler({
   _: ({ end }) => value => end(Either.Right(value)),
 });
 
-await toEither(divide, 5, 2); // Either.Right 2.5
-await toEither(divide, 5, 0); // Either.Left 'Invalid operation'
+await toEither(divide, 5, 2).toPromise(); // Either.Right 2.5
+await toEither(divide, 5, 0).toPromise(); // Either.Left 'Invalid operation'
 ```

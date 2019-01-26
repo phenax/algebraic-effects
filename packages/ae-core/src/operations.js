@@ -7,7 +7,7 @@ const handleTask = fn => o => (...args) => fn(o)(...args).fork(o.throwError, o.r
 
 const globalOpHandlers = {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),
-  awaitPromise: ({ resume, throwError }) => promise => promise.then(resume).catch(throwError),
+  awaitPromise: ({ promise }) => promise,
   runTask: ({ resume, throwError }) => t => t.fork(throwError, resume),
   call: handleTask(({ call }) => (p, ...a) => call(p, ...a)),
   resolve: ({ end }) => v => end(v),
