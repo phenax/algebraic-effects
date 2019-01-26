@@ -14,10 +14,11 @@ try :: (Program<Exception> ...a b, ...a) -> Task e b
 
 
 ### Operations
-
-* throw
-Throw operation models the behavior of breaking out of the flow of the program.
-
+```js
+Exception = {
+  throw: func(['error']),
+}
+```
 
 
 ## Usage examples

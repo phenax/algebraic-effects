@@ -32,11 +32,12 @@
 - [x] Call, Race, etc global operations
 - [x] Task monad
 - [x] Migrate all doc to use Task
+- [x] State effect update operation
+- [ ] Random effect
 - [ ] Explain motivation and inspiration
 - [ ] Cancellation
-- [ ] State effect update operation
-- [ ] Random effect
 - [ ] All flow operators
+- [ ] All links to next document below for readers to continue reeading
 - [ ] Custom global operations
 
 ### Scripts
