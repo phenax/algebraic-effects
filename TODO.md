@@ -33,11 +33,11 @@
 - [x] Task monad
 - [x] Migrate all doc to use Task
 - [x] State effect update operation
-- [ ] Random effect
-- [ ] Explain motivation and inspiration
+- [x] Random effect
+- [x] All flow operators
 - [ ] Cancellation
-- [ ] All flow operators
 - [ ] All links to next document below for readers to continue reeading
+- [ ] Explain motivation and inspiration
 - [ ] Custom global operations
 
 ### Scripts
