@@ -14,6 +14,7 @@
 - [x] Migrate to yarn workspaces
 - [x] Move static functions of Tasks out to a another entry point
 - [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
+- [ ] Prevent operation name collisions with effect namespace
 
 - Add more effect classes ...
   - [x] Exception
