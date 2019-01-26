@@ -1,6 +1,18 @@
 import { pointfree } from '@algebraic-effects/utils';
 import Task from '.';
 
+// rejectAfter :: (Number, e) -> Task.Rejected e
+export const rejectAfter = (duration, value) => Task(rej => {
+  const timer = setTimeout(rej, duration, value);
+  return () => clearTimeout(timer);
+});
+
+// resolveAfter :: (Number, a) -> Task.Resolved a
+export const resolveAfter = (duration, value) => Task((_, res) => {
+  const timer = setTimeout(res, duration, value);
+  return () => clearTimeout(timer);
+});
+
 // race :: [Task e a] -> Task e a
 export const race = tasks => Task((rej, res) => tasks.forEach(t => t.fork(rej, res)));
 

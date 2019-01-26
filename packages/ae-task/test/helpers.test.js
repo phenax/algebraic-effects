@@ -1,10 +1,32 @@
 import Task from '../src';
-import { parallel, race, series } from '../src/helpers';
+import { parallel, race, series, rejectAfter, resolveAfter } from '../src/helpers';
 
 describe('helpers', () => {
   const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
     const timerid = setTimeout(() => resolve(), duration);
     return () => cancel && cancel(timerid);
+  });
+
+  describe('rejectAfter', () => {
+    it('should reject task after some time', done => {
+      const startTime = Date.now();
+      rejectAfter(500, 5).fork(e => {
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(480);
+        expect(e).toBe(5);
+        done();
+      }, () => done('shoundlt be here'));
+    });
+  });
+
+  describe('resolveAfter', () => {
+    it('should reject task after some time', done => {
+      const startTime = Date.now();
+      resolveAfter(500, 5).fork(done, n => {
+        expect(Date.now() - startTime).toBeGreaterThanOrEqual(480);
+        expect(n).toBe(5);
+        done();
+      });
+    });
   });
 
   describe('race', () => {
