@@ -164,6 +164,35 @@ someTask
 
 ### Helper functions
 
+```js
+import { rejectAfter, race, parallel } from '@algebraic-effects/task/fns';
+```
+
+* `resolveAfter`
+Will resolve with a given value after a delay
+
+```haskell
+resolveAfter :: (Number, a) -> Task.Resolved a
+```
+```js
+resolveAfter(1000, 5)
+  .fork(handleError, handleSuccess);
+```
+
+
+* `rejectAfter`
+Will reject with a given value after a delay
+
+
+```haskell
+rejectAfter :: (Number, e) -> Task.Rejected e
+```
+```js
+rejectAfter(1000, 5)
+  .fork(handleError, handleSuccess);
+```
+
+
 * `race`
 Resolve or Reject with the first task tha reaches completion.
 
@@ -195,7 +224,7 @@ Run a given set of tasks parallely. Fail if one of the tasks fail.
 parallel :: [Task e a] -> Task e [a]
 ```
 ```js
-parallel([ fetchResourceA, fetchResourceB,, fetchResourceC ])
+parallel([ fetchResourceA, fetchResourceB, fetchResourceC ])
   .fork(handleError, ([ a, b, c ]) => handleSuccess(a, b, c));
 ```
 
