@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import styled from 'styled-components';
 
 import Link from './components/Link';
+import FloatingHeaderLink from './components/FloatingHeaderLink';
 import Sidenav from './components/Sidenav';
 import Router, { RouteProvider } from './components/Router';
 
@@ -73,6 +74,7 @@ const App = () => (
         <Sidenav pages={pages} />
       </Aside>
       <Main>
+        <FloatingHeaderLink />
         <Content>
           <React.Suspense>
             <Router pages={pages} />
