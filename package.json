@@ -35,6 +35,7 @@
     "ramda": "^0.26.1",
     "react": "^16.8.0-alpha.1",
     "react-dom": "^16.8.0-alpha.1",
+    "remark-emoji": "^2.0.2",
     "styled-components": "^4.1.3",
     "terser-webpack-plugin": "^1.2.1",
     "webpack": "^4.29.0"

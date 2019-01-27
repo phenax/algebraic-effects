@@ -48,6 +48,11 @@ const makeConfig = ({ ...extend }) => ({
           },
           {
             loader: '@mdx-js/loader',
+            options: {
+              mdPlugins: [
+                require('remark-emoji'),
+              ]
+            }
           }
         ]
       },

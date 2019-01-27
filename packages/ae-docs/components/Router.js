@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 const getHash = () => window.location.hash.slice(1);
 
+export const RouterContext = React.createContext(null);
+
 const Router = ({ pages, ...props }) => {
-  const [page, setPage] = useState(getHash());
+  const { page } = useContext(RouterContext) || {};
   const currentPage = pages[page] || pages.home;
+
+  useEffect(() => {
+    document.title = currentPage && currentPage.title
+      ? `${currentPage.title} - Algebraic Effects`
+      : 'Algebraic Effects';
+  }, [page]);
+
+  return <currentPage.render {...props} />;
+};
+
+export const RouteProvider = ({ children }) => {
+  const [page, setPage] = useState(getHash());
 
   const onHashChange = () => {
     const hash = getHash();
@@ -16,15 +30,11 @@ const Router = ({ pages, ...props }) => {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  useEffect(() => {
-    if(currentPage && currentPage.title) {
-      document.title = `${currentPage.title} - Algebraic Effects`;
-    } else {
-      document.title = 'Algebraic Effects';
-    }
-  }, [page]);
-
-  return <currentPage.render {...props} />;
+  return (
+    <RouterContext.Provider value={{ page, setPage }}>
+      {children}
+    </RouterContext.Provider>
+  );
 };
 
 export default Router;

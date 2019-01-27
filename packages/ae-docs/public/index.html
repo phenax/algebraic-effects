@@ -1,5 +1,8 @@
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name=”description” content="Documentation algebraic-effects in javascript" />
+    
     <title>Algebraic Effects</title>
     <style>
       /* http://meyerweb.com/eric/tools/css/reset/ 
@@ -55,7 +58,12 @@
         background-color: #fff;
         font-family: "Raleway", Arial, sans-serif;
         font-weight: 300;
+        width: 100%;
+        line-height: 1.5em;
+        color: #222;
       }
+
+      body, body * { box-sizing: border-box; }
 
       pre, code {
         font-family: "Fira Mono", 'Courier New', Courier, monospace;
@@ -69,7 +77,7 @@
         padding: 1em;
         overflow: auto;
         font-size: .8em;
-        line-height: 1.5em;
+        line-height: 1.4em;
       }
       pre code {
         background-color: transparent;
@@ -77,16 +85,31 @@
 
       h1, h2, h3, h4, h5, h6 {
         font-family: serif;
-        margin: .5em 0;
-        font-weight: 500;
+        margin: 1em 0 .5em;
+        font-weight: 600;
+        color: #444;
+        line-height: 1.2em;
         font-family: "Nanum Myeongjo", serif;
       }
-      h1 { font-size: 2.5em; }
-      h2 { font-size: 2.3em; }
-      h3 { font-size: 2.0em; }
+      h1 { font-size: 2.625em; }
+      h2 { font-size: 2.125em; }
+      h3 { font-size: 1.5em; }
       h4 { font-size: 1.7em; }
-      h5 { font-size: 1.4em; }
-      h6 { font-size: 1.1em; }
+      h5 { font-size: 1.3em; }
+      h6 { font-size: 1.2em; }
+
+      p {
+        display: block;
+        margin: 1em 0;
+      }
+
+      hr {
+        border: none;
+        width: 20px;
+        height: 2px;
+        background-color: #aaa;
+        margin: 2em auto 1.6em;
+      }
     </style>
     <link href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" rel="stylesheet" />
   </head>

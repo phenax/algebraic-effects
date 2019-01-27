@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import Link from './components/Link';
 import Sidenav from './components/Sidenav';
-import Router from './components/Router';
+import Router, { RouteProvider } from './components/Router';
 
 import Homepage from './pages/Homepage.mdx';
 import CoreModule from './pages/core.mdx';
@@ -45,27 +45,31 @@ const Main = styled.main`
 `;
 
 const Aside = styled.aside`
-  width: 300px;
+  flex: 0 0 230px;
 `;
 
 const Content = styled.div`
   max-width: 700px;
   margin: 1em auto;
   padding: 1em;
+  font-size: 1.2em;
+  line-height: 1.6em;
 `;
 
 const App = () => (
   <Wrapper>
-    <Aside>
-      <Sidenav pages={pages} />
-    </Aside>
-    <Main>
-      <Content>
-        <React.Suspense>
-          <Router pages={pages} />
-        </React.Suspense>
-      </Content>
-    </Main>
+    <RouteProvider>
+      <Aside>
+        <Sidenav pages={pages} />
+      </Aside>
+      <Main>
+        <Content>
+          <React.Suspense>
+            <Router pages={pages} />
+          </React.Suspense>
+        </Content>
+      </Main>
+    </RouteProvider>
   </Wrapper>
 );
 
