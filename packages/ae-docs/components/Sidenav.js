@@ -5,6 +5,15 @@ import Link from './Link';
 import { RouterContext } from './Router';
 
 
+const Wrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow: auto;
+  width: 230px;
+`;
+
 const Item = styled.div`
   border-right: ${p => p.isCurrentPage ? '3px solid #666' : 'none'};
   background-color: ${p => p.isCurrentPage ? '#f1f1f1' : 'transparent'};
@@ -42,7 +51,7 @@ const Sidenav = ({ pages }) => {
   const isMatch = str => `${str}`.toLowerCase().indexOf(term.toLowerCase()) >= 0;
 
   return (
-    <div style={{ width: '100%' }}>
+    <Wrapper>
       <div style={{ padding: '.5em' }}>
         <SearchInput type='text' value={term} onChange={onSearch} placeholder="Search" />
       </div>
@@ -67,7 +76,7 @@ const Sidenav = ({ pages }) => {
             </Item>
           ))}
       </div>
-    </div>
+    </Wrapper>
   );
 };
 

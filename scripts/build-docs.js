@@ -51,6 +51,7 @@ const makeConfig = ({ ...extend }) => ({
             options: {
               mdPlugins: [
                 require('remark-emoji'),
+                require('remark-highlight.js'),
               ]
             }
           }
