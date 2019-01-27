@@ -1,0 +1,11 @@
+{
+  "name": "@algebraic-effect/docs",
+  "private": true,
+  "description": "Algebraic effects docs",
+  "isDoc": true,
+  "main": "./README.md",
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "homepage": "/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT"
+}
