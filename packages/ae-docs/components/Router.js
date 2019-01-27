@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
 
-const getHash = () => window.location.hash.slice(1);
+const getHash = () => `${window.location.hash}`.slice(1).split('.');
 
 export const RouterContext = React.createContext(null);
 
@@ -17,11 +17,27 @@ const Router = ({ pages, ...props }) => {
   return <currentPage.render {...props} />;
 };
 
+const scrollIntoView = $el => {
+  if(typeof $el.scrollIntoView === 'function') {
+    $el.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+      inline: 'nearest',
+    });
+  } else {
+    const fromTop = $el.offsetTop;
+    requestAnimationFrame(() => document.scrollingElement.scrollTo(0, fromTop));
+  }
+};
+
 export const RouteProvider = ({ children }) => {
-  const [page, setPage] = useState(getHash());
+  const [initPage, initTarget] = getHash();
+  const [page, setPage] = useState(initPage);
+  const [scrollTarget, setScrollTarget] = useState(initTarget);
 
   const onHashChange = () => {
-    const hash = getHash();
+    const [hash, target] = getHash();
+    target && setScrollTarget(target);
     setPage(hash);
   };
 
@@ -29,6 +45,13 @@ export const RouteProvider = ({ children }) => {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useLayoutEffect(() => {
+    if(scrollTarget) {
+      const $target = document.getElementById(scrollTarget);
+      $target && setTimeout(() => scrollIntoView($target), 400);
+    }
+  }, [scrollTarget]);
 
   return (
     <RouterContext.Provider value={{ page, setPage }}>

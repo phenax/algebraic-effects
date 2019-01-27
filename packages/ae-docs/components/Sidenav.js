@@ -9,9 +9,12 @@ const Wrapper = styled.div`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 20;
   height: 100vh;
   overflow: auto;
   width: 230px;
+  background-color: #fff;
+  border-right: 1px solid #eee;
 `;
 
 const Item = styled.div`
