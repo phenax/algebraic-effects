@@ -3,9 +3,12 @@ const { map, filter, head, compose } = require('ramda');
 
 const webpack = require('webpack');
 
-const { getPackageJson, toPackagePaths, resolveAll, getPackages, errorHandler } = require('./utils');
+const { getPackageJson, toPackagePaths, resolveAll, getPackages, errorHandler, runCommand } = require('./utils');
 
-process.env.NODE_ENV = 'development';
+const [actionName] = process.argv.slice(2);
+
+
+process.env.NODE_ENV = actionName === 'build' ? 'production' : 'development';
 
 const isDoc = dir => {
   try {
@@ -79,11 +82,10 @@ const actions = {
   ),
   publish: ([ dir ]) => {
     const cwd = path.join(dir, 'public');
+    console.log(cwd);
   },
 };
 
-
-const [actionName] = process.argv.slice(2);
 
 if (!actionName || !actions[actionName]) {
   throw new Error('You need to specify the action (build, watch, publish)');
