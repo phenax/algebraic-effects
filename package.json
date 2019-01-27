@@ -12,7 +12,8 @@
     "test": "jest --config ./scripts/jest.config.js --watch",
     "test:ci": "jest --config ./scripts/jest.config.js --coverage",
     "coverage:ci": "codecov",
-    "publish-all": "node ./scripts/publish.js"
+    "publish-all": "node ./scripts/publish.js",
+    "docs": "node ./scripts/docs.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
