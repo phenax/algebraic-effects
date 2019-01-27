@@ -70,6 +70,7 @@ const Sidenav = ({ pages }) => {
               isMatch(page.description)
             );
           })
+          .sort((a, b) => a.order - b.order)
           .map(page => (
             <Item key={page.key} isCurrentPage={curentPage === page.key}>
               <Link to={page.key}>{page.title}</Link>

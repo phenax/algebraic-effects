@@ -14,22 +14,27 @@ import Random from './pages/Random.mdx';
 
 const pages = {
   home: {
+    order: 1,
     title: 'Getting started',
     render: Homepage,
   },
   core: {
+    order: 2,
     title: 'Core modules',
     render: CoreModule,
   },
   effects_exception: {
+    order: 3,
     title: 'Exception Effect',
     render: Exception,
   },
   effects_state: {
+    order: 4,
     title: 'State Effect',
     render: State,
   },
   effects_random: {
+    order: 5,
     title: 'Random Effect',
     render: Random,
   },
