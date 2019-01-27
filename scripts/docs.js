@@ -69,6 +69,9 @@ const onBuildComplete = (err, stats) => {
   console.log(stats.toString({ colors: true }));
 };
 
+const publishToGhPages = dir =>
+  runCommand('git', `subtree push --prefix ${dir} origin gh-pages`.split(' '), { cwd: path.resolve('.') });
+
 const actions = {
   build: compose(
     compiler => compiler.run(onBuildComplete),
@@ -81,8 +84,8 @@ const actions = {
     toWpConfig,
   ),
   publish: ([ dir ]) => {
-    const cwd = path.join(dir, 'public');
-    console.log(cwd);
+    const relativePath = path.join(dir, 'public').replace(path.resolve('.') + '/', '');
+    return publishToGhPages(relativePath);
   },
 };
 
