@@ -15,14 +15,15 @@
 - [x] Move static functions of Tasks out to a another entry point
 - [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 - [x] Prevent operation name collisions with effect namespace
+- [ ] Clone/Extend effect interface with new name.
 
-- Add more effect classes ...
+**Add more effect classes ...**
   - [x] Exception
   - [x] State
   - [x] Random Number
   - [ ] Console
 
-- Running programs inside programs
+**Running programs inside programs**
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
@@ -42,3 +43,4 @@
 
 ### Scripts
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
+- [ ] Build and publish ae-docs as html github pages. (Maybe mdx?)
