@@ -12,31 +12,35 @@
 - [x] Map/Over method for State effect
 - [x] Change package name to @algebraic-effects scope
 - [x] Migrate to yarn workspaces
-- [ ] ?Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
+- [x] Move static functions of Tasks out to a another entry point
+- [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
+- [x] Prevent operation name collisions with effect namespace
+- [ ] Clone/Extend effect interface with new name.
 
-- Add more effect classes ...
+**Add more effect classes ...**
+  - [x] Exception
+  - [x] State
   - [x] Random Number
   - [ ] Console
-  - [ ] Fetch
-  - [ ] ?Storage (key value)
-  - [ ] ?Something for dom
-  - [ ] ?Location
-  - [ ] ?... other browser apis
 
-- Running programs inside programs
+**Running programs inside programs**
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
   - [x] Run program in background
 
 ### Documentations
+- [x] Call, Race, etc global operations
+- [x] Task monad
+- [x] Migrate all doc to use Task
+- [x] State effect update operation
+- [x] Random effect
+- [x] All flow operators
+- [ ] Cancellation
+- [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
-- [ ] Cancellation
-- [ ] Call, Race, etc global operations
-- [ ] State effect update operation
-- [ ] Random effect
-- [ ] All flow operators
 
 ### Scripts
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
+- [ ] Build and publish ae-docs as html github pages. (Maybe mdx?)

@@ -1,0 +1,49 @@
+
+# Random Effect
+Random effect allows you get random numbers, items from lists and ints.
+
+NOTE: Do not use for any kind of cryptographic operation
+
+## API
+
+### Functions
+
+* `Random.random`
+This handler is a pre-seeded random number generator (Seed is generated randomly too).
+```haskell
+Random.random :: (Program<Random> ...b c, ...b) -> Task e c
+```
+
+* `Random.seed`
+Pass it the initial seed value and it will produce a reproducable random number.
+```haskell
+Random.seed :: Number -> (Program<Random> ...b c, ...b) -> Task e c
+```
+
+### Operations
+```js
+Random = {
+  number: func([], 'number'),
+  getInt: func(['number', 'number'], 'number'),
+  fromArray: func(['array a'], 'a'),
+}
+```
+
+## Usage examples
+
+### Using Random effect
+
+```js
+import { Random } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
+
+const myNumGenerator = function*() {
+  const randomNumber = yield Random.number(); // Yields a random nunmber between 0 and 1
+  const rInt = yield Random.getInt(5, 20); // Yields a random int beteen 5 and 20 inclusive
+  const iceCream = yield Random.fromArray([ 'chocolate', 'strawberry' ]); // Yields a random item from the array
+}
+
+Random.random(myNumGenerator).fork(() => {}, onSuccess);
+Random.seed(10).run(myNumGenerator).fork(() => {}, onSuccess); // Seed value 10
+```
+

@@ -1,23 +1,26 @@
-
+import { race as raceTasks, parallel as runInParallel } from '@algebraic-effects/task/fns';
+import { identity } from '@algebraic-effects/utils';
 import { Operation, func } from './utils';
 
-// handlePromise :: (...a -> Promise b) -> FlowOperators -> (...a) -> Promise b
-const handlePromise = fn => o => (...args) => fn(o)(...args).then(o.resume).catch(o.throwError);
+// handleTask :: (...a -> Task e b) -> FlowOperators -> (...a) -> CancelFunction
+const handleTask = fn => o => (...args) => fn(o)(...args).fork(o.throwError, o.resume);
 
 const globalOpHandlers = {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),
-  awaitPromise: handlePromise(() => x => x),
-  call: handlePromise(({ call }) => (p, ...a) => call(p, ...a)),
+  awaitPromise: ({ promise }) => promise,
+  runTask: ({ resume, throwError }) => t => t.fork(throwError, resume),
+  call: handleTask(({ call }) => (p, ...a) => call(p, ...a)),
   resolve: ({ end }) => v => end(v),
-  race: handlePromise(({ call }) => programs => Promise.race(programs.map(p => call(p)))),
-  parallel: handlePromise(({ call }) => programs => Promise.all(programs.map(p => call(p)))),
-  background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a)),
+  race: handleTask(({ call }) => programs => raceTasks(programs.map(p => call(p)))),
+  parallel: handleTask(({ call }) => programs => runInParallel(programs.map(p => call(p)))),
+  background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a).fork(identity, identity)),
 };
 
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
 export const resolve = Operation('resolve', func(['*']));
-export const awaitPromise = Operation('awaitPromise', func(['promise a'], 'a'));
+export const awaitPromise = Operation('awaitPromise', func(['promise e a'], 'a'));
+export const runTask = Operation('runTask', func(['task e a'], 'a'));
 
 export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
 export const race = Operation('race', func(['...(generator ...a b)'], 'b'));

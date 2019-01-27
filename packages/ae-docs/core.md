@@ -60,63 +60,71 @@ Effect.handler :: Object Handler -> Runner
 
 ### FlowOperators
 
-There are 3 flow operators that you can use to control the flow of your program.
+Currently, there are 5 flow operators that you can use to control the flow of your program.
 * `resume` allows you to continue the execution of your program. Passing a value to it will become the return value of the halted operation.
 * `end` allows you to end your program and resolve with a value.
 * `throwError` allows you to end your program and reject with an error.
+* `call` allows you to hand over the flow to another program/call another program till it resolves.
+* `promise` is a shorthand for `.then(resume).catch(throwError)`
 
 ### Using handlers
+`handler` method creates a handler instance. You can call that with your program to run it. Running a handler returns [an instance of `Task` which is a lazy, asynchronous task monad](./task.md).
 
 ```js
-const withMyEff = MyEffect.handler({
+const myEff = MyEffect.handler({
   increment: ({ resume }) => (a) => resume(a + 1), // Will increment and return a + 1 after the yield
   imDone: ({ end }) => (a) => end(a), // Will end the program and return a
   throw: ({ throwError }) => () => throwError(new Error()), // Will throw out of the program for you to catch
   _: ({ end }) => a => end(a), // Default behavior. This will be called for any yielded value thats not an effect operation and at the end of the program.
 });
+
+myEff.run(myProgram).fork(onSuccess, onFailure);
 ```
 
 
 
 ## Composing effects and handlers
 
-To compose handlers, you can use the `concat` method or the `composeHandlers` function.
-You can also compose entire effects using `composeEffects` function which is used in a similar way.
+To compose handlers, you can use the `concat` or `with` method or the `composeHandlers` function.
 
 ```js
 import { createEffect, composeHandlers } from '@algebraic-effects/core';
 
-const ApiEffect = createEffect('ApiEffect', { search: func(['q']) });
-const ConsoleEffect = createEffect('ConsoleEffect', { log: func(['...data']) });
+const ProfileApi = createEffect('ProfileApi', { search: func(['q']) });
+const Console = createEffect('Console', { log: func(['...data']) });
 
-const api = ApiEffect.handler({
+const api = ProfileApi.handler({
   search: ({ resume, throwError }) => q =>
-    fetch(`/search?q=${q}`).then(resume).catch(throwError),
+    fetch(`/users/search?q=${q}`).then(resume).catch(throwError),
 });
 
-const consoleEff = ConsoleEffect.handler({
+const logger = Console.handler({
   log: ({ resume }) => (...data) => resume(console.log(...data)),
 });
 
 function* searchUsers(query) {
-  const users = yield ApiEffect.search(query);
-  yield ConsoleEffect.log('Users', users);
+  const users = yield ProfileApi.search(query);
+  yield Console.log('Users', users);
   yield users.map(user => user.name);
 }
 
 // Now compose the handlers as ...
 
-const names = await api.with(consoleEff).run(searchUsers, 'Akshay');
+api.with(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
 
 // OR
 
-const handler = api.with(consoleEff);
-const names = await handler(searchUsers, 'Akshay');
+api.concat(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
 
 // OR
 
-const handler = composeHandlers(api, consoleEff);
-const names = await handler(searchUsers, 'Akshay');
+const handler = api.with(logger);
+handler(searchUsers, 'John').fork(onError, onSuccess);
+
+// OR
+
+const handler = composeHandlers(api, logger);
+handler(searchUsers, 'Ramu').fork(onError, onSuccess);
 ```
 
 
@@ -139,12 +147,13 @@ const IOEffect = createEffect('IOEffect', {
 
 // greetUser :: Program<IOEffect> String ()
 function* greetUser(greetText) {
-  const name = yield IOEffect.getInput('What is your name?'); // Will show the modal to a user and halt the execution till the user submits their response.
+  // Will show the modal to a user and halt the execution till the user submits their response.
+  const name = yield IOEffect.getInput('What is your name?');
   yield IOEffect.showMessage(`Hello, ${name}! ${greetText}`);
 }
 
 // io :: Runner
-const withIO = IOEffect.handler({
+const io = IOEffect.handler({
   // Some showModal function that accepts an onSubmit callback
   getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
   showMessage: ({ resume }) => message => {
@@ -154,7 +163,7 @@ const withIO = IOEffect.handler({
   };
 });
 
-withIO(greetUser, 'Welcome!');
+io.run(greetUser, 'Welcome!').fork(onError, onSuccess);
 // Shows a modal with the text "What is your name?" and an input form.
 // When you click on the submit, it renders a message that reads. "Hello Akshay! Welcome!"
 ```

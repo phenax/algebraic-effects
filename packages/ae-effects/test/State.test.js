@@ -26,13 +26,12 @@ describe('State', () => {
 
     State.of(10)
       .run(countdown)
-      .then(result => {
+      .map(result => {
         expect(result).toBe(0);
         const reversecount = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
         expect(logFn.mock.calls.map(x => x[0])).toEqual(reversecount);
       })
-      .then(() => done())
-      .catch(done);
+      .fork(done, () => done());
   });
 
   it('should count down to 0 from 10 with update', done => {
@@ -52,12 +51,11 @@ describe('State', () => {
 
     State.of({ count: 10, done: false })
       .run(countdown)
-      .then(result => {
+      .map(result => {
         expect(result).toEqual({ count: 0, done: true });
         const reversecount = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
         expect(logFn.mock.calls.map(x => x[0])).toEqual(reversecount);
       })
-      .then(() => done())
-      .catch(done);
+      .fork(done, () => done());
   });
 });

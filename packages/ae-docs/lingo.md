@@ -29,7 +29,7 @@ In the above example `IOEffect` and `ConsoleEffect` are effects. This package co
 A handler is a set of curried functions that decides how the program flows when the given operation is called
 
 ```js
-const withIO = IOEffect.handler({
+const io = IOEffect.handler({
   getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
   showMessage: ({ resume }) => /* whatever */,
 });
@@ -41,11 +41,11 @@ I like the `with*` prefix for my runners.
 It accepts a program and its arguments.
 
 ```js
-withIO(program, 'Hello world'); // Program, ...arguments
+io(program, 'Hello world'); // Program, ...arguments
 ```
 
 Alternatively you can call the .run method on it.
 
 ```js
-withIO.run(program, 'Hello world'); // Program, ...arguments
+io.run(program, 'Hello world'); // Program, ...arguments
 ```

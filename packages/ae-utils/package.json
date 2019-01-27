@@ -1,0 +1,22 @@
+{
+  "name": "@algebraic-effects/utils",
+  "version": "0.0.2",
+  "description": "Common utility functions",
+  "main": "index.js",
+  "isBuildTarget": true,
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "functional",
+    "algebraic",
+    "generators",
+    "fp",
+    "effects",
+    "saga",
+    "monad",
+    "functor",
+    "task",
+    "async"
+  ]
+}

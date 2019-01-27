@@ -5,7 +5,7 @@ Manage side-effects in your javascript application using algebraic effects.
 ### Importing it
 ```js
 import { createEffect } from '@algebraic-effects/core'; /*core*/
-import { sleep } from '@algebraic-effects/core/operations'; // global operations
+import { sleep, race } from '@algebraic-effects/core/operations'; // global operations
 import { Exception, State } from '@algebraic-effects/effects'; // State effect and Exception effect
 ```
 
@@ -16,3 +16,4 @@ import { Exception, State } from '@algebraic-effects/effects'; // State effect a
 * [Global operations](./operations.md)
 * [State effect](./State.md)
 * [Exception effect](./Exception.md)
+* [Task](./task.md)

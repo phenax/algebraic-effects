@@ -1,5 +1,5 @@
 
-import { createEffect, func, composeEffects, composeHandlers } from '../src';
+import { createEffect, func, composeHandlers } from '../src';
 import { sleep } from '../src/operations';
 
 describe('createEffect', () => {
@@ -18,7 +18,7 @@ describe('createEffect', () => {
 
     it('should have fetch operation', () => {
       expect(ApiEffect.fetch).toBeInstanceOf(Function);
-      expect(ApiEffect.fetch('/').name).toBe('fetch');
+      expect(ApiEffect.fetch('/').name).toBe('ApiEffect[fetch]');
       expect(ApiEffect.fetch('/').payload).toEqual(['/']);
     });
   });
@@ -31,30 +31,29 @@ describe('createEffect', () => {
       expect(runner.effectName).toBe('ApiEffect');
     });
 
-    it('should reject promise the op fails arg check', done => {
+    it('should reject task the op fails arg check', done => {
       function* action() {
         yield ApiEffect.fetch();
       }
 
       ApiEffect.handler({ fetch: () => () => {} })
         .run(action)
-        .then(() => done('Shoundt have ben called'))
-        .catch(e => {
+        .fork(e => {
           expect(e.message).toContain('ArgumentError');
           done();
-        });
+        }, () => done('Shoundt have ben called'));
     });
 
-    it('should reject promise for invalid program', done => {
+    it('should reject task for invalid program', done => {
       const notAGenerator = () => {};
-      
-      ApiEffect.handler({ fetch: () => () => {} })
-        .run(notAGenerator)
-        .then(() => done('shdnt be here'))
-        .catch(e => {
-          expect(e.message).toContain('Invalid generator');
-          done();
-        });
+
+      const callProgram = jest.fn(() =>
+        ApiEffect.handler({ fetch: () => () => {} })
+          .run(notAGenerator)
+          .fork(() => {}, () => {}));
+
+      expect(callProgram).toThrowError();
+      done();
     });
   });
 
@@ -78,12 +77,11 @@ describe('createEffect', () => {
       expect(run.effectName).toBe('DummyEff.ConsoleEff');
 
       run(action)
-        .then(() => {
+        .fork(done, () => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
           done();
-        })
-        .catch(done);
+        });
     });
 
     it('should compose handler with another handler using .concat', done => {
@@ -103,12 +101,34 @@ describe('createEffect', () => {
       expect(run.effectName).toBe('DummyEff.ConsoleEff');
 
       run(action)
-        .then(() => {
+        .fork(done, () => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
           done();
-        })
-        .catch(done);
+        });
+    });
+
+    it('should allow operations with the same name under different effects', done => {
+      const Log1 = createEffect('Log1', { log: func(['...a']) });
+      const Log2 = createEffect('Log2', { log: func(['...a']) });
+      const action = function *() {
+        yield Log1.log('a');
+        yield Log2.log('b');
+        yield 'Yo';
+      };
+      
+      const logfn1 = jest.fn();
+      const logfn2 = jest.fn();
+      const l1 = Log1.handler({ log: ({ resume }) => d => resume(logfn1(d)) });
+      const l2 = Log2.handler({ log: ({ resume }) => d => resume(logfn2(d)) });
+
+      const run = l1.with(l2);
+
+      run(action).fork(done, () => {
+        expect(logfn1).toBeCalledWith('a');
+        expect(logfn2).toBeCalledWith('b');
+        done();
+      });
     });
   });
 
@@ -124,41 +144,21 @@ describe('createEffect', () => {
       };
 
       const myFn = jest.fn();
-      const promise = DummyEff.handler({ myFn: ({ resume }) => () => resume(myFn()) }).run(action);
+      const error = () => done('Shundt be called');
+      const task = DummyEff
+        .handler({ myFn: ({ resume }) => () => resume(myFn()) })
+        .run(action)
+        .fork(error, error);
 
       setTimeout(() => {
-        promise.cancel();
-        expect(myFn).toBeCalledTimes(1);
-        done();
+        task();
+        
+        setTimeout(() => {
+          expect(myFn).toBeCalledTimes(1);
+          done();
+        }, 500);
       }, 100);
 
-      promise
-        .then(() => done('Shouldnt have reached here'))
-        .catch(done);
-    });
-  });
-
-  describe('composeEffects', () => {
-    const action = function *() {
-      const response = yield ApiEffect.fetch('/some-api');
-      yield ConsoleEff.log(response);
-      yield response.data;
-    };
-
-    it('should compose Api and IO effects', done => {
-      const Effect = composeEffects(ApiEffect, ConsoleEff);
-
-      const eff = Effect.handler({
-        log: ({ resume }) => ({ data }) => {
-          expect(data).toBe('wow');
-          resume();
-        },
-        fetch: ({ resume }) => () => resume({ data: 'wow' }),
-      });
-
-      eff(action)
-        .then(() => done())
-        .catch(done);
     });
   });
 
@@ -181,53 +181,50 @@ describe('createEffect', () => {
       const eff = composeHandlers(api, konsole);
 
       eff(action)
-        .then(data => {
+        .fork(done, data => {
           expect(data).toBe('Hello');
           expect(logg).toBeCalledWith('Hello world');
-          done();
-        })
-        .catch(done);
-    });
-  });
-
-  describe('example usage', () => {
-    it('should resolve with the correct value for valid operation (fetch example)', done => {
-      const api = ApiEffect.handler({
-        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
-      });
-
-      const action = function *() {
-        const response = yield ApiEffect.fetch('/some-api');
-        yield response.data;
-      };
-
-      api(action)
-        .then(data => {
-          expect(data).toBe('wow');
-          done();
-        })
-        .catch(done);
-    });
-
-    it('should resolve with the correct value for valid operation (fetch example)', done => {
-      const api = ApiEffect.handler({
-        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
-      });
-
-      const action = function *() {
-        const response = yield ApiEffect.fetch('/some-api');
-        yield ConsoleEff.log('Wrong operation');
-        yield response.data;
-      };
-
-      api(action)
-        .then(() => done('Shouldve thrown error'))
-        .catch(e => {
-          expect(e.message).toContain('Invalid operation');
-          expect(e.message).toContain('"log"');
           done();
         });
     });
   });
+
+  // describe('example usage', () => {
+  //   it('should resolve with the correct value for valid operation (fetch example)', done => {
+  //     const api = ApiEffect.handler({
+  //       fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+  //     });
+
+  //     const action = function *() {
+  //       const response = yield ApiEffect.fetch('/some-api');
+  //       yield response.data;
+  //     };
+
+  //     api(action)
+  //       .fork(done, data => {
+  //         expect(data).toBe('wow');
+  //         done();
+  //       });
+  //   });
+
+  //   it('should resolve with the correct value for valid operation (fetch example)', done => {
+  //     const api = ApiEffect.handler({
+  //       fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+  //     });
+
+  //     const action = function *() {
+  //       const response = yield ApiEffect.fetch('/some-api');
+  //       yield ConsoleEff.log('Wrong operation');
+  //       yield response.data;
+  //     };
+
+  //     api(action)
+  //       .fork(e => {
+  //         expect(e.message).toContain('Invalid operation');
+  //         expect(e.message).toContain('"log"');
+  //         done();
+  //       }, () => done('Shouldve thrown error'));
+  //   });
+  // });
 });
 

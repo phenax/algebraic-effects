@@ -10,9 +10,17 @@ State effect allows you to maintain state accross multiple calls to your program
 * `State.of`
 You can pass it the initial state for your program and run it.
 ```haskell
-State.of :: a -> (Program<State> ...b c, ...b) -> Promise c
+State.of :: a -> (Program<State> ...b c, ...b) -> Task e c
 ```
 
+### Operations
+```js
+State = {
+  get: func([], 'a'),
+  set: func(['a']),
+  update: func(['a -> a'], 'a'),
+}
+```
 
 ## Usage examples
 
@@ -34,7 +42,7 @@ const countdown = function*() {
 }
 
 State.of(10)(countdown)
-  .then(() => alert('HAPPY NEW YEAR!!!!'));
+  .fork(() => {}, () => alert('HAPPY NEW YEAR!!!!'));
 ```
 
 
@@ -56,11 +64,9 @@ const ConsoleEff = createEffect('ConsoleEff', {
 
 const clickCounter = function*() {
   yield CounterButtonEff.takeButtonClick();
+  yield State.update(count => count + 1); // Update the state
 
-  const count = yield State.get();
-  yield State.set(count + 1);
-
-  yield ConsoleEff.log(`Button clicked ${count} times!`);
+  yield ConsoleEff.log(`Button clicked ${yield State.get()} times!`);
 
   yield call(clickCounter);
 }
@@ -74,8 +80,8 @@ const logEff = ConsoleEff.handler({
 }),
 
 State.of(0)
-  .concat(buttonEff)
-  .concat(logEff)
+  .with(buttonEff)
+  .with(logEff)
   .run(clickCounter);
 ```
 
