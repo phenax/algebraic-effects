@@ -51,6 +51,10 @@ const Main = styled.main`
 
 const Aside = styled.aside`
   flex: 0 0 230px;
+
+  @media all and (max-width: 1100px) {
+    flex: 0;
+  }
 `;
 
 const Content = styled.div`

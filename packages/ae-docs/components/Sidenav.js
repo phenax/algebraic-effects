@@ -10,11 +10,43 @@ const Wrapper = styled.div`
   top: 0;
   left: 0;
   z-index: 20;
-  height: 100vh;
-  overflow: auto;
   width: 230px;
   background-color: #fff;
   border-right: 1px solid #eee;
+  font-size: 1em;
+
+  @media all and (max-width: 1100px) {
+    transition: transform .3s ease-in-out;
+    transform: translateX(${p => p.isVisible ? '0px' : '-100%'});
+    width: 300px;
+    font-size: 1.3em;
+    box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const NavBtn = styled.button`
+  position: absolute;
+  left: 100%;
+  top: 0;
+  outline: none;
+  border: none;
+  background-color: #222;
+  font-size: .8em;
+  padding: .6em .7em;
+  cursor: pointer;
+
+  .bar {
+    width: 1.7em;
+    height: 3px;
+    background-color: #fff;
+    margin: .3em;
+  }
+
+  display: none;
+
+  @media all and (max-width: 1100px) {
+    display: block;
+  }
 `;
 
 const Item = styled.div`
@@ -47,6 +79,7 @@ const SearchInput = styled.input`
 
 const Sidenav = ({ pages }) => {
   const [term, setSearchTerm] = useState('');
+  const [isVisible, setNavVisibility] = useState(false);
   const { page: curentPage } = useContext(RouterContext) || {};
 
   const onSearch = e => setSearchTerm(e.currentTarget.value);
@@ -54,31 +87,42 @@ const Sidenav = ({ pages }) => {
   const isMatch = str => `${str}`.toLowerCase().indexOf(term.toLowerCase()) >= 0;
 
   return (
-    <Wrapper>
-      <div style={{ padding: '.5em' }}>
-        <SearchInput type='text' value={term} onChange={onSearch} placeholder="Search" />
-      </div>
+    <Wrapper isVisible={isVisible}>
+      <NavBtn onClick={() => setNavVisibility(!isVisible)}>
+        <div className="bar" />
+        <div className="bar" />
+        <div className="bar" />
+      </NavBtn>
+      <div style={{ height: '100vh', overflow: 'auto' }}>
+        <div style={{ padding: '.5em' }}>
+          <SearchInput type='text' value={term} onChange={onSearch} placeholder="Search" />
+        </div>
 
-      <div style={{ textAlign: 'center', padding: '1em 0' }}>
-        algebraic-effects
-      </div>
+        <div style={{ textAlign: 'center', padding: '1em 0' }}>
+          algebraic-effects
+        </div>
 
-      <div style={{ paddingTop: '.5em' }}>
-        {Object.keys(pages)
-          .map(key => ({ ...pages[key], key }))
-          .filter(page => {
-            return !term ? true : (
-              isMatch(page.title) ||
-              isMatch(page.key) ||
-              isMatch(page.description)
-            );
-          })
-          .sort((a, b) => a.order - b.order)
-          .map(page => (
-            <Item key={page.key} isCurrentPage={curentPage === page.key}>
-              <Link to={page.key}>{page.title}</Link>
-            </Item>
-          ))}
+        <div style={{ paddingTop: '.5em' }}>
+          {Object.keys(pages)
+            .map(key => ({ ...pages[key], key }))
+            .filter(page => {
+              return !term ? true : (
+                isMatch(page.title) ||
+                isMatch(page.key) ||
+                isMatch(page.description)
+              );
+            })
+            .sort((a, b) => a.order - b.order)
+            .map(page => (
+              <Item
+                key={page.key}
+                isCurrentPage={curentPage === page.key}
+                onClick={() => setNavVisibility(false)}
+              >
+                <Link to={page.key}>{page.title}</Link>
+              </Item>
+            ))}
+        </div>
       </div>
     </Wrapper>
   );
