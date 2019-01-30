@@ -1,5 +1,5 @@
-import React from 'react';
-import { render } from 'react-dom';
+import React, { ConcurrentMode } from 'react';
+import { createRoot } from 'react-dom';
 import styled from 'styled-components';
 
 import Link from './components/Link';
@@ -100,7 +100,7 @@ const App = () => (
       <Main>
         <FloatingHeaderLink />
         <Content>
-          <React.Suspense fallback={<LoadingSpinner />}>
+          <React.Suspense fallback={<LoadingSpinner />} maxDuration={200}>
             <Router pages={pages} />
           </React.Suspense>
         </Content>
@@ -109,4 +109,8 @@ const App = () => (
   </Wrapper>
 );
 
-render(<App />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(
+  <ConcurrentMode>
+    <App />
+  </ConcurrentMode>,
+);
