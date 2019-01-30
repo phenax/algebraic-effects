@@ -8,10 +8,13 @@ import Sidenav from './components/Sidenav';
 import Router, { RouteProvider } from './components/Router';
 
 import Homepage from './pages/Homepage.mdx';
-import CoreModule from './pages/core.mdx';
-import Exception from './pages/Exception.mdx';
-import State from './pages/State.mdx';
-import Random from './pages/Random.mdx';
+const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/core.mdx'));
+const Lingo = React.lazy(() => import(/* webpackChunkName: "LingoPage" */ './pages/lingo.mdx'));
+const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/operations.mdx'));
+const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionPage" */ './pages/Exception.mdx'));
+const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pages/State.mdx'));
+const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
+const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/task.mdx'));
 
 const pages = {
   home: {
@@ -24,20 +27,35 @@ const pages = {
     title: 'Core modules',
     render: CoreModule,
   },
-  effects_exception: {
+  lingo: {
     order: 3,
+    title: 'Made up words',
+    render: Lingo,
+  },
+  operations: {
+    order: 4,
+    title: 'Global operations',
+    render: Operations,
+  },
+  effects_exception: {
+    order: 10,
     title: 'Exception Effect',
     render: Exception,
   },
   effects_state: {
-    order: 4,
+    order: 11,
     title: 'State Effect',
     render: State,
   },
   effects_random: {
-    order: 5,
+    order: 12,
     title: 'Random Effect',
     render: Random,
+  },
+  task: {
+    order: 20,
+    title: 'Task monad',
+    render: TaskMonad,
   },
 };
 
@@ -67,6 +85,12 @@ const Content = styled.div`
   line-height: 1.6em;
 `;
 
+const LoadingSpinner = () => (
+  <div>
+    Loading...
+  </div>
+);
+
 const App = () => (
   <Wrapper>
     <RouteProvider>
@@ -76,7 +100,7 @@ const App = () => (
       <Main>
         <FloatingHeaderLink />
         <Content>
-          <React.Suspense>
+          <React.Suspense fallback={<LoadingSpinner />}>
             <Router pages={pages} />
           </React.Suspense>
         </Content>

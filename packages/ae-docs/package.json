@@ -5,7 +5,7 @@
   "isDoc": true,
   "main": "./README.md",
   "repository": "https://github.com/phenax/algebraic-effects",
-  "homepage": "/algebraic-effects",
+  "homepage": "./",
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT"
 }

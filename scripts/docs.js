@@ -1,4 +1,5 @@
 const path = require('path');
+const fsextra = require('fs-extra');
 const { map, filter, head, compose } = require('ramda');
 
 const webpack = require('webpack');
@@ -60,7 +61,8 @@ const toWpConfig = ([ dir, pjson ]) => makeConfig({
   output: {
     path: path.join(dir, 'public/assets'),
     filename: 'bundle.js',
-    publicPath: pjson.homepage || '/',
+    chunkFilename: '[name].[hash:4].js',
+    publicPath: path.join(pjson.homepage || '/', 'assets/'),
   },
 });
 
@@ -72,16 +74,26 @@ const onBuildComplete = (err, stats) => {
 const publishToGhPages = dir =>
   runCommand('git', `subtree push --prefix ${dir} origin gh-pages`.split(' '), { cwd: path.resolve('.') });
 
+const getCompiler = ([ dir, pjson ]) => [dir, webpack( toWpConfig([ dir, pjson ]) )];
+
+const startBuilder = fn => ([ dir, compiler ]) => {
+  const removeAssets = () => fsextra.remove(path.join(dir, 'public/assets'));
+  compiler.hooks.beforeRun.tapPromise('runnerHook.remove', removeAssets);
+  compiler.hooks.watchRun.tapPromise('watcherHook.remove', removeAssets);
+  return fn([ dir, compiler ]);
+};
+
 const actions = {
   build: compose(
-    compiler => compiler.run(onBuildComplete),
-    webpack,
-    toWpConfig,
+    startBuilder(([ _, compiler ]) => compiler.run(onBuildComplete)),
+    getCompiler,
   ),
   watch: compose(
-    compiler => compiler.watch({ aggregateTimeout: 300, poll: 500, ignored: /node_modules/ }, onBuildComplete),
-    webpack,
-    toWpConfig,
+    startBuilder(([ _, compiler ]) => compiler.watch(
+      { aggregateTimeout: 300, poll: 500, ignored: /node_modules/ },
+      onBuildComplete,
+    )),
+    getCompiler,
   ),
   publish: ([ dir ]) => {
     const relativePath = path.join(dir, 'public').replace(path.resolve('.') + '/', '');
