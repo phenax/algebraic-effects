@@ -9,9 +9,13 @@ const Router = ({ pages, ...props }) => {
   const currentPage = pages[page] || pages.home;
 
   useEffect(() => {
+    // Set current title
     document.title = currentPage && currentPage.title
       ? `${currentPage.title} - Algebraic Effects`
       : 'Algebraic Effects';
+
+    // Scroll to top
+    document.scrollingElement.scrollTo(0, 0);
   }, [page]);
 
   return <currentPage.render {...props} />;
