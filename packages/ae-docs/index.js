@@ -1,6 +1,6 @@
 import React, { ConcurrentMode } from 'react';
 import { createRoot } from 'react-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import Link from './components/Link';
 import FloatingHeaderLink from './components/FloatingHeaderLink';
@@ -36,26 +36,33 @@ const Content = styled.div`
   line-height: 1.6em;
 `;
 
+const spin = keyframes`
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+`;
+
 const CenteredWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: ${p => p.height || '200px'};
+  height: ${p => p.height || '300px'};
 `;
 
 const Spinner = styled.div`
   display: ${p => p.isVisible ? 'block': 'none'};
-  width: ${p => p.size || 50}px;
-  height: ${p => p.size || 50}px;
-  border: ${p => p.thickness || 5}px solid transparent;
+  width: ${p => p.size || 70}px;
+  height: ${p => p.size || 70}px;
+  border: ${p => p.thickness || 3}px solid transparent;
   border-left-color: ${p => p.color || '#333'};
   border-right-color: ${p => p.color || '#333'};
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
 `;
 
 const LoadingSpinner = ({ height, ...props }) => (
   <CenteredWrapper height={height}>
-    <Spinner {...props} />
+    <Spinner isVisible {...props} />
   </CenteredWrapper>
 );
 
