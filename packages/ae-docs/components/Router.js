@@ -4,9 +4,9 @@ const getHash = () => `${window.location.hash}`.slice(1).split('.');
 
 export const RouterContext = React.createContext(null);
 
-const Router = ({ pages, ...props }) => {
+const Router = ({ routes, ...props }) => {
   const { page } = useContext(RouterContext) || {};
-  const currentPage = pages[page] || pages.home;
+  const currentPage = routes[page] || routes.home;
 
   useEffect(() => {
     // Set current title

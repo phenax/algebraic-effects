@@ -7,57 +7,8 @@ import FloatingHeaderLink from './components/FloatingHeaderLink';
 import Sidenav from './components/Sidenav';
 import Router, { RouteProvider } from './components/Router';
 
-import Homepage from './pages/Homepage.mdx';
-const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/core.mdx'));
-const Lingo = React.lazy(() => import(/* webpackChunkName: "LingoPage" */ './pages/lingo.mdx'));
-const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/operations.mdx'));
-const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionPage" */ './pages/Exception.mdx'));
-const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pages/State.mdx'));
-const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
-const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/task.mdx'));
 
-const pages = {
-  home: {
-    order: 1,
-    title: 'Getting started',
-    render: Homepage,
-  },
-  core: {
-    order: 2,
-    title: 'Core modules',
-    render: CoreModule,
-  },
-  lingo: {
-    order: 3,
-    title: 'Made up words',
-    render: Lingo,
-  },
-  operations: {
-    order: 4,
-    title: 'Global operations',
-    render: Operations,
-  },
-  effects_exception: {
-    order: 10,
-    title: 'Exception Effect',
-    render: Exception,
-  },
-  effects_state: {
-    order: 11,
-    title: 'State Effect',
-    render: State,
-  },
-  effects_random: {
-    order: 12,
-    title: 'Random Effect',
-    render: Random,
-  },
-  task: {
-    order: 20,
-    title: 'Task monad',
-    render: TaskMonad,
-  },
-};
+import routes from './routes';
 
 const Wrapper = styled.div`
   display: flex;
@@ -85,23 +36,40 @@ const Content = styled.div`
   line-height: 1.6em;
 `;
 
-const LoadingSpinner = () => (
-  <div>
-    Loading...
-  </div>
+const CenteredWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: ${p => p.height || '200px'};
+`;
+
+const Spinner = styled.div`
+  display: ${p => p.isVisible ? 'block': 'none'};
+  width: ${p => p.size || 50}px;
+  height: ${p => p.size || 50}px;
+  border: ${p => p.thickness || 5}px solid transparent;
+  border-left-color: ${p => p.color || '#333'};
+  border-right-color: ${p => p.color || '#333'};
+`;
+
+const LoadingSpinner = ({ height, ...props }) => (
+  <CenteredWrapper height={height}>
+    <Spinner {...props} />
+  </CenteredWrapper>
 );
 
 const App = () => (
   <Wrapper>
     <RouteProvider>
       <Aside>
-        <Sidenav pages={pages} />
+        <Sidenav routes={routes} />
       </Aside>
       <Main>
         <FloatingHeaderLink />
         <Content>
           <React.Suspense fallback={<LoadingSpinner />} maxDuration={200}>
-            <Router pages={pages} />
+            <Router routes={routes} />
           </React.Suspense>
         </Content>
       </Main>

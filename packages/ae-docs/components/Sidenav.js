@@ -77,7 +77,7 @@ const SearchInput = styled.input`
   padding: .5em;
 `;
 
-const Sidenav = ({ pages }) => {
+const Sidenav = ({ routes }) => {
   const [term, setSearchTerm] = useState('');
   const [isVisible, setNavVisibility] = useState(false);
   const { page: curentPage } = useContext(RouterContext) || {};
@@ -103,8 +103,8 @@ const Sidenav = ({ pages }) => {
         </div>
 
         <div style={{ paddingTop: '.5em' }}>
-          {Object.keys(pages)
-            .map(key => ({ ...pages[key], key }))
+          {Object.keys(routes)
+            .map(key => ({ ...routes[key], key }))
             .filter(page => {
               return !term ? true : (
                 isMatch(page.title) ||
