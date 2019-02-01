@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import Link from './Link';
 import { RouterContext } from './Router';
 
+const breakPoint = 'max-width: 1100px';
 
 const Wrapper = styled.div`
   position: fixed;
@@ -15,7 +16,7 @@ const Wrapper = styled.div`
   border-right: 1px solid #eee;
   font-size: 1em;
 
-  @media all and (max-width: 1100px) {
+  @media all and (${breakPoint}) {
     transition: transform .3s ease-in-out;
     transform: translateX(${p => p.isVisible ? '0px' : '-100%'});
     width: 300px;
@@ -44,7 +45,7 @@ const NavBtn = styled.button`
 
   display: none;
 
-  @media all and (max-width: 1100px) {
+  @media all and (${breakPoint}) {
     display: block;
   }
 `;

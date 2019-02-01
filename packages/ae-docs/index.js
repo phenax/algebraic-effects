@@ -28,10 +28,10 @@ const Aside = styled.aside`
 `;
 
 const Content = styled.div`
-  max-width: 800px;
+  max-width: 900px;
   width: 100%;
   margin: 1em auto;
-  padding: 1em 1.5em;
+  padding: 1em 1.5em 2em;
   font-size: 1.2em;
   line-height: 1.6em;
 `;
