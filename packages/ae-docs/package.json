@@ -3,7 +3,7 @@
   "private": true,
   "description": "Algebraic effects docs",
   "isDoc": true,
-  "main": "./README.md",
+  "main": "./index.js",
   "repository": "https://github.com/phenax/algebraic-effects",
   "homepage": "./",
   "author": "Akshay Nair <phenax5@gmail.com>",

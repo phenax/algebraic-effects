@@ -1,10 +1,12 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
+import { compose, groupBy, propOr } from 'ramda';
+import { fromClassPrototype } from 'pipey';
 
 import Link from './Link';
 import { RouterContext } from './Router';
 
-const breakPoint = 'max-width: 1100px';
+const MOBILE_BREAKPOINT = 'max-width: 1100px';
 
 const Wrapper = styled.div`
   position: fixed;
@@ -16,7 +18,7 @@ const Wrapper = styled.div`
   border-right: 1px solid #eee;
   font-size: 1em;
 
-  @media all and (${breakPoint}) {
+  @media all and (${MOBILE_BREAKPOINT}) {
     transition: transform .3s ease-in-out;
     transform: translateX(${p => p.isVisible ? '0px' : '-100%'});
     width: 300px;
@@ -45,7 +47,7 @@ const NavBtn = styled.button`
 
   display: none;
 
-  @media all and (${breakPoint}) {
+  @media all and (${MOBILE_BREAKPOINT}) {
     display: block;
   }
 `;
@@ -78,14 +80,36 @@ const SearchInput = styled.input`
   padding: .5em;
 `;
 
+const GroupName = styled.div`
+  color: #888;
+  text-transform: uppercase;
+  font-size: .7em;
+  border-bottom: 1px solid #f3f3f3;
+  padding: 1.5em 1em 0;
+`;
+
+
+const { map, filter, sort } = fromClassPrototype(Array);
+
+const isMatch = (term, str) => `${str}`.toLowerCase().indexOf(`${term}`.toLowerCase()) >= 0;
+
+const findMatchingRoutes = term => routes => compose(
+  sort((a, b) => a.order - b.order),
+  filter(page => !term ? true : (
+    isMatch(term, page.title) ||
+    isMatch(term, page.key) ||
+    isMatch(term, page.description)
+  )),
+  map(key => ({ ...routes[key], key })),
+  Object.keys,
+)(routes);
+
 const Sidenav = ({ routes }) => {
   const [term, setSearchTerm] = useState('');
   const [isVisible, setNavVisibility] = useState(false);
   const { page: curentPage } = useContext(RouterContext) || {};
 
   const onSearch = e => setSearchTerm(e.currentTarget.value);
-
-  const isMatch = str => `${str}`.toLowerCase().indexOf(term.toLowerCase()) >= 0;
 
   return (
     <Wrapper isVisible={isVisible}>
@@ -104,25 +128,25 @@ const Sidenav = ({ routes }) => {
         </div>
 
         <div style={{ paddingTop: '.5em' }}>
-          {Object.keys(routes)
-            .map(key => ({ ...routes[key], key }))
-            .filter(page => {
-              return !term ? true : (
-                isMatch(page.title) ||
-                isMatch(page.key) ||
-                isMatch(page.description)
-              );
-            })
-            .sort((a, b) => a.order - b.order)
-            .map(page => (
-              <Item
-                key={page.key}
-                isCurrentPage={curentPage === page.key}
-                onClick={() => setNavVisibility(false)}
-              >
-                <Link to={page.key}>{page.title}</Link>
-              </Item>
-            ))}
+          {compose(
+            map(({ group, items }) => (
+              <div key={group}>
+                {group && <GroupName>{group}</GroupName>}
+                {items.map(page => (
+                  <Item
+                    key={page.key}
+                    isCurrentPage={curentPage === page.key}
+                    onClick={() => setNavVisibility(false)}
+                  >
+                    <Link to={page.key}>{page.title}</Link>
+                  </Item>
+                ))}
+              </div>
+            )),
+            o => Object.keys(o).map(group => ({ group, items: o[group] })),
+            groupBy(propOr('', 'group')),
+            findMatchingRoutes(term)
+          )(routes)}
         </div>
       </div>
     </Wrapper>

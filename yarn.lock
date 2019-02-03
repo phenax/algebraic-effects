@@ -5440,6 +5440,11 @@ pinkie@^2.0.0:
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
 
+pipey@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/pipey/-/pipey-0.0.4.tgz#0d3edb8e8b5ebe0065f20e24e2747d5ad452aefd"
+  integrity sha512-OE9AxGoIa//rThyUCG0LS9yA79/XXlbwydWgohZBKyS/P0oggpSRAlCyTe6njJVkCVuI3LUD3FSLOJ6oe1Nccw==
+
 pkg-dir@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/pkg-dir/-/pkg-dir-2.0.0.tgz#f6d5d1109e19d63edf428e0bd57e12777615334b"

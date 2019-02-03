@@ -9,6 +9,8 @@ const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pag
 const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
 const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/task.mdx'));
 
+const EFFECTS = 'Effects';
+
 export default {
   home: {
     order: 1,
@@ -30,24 +32,27 @@ export default {
     title: 'Global operations',
     render: Operations,
   },
-  effects_exception: {
-    order: 10,
-    title: 'Exception Effect',
-    render: Exception,
-  },
-  effects_state: {
-    order: 11,
-    title: 'State Effect',
-    render: State,
-  },
-  effects_random: {
-    order: 12,
-    title: 'Random Effect',
-    render: Random,
-  },
   task: {
-    order: 20,
+    order: 10,
     title: 'Task monad',
     render: TaskMonad,
+  },
+  effects_exception: {
+    order: 20,
+    title: 'Exception Effect',
+    render: Exception,
+    group: EFFECTS,
+  },
+  effects_state: {
+    order: 21,
+    title: 'State Effect',
+    render: State,
+    group: EFFECTS,
+  },
+  effects_random: {
+    order: 22,
+    title: 'Random Effect',
+    render: Random,
+    group: EFFECTS,
   },
 };
