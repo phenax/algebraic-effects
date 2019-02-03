@@ -49,21 +49,23 @@ export default {
     render: TaskMonad,
     keywords: 'resolve,reject,empty,promise,map,fork,fold,reduce,chain,race,parallel,series',
   },
-  exceptionEffect: {
+
+
+  exception: {
     order: 20,
     title: 'Exception Effect',
     render: Exception,
     keywords: 'try,catch,either,error,throw',
     group: EFFECTS,
   },
-  stateEffect: {
+  state: {
     order: 21,
     title: 'State Effect',
     render: State,
     keywords: 'get,set,update',
     group: EFFECTS,
   },
-  randomEffect: {
+  random: {
     order: 22,
     title: 'Random Effect',
     render: Random,
