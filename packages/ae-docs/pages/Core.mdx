@@ -37,6 +37,7 @@ const IOEffect = createEffect('IOEffect', {
 Describe your function signature. The only validation is for the length of arguments, the rest of the data is purely for documentation.
 
 ```haskell
+type FuncDescription = ([String], String)
 func :: ([String], String) -> FuncDescription
 ```
 
@@ -84,6 +85,15 @@ const myEff = MyEffect.handler({
 myEff.run(myProgram).fork(onSuccess, onFailure);
 ```
 
+You can call your program in any way you fancy
+```js
+myEff(program, 'Hello world');
+// OR
+myEff.run(program, 'Hello world');
+// OR
+myEff.run(program('Hello world'));
+```
+
 
 
 ## Composing effects and handlers
@@ -117,12 +127,7 @@ api.with(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
 
 // OR
 
-api.concat(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
-
-// OR
-
-const handler = api.with(logger);
-handler(searchUsers, 'John').fork(onError, onSuccess);
+api.concat(logger).run(searchUsers, 'Ramu').fork(onError, onSuccess);
 
 // OR
 

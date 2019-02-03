@@ -22,8 +22,19 @@ In the above example `IOEffect.getInput`, `ConsoleEffect.log` and `IOEffect.show
 
 
 ## Effect
-An effect is a group of operations.
-In the above example `IOEffect` and `ConsoleEffect` are effects. This package comes with a few built in effects like State, Exception, etc.
+An effect is a group of operations signatures. You can create your own custom effects using `createEffect`.
+In the above example `IOEffect` and `ConsoleEffect` are effects. This package comes with a few built in effects like State, Exception, Random, etc.
+
+```js
+const IOEffect = createEffect('IOEffect', {
+  getInput: func(['question'], 'name'),
+  showMessage: func(['message']),
+});
+```
+
+
+## Operation signature
+An operation signature is effectively a function signature but for effects. It is used to document the signature of an operation which allows the program to then use the operation as if it were the real side-effects. To define a function signature, you can use the `func` function. In the example above, you can see `func(['question'], 'name')` which is describing the input(s) and output of the operation.
 
 
 ## Handler
@@ -32,7 +43,10 @@ A handler is a set of curried functions that decides how the program flows when 
 ```js
 const io = IOEffect.handler({
   getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
-  showMessage: ({ resume }) => /* whatever */,
+  showMessage: ({ resume }) => message => {
+    renderMessage(message);
+    resume();
+  },
 });
 ```
 
