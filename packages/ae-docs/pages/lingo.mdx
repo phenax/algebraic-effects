@@ -1,0 +1,62 @@
+# The street lingo
+Ya need to kno da lingo to be talkin wid us yo. So letz getya up to speed.
+
+---
+
+## Program
+A program is a pure, cancellable generator that calls atleast one operation. This is where all your core logic exists free from the implementation details. All effects by design have a consistent api so dont worry about any of the outside world.
+
+```js
+// program :: Program<IOEffect, ConsoleEffect> String ()
+const program = function *(greetText) {
+  const name = yield IOEffect.getInput('What is your name?');
+  yield ConsoleEffect.log('>> Name', name);
+  yield IOEffect.showMessage(`Hello, ${name}! ${greetText}`);
+};
+```
+
+
+## Operation
+An operation is basically something to do. An operation is technically just an instruction with no behavior implementation. So you can use an operation in your program without worrying about anything other than the operation signature.
+In the above example `IOEffect.getInput`, `ConsoleEffect.log` and `IOEffect.showMessage` are operations being run.
+
+
+## Effect
+An effect is a group of operations signatures. You can create your own custom effects using [`createEffect`](#core.createeffect).
+In the above example `IOEffect` and `ConsoleEffect` are effects. This package comes with a few built in effects like State, Exception, Random, etc.
+
+```js
+const IOEffect = createEffect('IOEffect', {
+  getInput: func(['question'], 'name'),
+  showMessage: func(['message']),
+});
+```
+
+
+## Operation signature
+An operation signature is effectively a function signature but for effects. It is used to document the signature of an operation which allows the program to then use the operation as if it were the real side-effects. To define a function signature, you can use the [`func`](#core.func) function. In the example above, you can see `func(['question'], 'name')` which is describing the input(s) and output of the operation.
+
+
+## Operation behavior/implementation
+A operation behavior is a set of curried functions that decides how the program flows when the given operation is called.
+
+```js
+// IOEffect :: Effect
+
+const io = IOEffect.handler({
+  // getInput, showMessage :: OpBehavior (String) ()
+  getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
+  showMessage: ({ resume }) => message => {
+    renderMessage(message);
+    resume();
+  },
+});
+```
+
+## Effect handler
+`.handler` method call returns a handler instance. You can use this to call your program and/or compose with other effect handlers.
+
+```js
+// io :: Handler
+io.run(program, 'Hello world'); // Program, ...arguments
+```

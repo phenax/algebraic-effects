@@ -1,0 +1,164 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name=”description” content="Documentation algebraic-effects in javascript" />
+    
+    <title>Algebraic Effects</title>
+    <style>
+      /* http://meyerweb.com/eric/tools/css/reset/ 
+        v2.0 | 20110126
+        License: none (public domain)
+      */
+      html, body, div, span, applet, object, iframe,
+      h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+      a, abbr, acronym, address, big, cite, code,
+      del, dfn, em, img, ins, kbd, q, s, samp,
+      small, strike, strong, sub, sup, tt, var,
+      b, u, i, center,
+      dl, dt, dd, ol, ul, li,
+      fieldset, form, label, legend,
+      table, caption, tbody, tfoot, thead, tr, th, td,
+      article, aside, canvas, details, embed, 
+      figure, figcaption, footer, header, hgroup, 
+      menu, nav, output, ruby, section, summary,
+      time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+      }
+      /* HTML5 display-role reset for older browsers */
+      article, aside, details, figcaption, figure, 
+      footer, header, hgroup, menu, nav, section {
+        display: block;
+      }
+      body {
+        line-height: 1;
+      }
+      ol, ul {
+        list-style: none;
+      }
+      blockquote, q {
+        quotes: none;
+      }
+      blockquote:before, blockquote:after,
+      q:before, q:after {
+        content: '';
+        content: none;
+      }
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+    </style>
+    <style>
+      html, body {
+        background-color: #fff;
+        font-family: "Raleway", Arial, sans-serif;
+        font-weight: 300;
+        width: 100%;
+        line-height: 1.5em;
+        color: #222;
+      }
+
+      body, body * { box-sizing: border-box; }
+
+      pre, code {
+        font-family: "Fira Mono", 'Courier New', Courier, monospace;
+      }
+      code {
+        background-color: #f5f5f5;
+        padding: 0 .3em;
+      }
+      pre code.hljs {
+        font-size: .8em;
+        line-height: 1.5em;
+        padding: 1.3em;
+        border-radius: 0;
+        margin: .5em 0;
+      }
+
+      /* standard typography */
+      h1, h2, h3, h4, h5, h6 {
+        margin: 1.5em 0 .5em;
+        font-weight: 600;
+        color: #444;
+        line-height: 1.2em;
+        font-family: "Nanum Myeongjo", serif;
+      }
+      h1 { font-size: 2.625em; }
+      h2 { font-size: 2.125em; }
+      h3 { font-size: 1.5em; }
+      h4 { font-size: 1.7em; }
+      h5 { font-size: 1.3em; }
+      h6 { font-size: 1.2em; }
+
+      p {
+        display: block;
+        margin: 1em 0;
+      }
+
+      blockquote {
+        background-color: #f9f9f9;
+        color: #666;
+        padding: .5em 1em;
+        font-style: italic;
+      }
+      blockquote p {
+        padding: 0;
+        margin: 0;
+      }
+      /* End standard typography */
+
+
+      /* Line Seperator Style */
+      hr {
+        position: relative;
+        margin: 2em auto 1.6em;
+        overflow: visible;
+      }
+      hr, hr::before, hr::after {
+        display: block;
+        border: none;
+        background-color: #aaa;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      hr::before, hr::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left:50%;
+        transform: translateY(-50%);
+      }
+      hr::before { margin-left: -50px; }
+      hr::after { margin-left: 50px; }
+      /* End Line Seperator Style */
+
+      /* Action styles */
+      a {
+        color: #3498db;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      /* End action styles */
+
+      ol { list-style: decimal; }
+      ul { list-style: disc; }
+      ul { margin-left: 1.3em; }
+      li { margin: 1em 0; }
+    </style>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/atom-one-dark-reasonable.min.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="./assets/bundle.js"></script>
+  </body>
+</html>

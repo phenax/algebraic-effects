@@ -1,7 +1,16 @@
 # Operations
-
 Most operations are grouped inside effects but there are a few global operations that can be invoked by any program.
 
+---
+
+
+## Import it in your project
+```js
+import { sleep, call, background, parallel, race } from '@algebraic-effects/core/operations';
+```
+
+
+## API
 
 ### sleep
 Sleep operation allows you to put add delay to your program.
@@ -91,7 +100,7 @@ function* programB(key) {
 
 // Program will resolve with `B-wow wins` as programB has a shorter delay and returns earlier
 function* myProgramRace() {
-  // You can pass in the generator or the return value of a generator call (iterator instance)
+  // You can pass in the generator or the return value of a generator call (Generator instance)
   const winner = yield race([ programA, programB('wow') ]);
   return `${winner} wins`;
 }

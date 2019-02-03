@@ -1,13 +1,13 @@
 
 # Algebraic Effects
-Algebraic effects in javascript using generators inspired by [koka](https://github.com/koka-lang/koka)
+Define side-effects in a pure and composible way using algebraic effects. [https://phenax.github.io/algebraic-effects](https://phenax.github.io/algebraic-effects)
 
 <!-- [![CircleCI](https://img.shields.io/circleci/project/github/phenax/algebraic-effects/master.svg?style=for-the-badge)](https://circleci.com/gh/phenax/algebraic-effects) -->
 [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/algebraic-effects.svg?style=for-the-badge)](https://www.npmjs.com/package/algebraic-effects)
 <!-- [![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects) -->
 
 
-[Read the documentation for more information](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
+[Documentation](https://phenax.github.io/algebraic-effects)
 
 
 ## Install
@@ -23,17 +23,7 @@ yarn add @algebraic-effects/core @algebraic-effects/effects
 ```
 
 
-## Docs
-* [Gettting started](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs)
-* [Familiarize yourself with the lingo of the cool kids](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/lingo.md)
-* [Have a look at the core modules](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/core.md)
-* [Global operations](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/operations.md)
-* [State effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/State.md)
-* [Exception effect](https://github.com/phenax/algebraic-effects/tree/master/packages/ae-docs/Exception.md)
-
-
 ## Usage
-
 
 ### Import it to your file
 ```js
@@ -42,7 +32,7 @@ import { sleep } from '@algebraic-effects/core/operations';
 ```
 
 
-### Simple state effect example
+### State effect counter example
 
 ```js
 import { State } from '@algebraic-effects/effects';
@@ -122,8 +112,9 @@ const api = ApiEffect.handler({
 ```js
 api.with(logger) // Compose your effect handlers togather and run them
   .run(fetchProfile)
-  .fork(handleError, user => {
-    // You've got the user now
-  })
+  .fork(
+    e => { /* Handle error */ },
+    user => { /* Handle success */ }
+  )
 ```
 

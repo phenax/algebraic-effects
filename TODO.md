@@ -36,11 +36,13 @@
 - [x] State effect update operation
 - [x] Random effect
 - [x] All flow operators
-- [ ] Cancellation
+- [x] Cancellation
+- [x] FAQ
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
+- [ ] Clone/Extend
 
 ### Scripts
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
-- [ ] Build and publish ae-docs as html github pages. (Maybe mdx?)
+- [x] Build and publish ae-docs as html github pages. (Maybe mdx?)

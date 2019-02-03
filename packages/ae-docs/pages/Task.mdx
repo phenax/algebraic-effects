@@ -1,13 +1,16 @@
 
 # Task monad
-A lightweight asynchronous and lazy task monad. Running an effectful program returns an instance of a Task
+A lightweight asynchronous, lazy, cancellable task monad. Running an effectful program returns an instance of a Task
+
+---
 
 
-Import it as
+## Import it in your project
 ```js
 import Task from '@algebraic-effects/task';
 import { race, parallel, bimap, fork } from '@algebraic-effects/task/fns'; // Helper functions. Also includes point-free alternatives for Task#method
 ```
+
 
 ## API
 

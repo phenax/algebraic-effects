@@ -1,8 +1,11 @@
 
-# Core modules (@algebraic-effects/core)
+# @algebraic-effects/core
+Core functions (createEffect) to help you create custom effects
+
+---
 
 ## Program
-A program is just a generator with effects
+A program is a pure, cancellable generator that calls atleast one operation.
 
 ```js
 // program :: Program<IOEffect, ConsoleEffect> String -> ()
@@ -18,7 +21,7 @@ const program = function *(greetText) {
 Create effect allows you to write your own custom effects
 
 ```haskell
-createEffect :: (String, Object FuncDescription) -> Effect
+createEffect :: (String, Object OpSignature) -> Effect
 ```
 
 ```js
@@ -34,7 +37,8 @@ const IOEffect = createEffect('IOEffect', {
 Describe your function signature. The only validation is for the length of arguments, the rest of the data is purely for documentation.
 
 ```haskell
-func :: ([String], String) -> FuncDescription
+type OpSignature = ([String], String)
+func :: ([String], String) -> OpSignature
 ```
 
 ```js
@@ -48,6 +52,16 @@ func([]); // 0 arguements + no return value
 ```
 
 
+### FlowOperators
+
+Currently, there are 5 flow operators that you can use to control the flow of your program.
+* `resume` allows you to continue the execution of your program. Passing a value to it will become the return value of the halted operation.
+* `end` allows you to end your program and resolve with a value.
+* `throwError` allows you to end your program and reject with an error.
+* `call` allows you to hand over the flow to another program/call another program till it resolves. It returns a `Task` instance.
+* `promise` is a shorthand for `.then(resume).catch(throwError)`
+
+
 
 ## Effect.handler
 Lets you define handlers to your effect and creates a runner.
@@ -58,29 +72,52 @@ type Handler = FlowOperators -> (...a) -> ();
 Effect.handler :: Object Handler -> Runner
 ```
 
-### FlowOperators
-
-Currently, there are 5 flow operators that you can use to control the flow of your program.
-* `resume` allows you to continue the execution of your program. Passing a value to it will become the return value of the halted operation.
-* `end` allows you to end your program and resolve with a value.
-* `throwError` allows you to end your program and reject with an error.
-* `call` allows you to hand over the flow to another program/call another program till it resolves.
-* `promise` is a shorthand for `.then(resume).catch(throwError)`
-
-### Using handlers
-`handler` method creates a handler instance. You can call that with your program to run it. Running a handler returns [an instance of `Task` which is a lazy, asynchronous task monad](./task.md).
+`handler` method creates a handler instance. You can call that with your program to run it. Running a handler returns [an instance of `Task` which is a lazy, asynchronous task monad](#task).
 
 ```js
-const myEff = MyEffect.handler({
+const myEffHandler = MyEffect.handler({
   increment: ({ resume }) => (a) => resume(a + 1), // Will increment and return a + 1 after the yield
   imDone: ({ end }) => (a) => end(a), // Will end the program and return a
   throw: ({ throwError }) => () => throwError(new Error()), // Will throw out of the program for you to catch
+  callMyOtherProgram: ({ call, throwError, resume }) => () =>
+    call(myOtherProgram, 'arg1', 'arg2').fork(throwError, resume), // Will call an outside program with the same set of effects
   _: ({ end }) => a => end(a), // Default behavior. This will be called for any yielded value thats not an effect operation and at the end of the program.
 });
 
-myEff.run(myProgram).fork(onSuccess, onFailure);
+myEffHandler.run(myProgram).fork(onSuccess, onFailure);
 ```
 
+## Run your program
+You can call your program in any of the following ways. Doing this will return a [Task](#task) instance. You can then call the [`.fork`](#task.instance-methods) method on task to run start running your program.
+```js
+myEffHandler(program, 'Hello world').fork(onError, onSuccess);
+// OR
+myEffHandler.run(program, 'Hello world').fork(onError, onSuccess);
+// OR
+myEffHandler.run(program('Hello world')).fork(onError, onSuccess);
+```
+
+
+
+## Cancelling 
+A call to [`.fork`](#task.instance-methods) returns a function that when called, will cancel your program and stop its execution at the last run operation.
+
+```js
+function* myProgram() {
+  yield Logger.log('Will log this');
+  yield sleep(1000);
+  yield Logger.log('Will NOT log this');
+}
+
+const logger = Logger.handler({ log: /**/ });
+
+const cancel =
+  logger.run(myProgram)
+    .fork(() => {}, () => {}); // Will not call either of the functions
+
+// Cancel after 500ms
+setTimeout(cancel, 500);
+```
 
 
 ## Composing effects and handlers
@@ -114,12 +151,7 @@ api.with(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
 
 // OR
 
-api.concat(logger).run(searchUsers, 'Akshay').fork(onError, onSuccess);
-
-// OR
-
-const handler = api.with(logger);
-handler(searchUsers, 'John').fork(onError, onSuccess);
+api.concat(logger).run(searchUsers, 'Ramu').fork(onError, onSuccess);
 
 // OR
 
