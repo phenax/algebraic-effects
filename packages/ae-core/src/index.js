@@ -5,16 +5,18 @@ import globalHandlers from './operations';
 // type Program = GeneratorFunction
 // type Runner = (Program ...a b, ...a) -> Task e b
 
-const isIterator = p => !!p[Symbol.iterator];
+// isGenerator :: Generator? -> Boolean
+const isGenerator = p => p.constructor === (function*(){}()).constructor;
 
 // runProgram :: (Program, ...a) -> Iterator
 const runProgram = (program, ...args) => {
   const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
-  if (!isIterator(p))
-    throw new Error('Cant run program. Invalid generator');
+  if (!isGenerator(p))
+    throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
 };
 
+// operationName :: (String, String) -> String
 const operationName = (effect, op) => `${effect}[${op}]`;
 
 // createRunner :: (Object Function, { effect :: String }) -> Runner
