@@ -58,4 +58,31 @@ describe('State', () => {
       })
       .fork(done, () => done());
   });
+
+  it('should work well with another extended state and composition', done => {
+    const CountListState = State.extendAs('CountListState');
+
+    const countdown = function *() {
+      const count = yield State.get();
+
+      yield CountListState.update(list => [...list, count]);
+  
+      if(count > 0) {
+        yield State.set(count - 1);
+        yield sleep(10);
+        return yield call(countdown);
+      }
+
+      return yield CountListState.get();
+    };
+
+    State.of(10)
+      .with(State.of([], CountListState))
+      .run(countdown)
+      .map(result => {
+        const reversecount = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+        expect(result).toEqual(reversecount);
+      })
+      .fork(done, () => done());
+  });
 });

@@ -132,6 +132,65 @@ describe('createEffect', () => {
     });
   });
 
+  describe('.extendAs', () => {
+    const DummyEff = createEffect('DummyEff', { myFn: func() });
+
+    it('should allow extending an effect without collisions without any additional methods', done => {
+      const NewDummyEff = DummyEff.extendAs('NewDummyEffect');
+
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield NewDummyEff.myFn('Hello1');
+        yield 'Yo';
+      };
+
+      const aFn = jest.fn();
+      const bFn = jest.fn();
+      const bHandler = DummyEff.handler({ myFn: ({ resume }) => () => resume(aFn()) });
+      const aHandler = NewDummyEff.handler({ myFn: ({ resume }) => d => resume(bFn(d)) });
+
+      const run = bHandler.with(aHandler);
+
+      run(action).fork(done, () => {
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledWith('Hello1');
+        done();
+      });
+    });
+
+    it('should allow extending an effect without collisions', done => {
+      const NewDummyEff = DummyEff.extendAs('NewDummyEffect', {
+        otherFunc: func(['a']),
+      });
+
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield NewDummyEff.myFn('Hello1');
+        yield NewDummyEff.otherFunc('Hello2');
+        yield 'Yo';
+      };
+
+      const aFn = jest.fn();
+      const bFn = jest.fn();
+      const bHandler = DummyEff.handler({ myFn: ({ resume }) => () => resume(aFn()) });
+      const aHandler = NewDummyEff.handler({
+        otherFunc: ({ resume }) => d => resume(bFn(d)),
+        myFn: ({ resume }) => msg => resume(bFn(msg)),
+      });
+
+      const run = bHandler.with(aHandler);
+
+      run(action).fork(done, () => {
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(2);
+        expect(bFn).toBeCalledWith('Hello1');
+        expect(bFn).toBeCalledWith('Hello2');
+        done();
+      });
+    });
+  });
+
   describe('createRunner#cancel', () => {
     const DummyEff = createEffect('DummyEff', { myFn: func() });
 

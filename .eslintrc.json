@@ -12,10 +12,7 @@
     "parser": "babel-eslint",
     "parserOptions": {
         "ecmaVersion": 2016,
-        "sourceType": "module",
-        "babelOptions": {
-            "configFile": "./babel.config.js"
-        }
+        "sourceType": "module"
     },
     "rules": {
         "no-console": 0,
