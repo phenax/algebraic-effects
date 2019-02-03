@@ -98,7 +98,8 @@ const findMatchingRoutes = term => routes => compose(
   filter(page => !term ? true : (
     isMatch(term, page.title) ||
     isMatch(term, page.key) ||
-    isMatch(term, page.description)
+    isMatch(term, page.description) ||
+    isMatch(term, page.keywords)
   )),
   map(key => ({ ...routes[key], key })),
   Object.keys,

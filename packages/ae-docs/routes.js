@@ -16,43 +16,51 @@ export default {
     order: 1,
     title: 'Getting started',
     render: Homepage,
+    keywords: 'import,index,start,beginner',
   },
   core: {
     order: 2,
     title: 'Core modules',
     render: CoreModule,
+    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run',
   },
   lingo: {
     order: 3,
     title: 'Made up words',
     render: Lingo,
+    keywords: 'operation,signature,program,effect,handler,runner',
   },
   operations: {
     order: 4,
     title: 'Global operations',
     render: Operations,
+    keywords: 'sleep,call,background,race,parallel,series,awaitPromise,addGlobalOperation',
   },
   task: {
     order: 10,
     title: 'Task monad',
     render: TaskMonad,
+    keywords: 'resolve,reject,empty,promise,map,fork,fold,reduce,chain,race,parallel,series',
   },
-  effects_exception: {
+  exceptionEffect: {
     order: 20,
     title: 'Exception Effect',
     render: Exception,
+    keywords: 'try,catch,either,error,throw',
     group: EFFECTS,
   },
-  effects_state: {
+  stateEffect: {
     order: 21,
     title: 'State Effect',
     render: State,
+    keywords: 'get,set,update',
     group: EFFECTS,
   },
-  effects_random: {
+  randomEffect: {
     order: 22,
     title: 'Random Effect',
     render: Random,
+    keywords: 'seed,unseeded,crypto,fromArray,number,getInt',
     group: EFFECTS,
   },
 };
