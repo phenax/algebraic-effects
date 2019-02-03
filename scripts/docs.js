@@ -31,6 +31,13 @@ const makeConfig = extend => ({
   resolve: {
     extensions: ['.js','.ts','.tsx','.mdx'],
   },
+  optimization: {
+    sideEffects: false,
+    namedModules: true,
+    namedChunks: true,
+    splitChunks: { name: true },
+    runtimeChunk: false,
+  },
   module: {
     rules: [
       {
