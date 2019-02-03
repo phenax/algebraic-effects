@@ -113,7 +113,7 @@ export const createEffect = (name, operations) => ({
     ...acc,
     [opName]: Operation(operationName(name, opName), operations[opName]),
   }), {}),
-  extend: (newName, newOperations) =>
+  extendAs: (newName, newOperations) =>
     createEffect(newName, { ...operations, ...newOperations }),
 });
 

@@ -160,6 +160,21 @@ handler(searchUsers, 'Ramu').fork(onError, onSuccess);
 ```
 
 
+## Extend your effects
+You can create a new effect by extending an existing one.
+
+```haskell
+Effect.extendAs :: (String, ?Object OpSignature) -> Effect
+```
+
+```js
+const MyConsoleEffect = ConsoleEffect.extendAs('MyConsoleEffect', {
+  logError: func(['error'], 'error'),
+});
+
+const CountState = State.extendAs('CountState'); // You dont need the second parameter
+```
+
 
 
 ## Putting it all to use

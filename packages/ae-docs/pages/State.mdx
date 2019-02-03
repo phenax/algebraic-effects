@@ -94,14 +94,14 @@ State.of(0)
 
 
 ### Using Multiple states
-You can have multiple sets of states in your program.
+You can have multiple sets of states in your program by [extending](#core.extend-your-effects) from State
 
 ```js
 import { State } from '@algebraic-effects/effects';
 import { call, sleep } from '@algebraic-effects/core/operations';
 
-const CountState = State.extend('CountState');
-const ListState = State.extend('ListState');
+const CountState = State.extendAs('CountState');
+const ListState = State.extendAs('ListState');
 
 const countdown = function*() {
   const count = yield CountState.get();

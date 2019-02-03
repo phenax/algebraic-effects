@@ -132,11 +132,11 @@ describe('createEffect', () => {
     });
   });
 
-  describe('.extend', () => {
+  describe('.extendAs', () => {
     const DummyEff = createEffect('DummyEff', { myFn: func() });
 
     it('should allow extending an effect without collisions without any additional methods', done => {
-      const NewDummyEff = DummyEff.extend('NewDummyEffect');
+      const NewDummyEff = DummyEff.extendAs('NewDummyEffect');
 
       const action = function *() {
         yield DummyEff.myFn();
@@ -160,7 +160,7 @@ describe('createEffect', () => {
     });
 
     it('should allow extending an effect without collisions', done => {
-      const NewDummyEff = DummyEff.extend('NewDummyEffect', {
+      const NewDummyEff = DummyEff.extendAs('NewDummyEffect', {
         otherFunc: func(['a']),
       });
 

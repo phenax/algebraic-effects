@@ -60,7 +60,7 @@ describe('State', () => {
   });
 
   it('should work well with another extended state and composition', done => {
-    const CountListState = State.extend('CountListState');
+    const CountListState = State.extendAs('CountListState');
 
     const countdown = function *() {
       const count = yield State.get();
