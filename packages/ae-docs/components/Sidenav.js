@@ -13,7 +13,7 @@ const Wrapper = styled.div`
   top: 0;
   left: 0;
   z-index: 20;
-  width: 230px;
+  width: 250px;
   background-color: #fff;
   border-right: 1px solid #eee;
   font-size: 1em;
@@ -88,6 +88,30 @@ const GroupName = styled.div`
   padding: 1.5em 1em 0;
 `;
 
+const BottomBar = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  flex: 0 0 50px;
+  border-top: 1px solid #f3f3f3;
+
+  font-size: 16px;
+`;
+
+const SidebarContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 100vh;
+  overflow: auto;
+`;
+
+const IconLink = styled(Link)`
+  color: #555;
+`;
+
 
 const { map, filter, sort } = fromClassPrototype(Array);
 
@@ -119,37 +143,44 @@ const Sidenav = ({ routes }) => {
         <div className="bar" />
         <div className="bar" />
       </NavBtn>
-      <div style={{ height: '100vh', overflow: 'auto' }}>
-        <div style={{ padding: '.5em' }}>
-          <SearchInput type='text' value={term} onChange={onSearch} placeholder="Search" />
+      <SidebarContainer>
+        <div>
+          <div style={{ padding: '.5em' }}>
+            <SearchInput type='text' value={term} onChange={onSearch} placeholder="Search" />
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '1em 0' }}>
+            algebraic-effects
+          </div>
+
+          <div style={{ paddingTop: '.5em' }}>
+            {compose(
+              map(({ group, items }) => (
+                <div key={group}>
+                  {group && <GroupName>{group}</GroupName>}
+                  {items.map(page => (
+                    <Item
+                      key={page.key}
+                      isCurrentPage={curentPage === page.key}
+                      onClick={() => setNavVisibility(false)}
+                    >
+                      <Link to={page.key}>{page.title}</Link>
+                    </Item>
+                  ))}
+                </div>
+              )),
+              o => Object.keys(o).map(group => ({ group, items: o[group] })),
+              groupBy(propOr('', 'group')),
+              findMatchingRoutes(term)
+            )(routes)}
+          </div>
         </div>
 
-        <div style={{ textAlign: 'center', padding: '1em 0' }}>
-          algebraic-effects
-        </div>
-
-        <div style={{ paddingTop: '.5em' }}>
-          {compose(
-            map(({ group, items }) => (
-              <div key={group}>
-                {group && <GroupName>{group}</GroupName>}
-                {items.map(page => (
-                  <Item
-                    key={page.key}
-                    isCurrentPage={curentPage === page.key}
-                    onClick={() => setNavVisibility(false)}
-                  >
-                    <Link to={page.key}>{page.title}</Link>
-                  </Item>
-                ))}
-              </div>
-            )),
-            o => Object.keys(o).map(group => ({ group, items: o[group] })),
-            groupBy(propOr('', 'group')),
-            findMatchingRoutes(term)
-          )(routes)}
-        </div>
-      </div>
+        {/* <BottomBar>
+          <IconLink to="https://github.com/phenax" isExternal>Github</IconLink>
+          <IconLink to="https://github.com/phenax" isExternal>Twitter</IconLink>
+        </BottomBar> */}
+      </SidebarContainer>
     </Wrapper>
   );
 };
