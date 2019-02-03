@@ -15,7 +15,7 @@
 - [x] Move static functions of Tasks out to a another entry point
 - [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 - [x] Prevent operation name collisions with effect namespace
-- [ ] Clone/Extend effect interface with new name.
+- [x] Clone/Extend effect interface with new name.
 
 **Add more effect classes ...**
   - [x] Exception
@@ -38,11 +38,12 @@
 - [x] All flow operators
 - [x] Cancellation
 - [x] FAQ
+- [x] Clone/Extend
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
-- [ ] Clone/Extend
 
-### Scripts
+### Scripts and doc builder
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
 - [x] Build and publish ae-docs as html github pages. (Maybe mdx?)
+- [ ] Docs issue with scrolling to link hook. (Should attempt scrolling after page load)
