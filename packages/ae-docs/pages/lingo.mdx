@@ -1,10 +1,10 @@
 # The street lingo
-Ya need to kno da lingo to be talkin wid us yo. So letz get yaz up ta speed.
+Ya need to kno da lingo to be talkin wid us yo. So letz getya up to speed.
 
 ---
 
 ## Program
-A program is a generator that calls an effects. This is where all your core logic exists free from the implementation details. All effects by design have a consistent api so dont worry about any of the outside world.
+A program is a pure, cancellable generator that calls atleast one operation. This is where all your core logic exists free from the implementation details. All effects by design have a consistent api so dont worry about any of the outside world.
 
 ```js
 // program :: Program<IOEffect, ConsoleEffect> String ()
