@@ -80,8 +80,9 @@
         margin: .5em 0;
       }
 
+      /* standard typography */
       h1, h2, h3, h4, h5, h6 {
-        margin: 1em 0 .5em;
+        margin: 1.5em 0 .5em;
         font-weight: 600;
         color: #444;
         line-height: 1.2em;
@@ -99,14 +100,6 @@
         margin: 1em 0;
       }
 
-      hr {
-        border: none;
-        width: 20px;
-        height: 2px;
-        background-color: #aaa;
-        margin: 2em auto 1.6em;
-      }
-
       blockquote {
         background-color: #f9f9f9;
         color: #666;
@@ -117,21 +110,51 @@
         padding: 0;
         margin: 0;
       }
+      /* End standard typography */
 
+
+      /* Line Seperator Style */
+      hr {
+        position: relative;
+        margin: 2em auto 1.6em;
+        overflow: visible;
+      }
+      hr, hr::before, hr::after {
+        display: block;
+        border: none;
+        background-color: #aaa;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      hr::before, hr::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left:50%;
+        transform: translateY(-50%);
+      }
+      hr::before { margin-left: -50px; }
+      hr::after { margin-left: 50px; }
+      /* End Line Seperator Style */
+
+      /* Action styles */
       a {
         color: #3498db;
         text-decoration: none;
       }
-
       a:hover {
         text-decoration: underline;
       }
+      /* End action styles */
 
       ol { list-style: decimal; }
       ul { list-style: disc; }
       ul { margin-left: 1.3em; }
+      li { margin: 1em 0; }
     </style>
-    <link href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/atom-one-dark-reasonable.min.css" />
   </head>
   <body>
