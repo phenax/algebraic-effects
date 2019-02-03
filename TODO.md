@@ -39,6 +39,7 @@
 - [x] Cancellation
 - [x] FAQ
 - [x] Clone/Extend
+- [ ] Parameterized custom effects (like State)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
