@@ -8,10 +8,10 @@ const State = createEffect('State', {
 });
 
 // State.of :: a -> Runner a
-State.of = initState => {
+State.of = (initState, CustomState = State) => {
   let current = initState;
 
-  return State.handler({
+  return CustomState.handler({
     get: ({ resume }) => () => resume(current),
     set: ({ resume }) => x => resume(current = x),
     update: ({ resume }) => fn => resume(current = fn(current)),

@@ -134,11 +134,36 @@ describe('createEffect', () => {
 
   describe('.extend', () => {
     const DummyEff = createEffect('DummyEff', { myFn: func() });
-    const NewDummyEff = DummyEff.extend('NewDummyEffect', {
-      otherFunc: func(['a']),
+
+    it('should allow extending an effect without collisions without any additional methods', done => {
+      const NewDummyEff = DummyEff.extend('NewDummyEffect');
+
+      const action = function *() {
+        yield DummyEff.myFn();
+        yield NewDummyEff.myFn('Hello1');
+        yield 'Yo';
+      };
+
+      const aFn = jest.fn();
+      const bFn = jest.fn();
+      const bHandler = DummyEff.handler({ myFn: ({ resume }) => () => resume(aFn()) });
+      const aHandler = NewDummyEff.handler({ myFn: ({ resume }) => d => resume(bFn(d)) });
+
+      const run = bHandler.with(aHandler);
+
+      run(action).fork(done, () => {
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledWith('Hello1');
+        done();
+      });
     });
 
     it('should allow extending an effect without collisions', done => {
+      const NewDummyEff = DummyEff.extend('NewDummyEffect', {
+        otherFunc: func(['a']),
+      });
+
       const action = function *() {
         yield DummyEff.myFn();
         yield NewDummyEff.myFn('Hello1');
