@@ -38,6 +38,7 @@
 - [x] All flow operators
 - [x] Cancellation
 - [x] FAQ
+- [ ] Parameterized custom effects (like State)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 - [ ] Custom global operations
