@@ -8,10 +8,7 @@ const scrollTo = (x: number, y: number) => document.scrollingElement && document
 export const RouterContext = React.createContext({ page: '' });
 
 
-interface RouterProps {
-  routes: Routes,
-}
-
+interface RouterProps { routes: Routes };
 const Router = ({ routes, ...props }: RouterProps & any) => {
   const { page } = useContext(RouterContext);
   const currentPage = routes[page] || routes.home;

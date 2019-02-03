@@ -100,7 +100,7 @@ function* programB(key) {
 
 // Program will resolve with `B-wow wins` as programB has a shorter delay and returns earlier
 function* myProgramRace() {
-  // You can pass in the generator or the return value of a generator call (iterator instance)
+  // You can pass in the generator or the return value of a generator call (Generator instance)
   const winner = yield race([ programA, programB('wow') ]);
   return `${winner} wins`;
 }

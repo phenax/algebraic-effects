@@ -21,7 +21,7 @@ const program = function *(greetText) {
 Create effect allows you to write your own custom effects
 
 ```haskell
-createEffect :: (String, Object FuncDescription) -> Effect
+createEffect :: (String, Object OpSignature) -> Effect
 ```
 
 ```js
@@ -37,8 +37,8 @@ const IOEffect = createEffect('IOEffect', {
 Describe your function signature. The only validation is for the length of arguments, the rest of the data is purely for documentation.
 
 ```haskell
-type FuncDescription = ([String], String)
-func :: ([String], String) -> FuncDescription
+type OpSignature = ([String], String)
+func :: ([String], String) -> OpSignature
 ```
 
 ```js
@@ -87,18 +87,37 @@ const myEffHandler = MyEffect.handler({
 myEffHandler.run(myProgram).fork(onSuccess, onFailure);
 ```
 
-
-You can call your program in any way you fancy
+## Run your program
+You can call your program in any of the following ways. Doing this will return a [Task](#task) instance. You can then call the [`.fork`](#task.instance-methods) method on task to run start running your program.
 ```js
-myEffHandler(program, 'Hello world');
+myEffHandler(program, 'Hello world').fork(onError, onSuccess);
 // OR
-myEffHandler.run(program, 'Hello world');
+myEffHandler.run(program, 'Hello world').fork(onError, onSuccess);
 // OR
-myEffHandler.run(program('Hello world'));
+myEffHandler.run(program('Hello world')).fork(onError, onSuccess);
 ```
 
 
+
 ## Cancelling 
+A call to [`.fork`](#task.instance-methods) returns a function that when called, will cancel your program and stop its execution at the last run operation.
+
+```js
+function* myProgram() {
+  yield Logger.log('Will log this');
+  yield sleep(1000);
+  yield Logger.log('Will NOT log this');
+}
+
+const logger = Logger.handler({ log: /**/ });
+
+const cancel =
+  logger.run(myProgram)
+    .fork(() => {}, () => {}); // Will not call either of the functions
+
+// Cancel after 500ms
+setTimeout(cancel, 500);
+```
 
 
 ## Composing effects and handlers

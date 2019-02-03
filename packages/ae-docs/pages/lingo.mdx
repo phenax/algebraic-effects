@@ -22,7 +22,7 @@ In the above example `IOEffect.getInput`, `ConsoleEffect.log` and `IOEffect.show
 
 
 ## Effect
-An effect is a group of operations signatures. You can create your own custom effects using `createEffect`.
+An effect is a group of operations signatures. You can create your own custom effects using [`createEffect`](#core.createeffect).
 In the above example `IOEffect` and `ConsoleEffect` are effects. This package comes with a few built in effects like State, Exception, Random, etc.
 
 ```js
@@ -34,14 +34,17 @@ const IOEffect = createEffect('IOEffect', {
 
 
 ## Operation signature
-An operation signature is effectively a function signature but for effects. It is used to document the signature of an operation which allows the program to then use the operation as if it were the real side-effects. To define a function signature, you can use the `func` function. In the example above, you can see `func(['question'], 'name')` which is describing the input(s) and output of the operation.
+An operation signature is effectively a function signature but for effects. It is used to document the signature of an operation which allows the program to then use the operation as if it were the real side-effects. To define a function signature, you can use the [`func`](#core.func) function. In the example above, you can see `func(['question'], 'name')` which is describing the input(s) and output of the operation.
 
 
-## Handler
-A handler is a set of curried functions that decides how the program flows when the given operation is called
+## Operation behavior/implementation
+A operation behavior is a set of curried functions that decides how the program flows when the given operation is called.
 
 ```js
+// IOEffect :: Effect
+
 const io = IOEffect.handler({
+  // getInput, showMessage :: OpBehavior (String) ()
   getInput: ({ resume }) => label => showModal({ label, onSubmit: resume }),
   showMessage: ({ resume }) => message => {
     renderMessage(message);
@@ -50,17 +53,10 @@ const io = IOEffect.handler({
 });
 ```
 
-## Runner
-`.handler` method call returns a function. You can use that function to call your program. This function is called the runner.
-I like the `with*` prefix for my runners.
-It accepts a program and its arguments.
+## Effect handler
+`.handler` method call returns a handler instance. You can use this to call your program and/or compose with other effect handlers.
 
 ```js
-io(program, 'Hello world'); // Program, ...arguments
-```
-
-Alternatively you can call the .run method on it.
-
-```js
+// io :: Handler
 io.run(program, 'Hello world'); // Program, ...arguments
 ```
