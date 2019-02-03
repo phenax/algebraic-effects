@@ -91,3 +91,36 @@ State.of(0)
   .run(clickCounter);
 ```
 
+
+
+### Using Multiple states
+You can have multiple sets of states in your program.
+
+```js
+import { State } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
+
+const CountState = State.extend('CountState');
+const ListState = State.extend('ListState');
+
+const countdown = function*() {
+  const count = yield CountState.get();
+
+  yield ListState.update(list => [...list, count]); // Update list
+
+  if(count > 0) {
+    yield CountState.set(count - 1); // Decrement count
+    yield sleep(1000); // Add a delay of 1 second
+    yield call(countdown); // Call the function recursively
+  }
+
+  return yield ListState.get();
+}
+
+State.of(10, CountState)
+  .with(State.of([], ListState))
+  .run(countdown)
+  .fork(() => {}, list => {
+    console.log(list); // 10, 9, 8,...,0
+  });
+```
