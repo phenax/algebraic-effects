@@ -112,8 +112,9 @@ const api = ApiEffect.handler({
 ```js
 api.with(logger) // Compose your effect handlers togather and run them
   .run(fetchProfile)
-  .fork(handleError, user => {
-    // You've got the user now
-  })
+  .fork(
+    e => { /* Handle error */ },
+    user => { /* Handle success */ }
+  )
 ```
 

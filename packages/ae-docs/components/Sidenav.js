@@ -88,17 +88,20 @@ const GroupName = styled.div`
   padding: 1.5em 1em 0;
 `;
 
-const BottomBar = styled.div`
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  flex: 0 0 50px;
-  border-top: 1px solid #f3f3f3;
+// const BottomBar = styled.div`
+//   display: flex;
+//   justify-content: space-around;
+//   align-items: center;
+//   width: 100%;
+//   height: 100%;
+//   flex: 0 0 50px;
+//   border-top: 1px solid #f3f3f3;
 
-  font-size: 16px;
-`;
+//   font-size: 16px;
+// `;
+// const IconLink = styled(Link)`
+//   color: #555;
+// `;
 
 const SidebarContainer = styled.div`
   display: flex;
@@ -106,10 +109,6 @@ const SidebarContainer = styled.div`
   flex-direction: column;
   height: 100vh;
   overflow: auto;
-`;
-
-const IconLink = styled(Link)`
-  color: #555;
 `;
 
 
