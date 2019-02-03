@@ -12,6 +12,8 @@ const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.js$/, delay: 100 };
 
 const isWatchEnabled = process.argv.includes('--watch');
 
+process.env.NODE_ENV = isWatchEnabled ? 'development' : 'production';
+
 const toSrcPath = p => path.join(p, 'src');
 const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
 

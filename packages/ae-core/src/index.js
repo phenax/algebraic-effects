@@ -112,7 +112,9 @@ export const createEffect = (name, operations) => ({
   ...Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
     [opName]: Operation(operationName(name, opName), operations[opName]),
-  }), {})
+  }), {}),
+  extend: (newName, newOperations) =>
+    createEffect(newName, { ...operations, ...newOperations }),
 });
 
 // composeHandlers :: ...Runner -> Runner
