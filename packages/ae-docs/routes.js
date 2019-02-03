@@ -8,7 +8,7 @@ const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage"
 const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionPage" */ './pages/Exception.mdx'));
 const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pages/State.mdx'));
 const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
-const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/task.mdx'));
+const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/Task.mdx'));
 
 const EFFECTS = 'Effects';
 
