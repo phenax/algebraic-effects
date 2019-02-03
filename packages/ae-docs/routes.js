@@ -1,9 +1,10 @@
 import React from 'react';
 
-import Homepage from './pages/Homepage.mdx';
-const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/core.mdx'));
+import Homepage from './pages/homepage.mdx';
+const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/Core.mdx'));
+const Questions = React.lazy(() => import(/* webpackChunkName: "QuestionsPage" */ './pages/questions.mdx'));
 const Lingo = React.lazy(() => import(/* webpackChunkName: "LingoPage" */ './pages/lingo.mdx'));
-const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/operations.mdx'));
+const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/Operations.mdx'));
 const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionPage" */ './pages/Exception.mdx'));
 const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pages/State.mdx'));
 const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
@@ -17,6 +18,12 @@ export default {
     title: 'Getting started',
     render: Homepage,
     keywords: 'import,index,start,beginner',
+  },
+  faq: {
+    order: 2,
+    title: 'What, Why and How',
+    render: Questions,
+    keywords: 'questions,answers,faq,motivation,background',
   },
   core: {
     order: 2,

@@ -6,19 +6,20 @@ Manage side-effects in your javascript application using algebraic effects.
 
 ---
 
-### Importing it
+### Add it as a depenedency in your project
+```bash
+yarn add @algebraic-effects/core
+```
+
+If you want effects like Exception, State, Random, etc.
+```bash
+yarn add @algebraic-effects/core @algebraic-effects/effects
+```
+
+
+### Import and use it
 ```js
 import { createEffect } from '@algebraic-effects/core'; /*core*/
 import { sleep, race } from '@algebraic-effects/core/operations'; // global operations
 import { Exception, State } from '@algebraic-effects/effects'; // State effect and Exception effect
 ```
-
-### Index
-
-* [Familiarize yourself with the lingo of the cool kids](./lingo.md)
-* [Have a look at the core `modules`](./core.md)
-* [Global operations](./operations.md)
-* [State effect](./State.md)
-* [Exception effect](./Exception.md)
-* [Task](./task.md)
-
