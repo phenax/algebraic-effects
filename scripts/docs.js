@@ -28,11 +28,19 @@ const babelLoader = {
 
 const makeConfig = extend => ({
   mode: process.env.NODE_ENV,
+  resolve: {
+    extensions: ['.js','.ts','.tsx','.mdx'],
+  },
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
+        use: [ babelLoader, 'ts-loader' ],
+        exclude: /node_modules/
+      },
+      {
         test: /.js$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /(node_modules)/,
         use: babelLoader,
       },
       {

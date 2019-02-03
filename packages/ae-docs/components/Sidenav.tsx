@@ -3,11 +3,14 @@ import styled from 'styled-components';
 import { compose, groupBy, propOr } from 'ramda';
 import { fromClassPrototype } from 'pipey';
 
+import { Routes, Page } from '../types/routes';
+
 import Link from './Link';
 import { RouterContext } from './Router';
 
 const MOBILE_BREAKPOINT = 'max-width: 1100px';
 
+interface WrapperProps { isVisible: boolean };
 const Wrapper = styled.div`
   position: fixed;
   top: 0;
@@ -20,7 +23,7 @@ const Wrapper = styled.div`
 
   @media all and (${MOBILE_BREAKPOINT}) {
     transition: transform .3s ease-in-out;
-    transform: translateX(${p => p.isVisible ? '0px' : '-100%'});
+    transform: translateX(${(p: WrapperProps) => p.isVisible ? '0px' : '-100%'});
     width: 300px;
     font-size: 1.3em;
     box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.05);
@@ -52,9 +55,10 @@ const NavBtn = styled.button`
   }
 `;
 
+interface ItemProps { isCurrentPage: boolean };
 const Item = styled.div`
-  border-right: ${p => p.isCurrentPage ? '3px solid #666' : 'none'};
-  background-color: ${p => p.isCurrentPage ? '#f1f1f1' : 'transparent'};
+  border-right: ${(p: ItemProps) => p.isCurrentPage ? '3px solid #666' : 'none'};
+  background-color: ${(p: ItemProps) => p.isCurrentPage ? '#f1f1f1' : 'transparent'};
 
   font-size: .8em;
 
@@ -88,6 +92,14 @@ const GroupName = styled.div`
   padding: 1.5em 1em 0;
 `;
 
+const SidebarContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  height: 100vh;
+  overflow: auto;
+`;
+
 // const BottomBar = styled.div`
 //   display: flex;
 //   justify-content: space-around;
@@ -103,37 +115,30 @@ const GroupName = styled.div`
 //   color: #555;
 // `;
 
-const SidebarContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  height: 100vh;
-  overflow: auto;
-`;
-
 
 const { map, filter, sort } = fromClassPrototype(Array);
 
-const isMatch = (term, str) => `${str}`.toLowerCase().indexOf(`${term}`.toLowerCase()) >= 0;
+const isMatch = (term?: string, str?: string) => `${str}`.toLowerCase().indexOf(`${term}`.toLowerCase()) >= 0;
 
-const findMatchingRoutes = term => routes => compose(
-  sort((a, b) => a.order - b.order),
-  filter(page => !term ? true : (
+const findMatchingRoutes = (term: string) => (routes: Routes) => compose(
+  sort((a: Page, b: Page) => a.order - b.order),
+  filter((page: Page) => !term ? true : (
     isMatch(term, page.title) ||
     isMatch(term, page.key) ||
     isMatch(term, page.description) ||
     isMatch(term, page.keywords)
   )),
-  map(key => ({ ...routes[key], key })),
+  map((key: string) => ({ ...routes[key], key })),
   Object.keys,
 )(routes);
 
-const Sidenav = ({ routes }) => {
+interface SidenavProps { routes: Routes };
+const Sidenav = ({ routes }: SidenavProps) => {
   const [term, setSearchTerm] = useState('');
   const [isVisible, setNavVisibility] = useState(false);
-  const { page: curentPage } = useContext(RouterContext) || {};
+  const { page: curentPage } = useContext(RouterContext);
 
-  const onSearch = e => setSearchTerm(e.currentTarget.value);
+  const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.currentTarget.value);
 
   return (
     <Wrapper isVisible={isVisible}>
@@ -154,7 +159,7 @@ const Sidenav = ({ routes }) => {
 
           <div style={{ paddingTop: '.5em' }}>
             {compose(
-              map(({ group, items }) => (
+              map(({ group, items }: { group: string, items: Page[] }) => (
                 <div key={group}>
                   {group && <GroupName>{group}</GroupName>}
                   {items.map(page => (
@@ -163,12 +168,12 @@ const Sidenav = ({ routes }) => {
                       isCurrentPage={curentPage === page.key}
                       onClick={() => setNavVisibility(false)}
                     >
-                      <Link to={page.key}>{page.title}</Link>
+                      <Link to={page.key || ''}>{page.title}</Link>
                     </Item>
                   ))}
                 </div>
               )),
-              o => Object.keys(o).map(group => ({ group, items: o[group] })),
+              (o: { [key: string]: Page[] }) => Object.keys(o).map(group => ({ group, items: o[group] })),
               groupBy(propOr('', 'group')),
               findMatchingRoutes(term)
             )(routes)}

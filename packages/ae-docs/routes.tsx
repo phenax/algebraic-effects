@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Routes } from './types/routes';
+
 import Homepage from './pages/homepage.mdx';
 const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/Core.mdx'));
 const Questions = React.lazy(() => import(/* webpackChunkName: "QuestionsPage" */ './pages/questions.mdx'));
@@ -12,7 +14,7 @@ const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" *
 
 const EFFECTS = 'Effects';
 
-export default {
+const routes: Routes = {
   home: {
     order: 1,
     title: 'Getting started',
@@ -73,3 +75,5 @@ export default {
     group: EFFECTS,
   },
 };
+
+export default routes;

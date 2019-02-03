@@ -3,13 +3,17 @@ import React, { useState, useEffect, useContext } from 'react';
 import Link from './Link';
 import { RouterContext } from './Router';
 
-// Workaround for the header link issue with markdown remark
-const FloatingHeaderLink = () => {
-  const { page } = useContext(RouterContext) || {};
-  const [target, setTarget] = useState(null);
-  const [position, setPosition] = useState({ x: -100, y: -100 });
+const FLOATING_HOOK_ID = 'floating-heading-link';
 
-  const onMouseMove = e => {
+type Position = { x: number, y: number };
+
+const useFloatingLink = () => {
+  const [target, setTarget] = useState<string>('');
+  const [position, setPosition] = useState<Position>({ x: -100, y: -100 });
+
+  const onMouseMove = (e: Event & { target: HTMLElement }) => {
+    if(!e.target) return;
+
     if(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(`${e.target.tagName}`.toLowerCase()) >= 0) {
       if(e.target.id && e.target.id !== target) {
         setTarget(e.target.id);
@@ -24,7 +28,7 @@ const FloatingHeaderLink = () => {
       }
     }
 
-    e.target.id !== 'floating-heading-link' && setTarget(null);
+    e.target.id !== FLOATING_HOOK_ID && setTarget('');
   };
 
   useEffect(() => {
@@ -32,11 +36,11 @@ const FloatingHeaderLink = () => {
     return () => window.removeEventListener('mousemove', onMouseMove);
   }, []);
 
-  return target ? (
-    <Link
-      to={`${page}.${target}`}
-      id="floating-heading-link"
-      style={{
+  return {
+    target,
+    linkProps: {
+      id: FLOATING_HOOK_ID,
+      style: {
         position: 'absolute',
         zIndex: 1,
         left: `${position.x}px`,
@@ -44,8 +48,18 @@ const FloatingHeaderLink = () => {
         fontSize: '1em',
         padding: '1em .5em',
         textDecoration: 'none',
-      }}
-    >
+      },
+    },
+  };
+};
+
+// Workaround for the header link issue with markdown remark
+const FloatingHeaderLink = () => {
+  const { page } = useContext(RouterContext);
+  const { target, linkProps } = useFloatingLink();
+
+  return target ? (
+    <Link {...linkProps} to={`${page}.${target}`}>
       {'🔗'}
     </Link>
   ): '';

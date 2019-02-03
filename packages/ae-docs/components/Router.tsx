@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
 
+import { Routes } from '../types/routes';
+
 const getHash = () => `${window.location.hash}`.slice(1).split('.');
+const scrollTo = (x: number, y: number) => document.scrollingElement && document.scrollingElement.scrollTo(x, y);
 
-export const RouterContext = React.createContext(null);
+export const RouterContext = React.createContext({ page: '' });
 
-const Router = ({ routes, ...props }) => {
-  const { page } = useContext(RouterContext) || {};
+
+interface RouterProps {
+  routes: Routes,
+}
+
+const Router = ({ routes, ...props }: RouterProps & any) => {
+  const { page } = useContext(RouterContext);
   const currentPage = routes[page] || routes.home;
 
   useEffect(() => {
@@ -15,13 +23,13 @@ const Router = ({ routes, ...props }) => {
       : 'Algebraic Effects';
 
     // Scroll to top
-    document.scrollingElement.scrollTo(0, 0);
+    scrollTo(0, 0);
   }, [page]);
 
   return <currentPage.render {...props} />;
 };
 
-const scrollIntoView = $el => {
+const scrollIntoView = ($el: HTMLElement) => {
   if(typeof $el.scrollIntoView === 'function') {
     $el.scrollIntoView({
       behavior: 'smooth',
@@ -30,11 +38,16 @@ const scrollIntoView = $el => {
     });
   } else {
     const fromTop = $el.offsetTop;
-    requestAnimationFrame(() => document.scrollingElement.scrollTo(0, fromTop));
+    requestAnimationFrame(() => scrollTo(0, fromTop));
   }
 };
 
-export const RouteProvider = ({ children }) => {
+
+interface RouterProviderProps {
+  children: JSX.Element[] | JSX.Element,
+};
+
+export const RouteProvider = ({ children }: RouterProviderProps) => {
   const [initPage, initTarget] = getHash();
   const [page, setPage] = useState(initPage);
   const [scrollTarget, setScrollTarget] = useState(initTarget);
