@@ -13,10 +13,10 @@ import { Logger } from '@algebraic-effects/effects';
 
 ## API
 
-### Functions
+### With handler
 
 * `Logger.from`
-This handler is a pre-seeded random number generator (Seed is generated randomly too).
+You can pass in any console-like interface and it will handle the logging internally.
 ```haskell
 Logger.from :: ConsoleInterface -> (Program<Logger> ...b c, ...b) -> Task e c
 ```
