@@ -16,6 +16,8 @@
 - [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
+- [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
+- [ ] ?Multiple continuations
 
 **Add more effect classes ...**
   - [x] Exception
@@ -29,7 +31,7 @@
   - [x] Parallel execution of programs
   - [x] Run program in background
 
-### Documentations
+### Documentation
 - [x] Call, Race, etc global operations
 - [x] Task monad
 - [x] Migrate all doc to use Task
@@ -40,9 +42,9 @@
 - [x] FAQ
 - [x] Clone/Extend
 - [ ] Parameterized custom effects (like State)
+- [ ] Custom global operations
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
-- [ ] Custom global operations
 
 ### Scripts and doc builder
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
