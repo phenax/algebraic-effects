@@ -1,4 +1,7 @@
 
+// isGenerator :: Generator? -> Boolean
+export const isGenerator = p => p.constructor === (function*(){}()).constructor;
+
 // pointfree :: String -> (...a) -> Object(with methodName :: ...a -> b) -> b
 export const pointfree = methodName => function() {
   return x => x[methodName].apply(x, arguments);

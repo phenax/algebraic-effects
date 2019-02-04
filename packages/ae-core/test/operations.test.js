@@ -1,6 +1,6 @@
 
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, background, addGlobalOperation } from '../src/operations';
+import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect } from '../src/operations';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -200,10 +200,10 @@ describe('Global operations', () => {
     });
   });
 
-  describe('Custom global operations', () => {
+  describe('Custom generic operations', () => {
     const logfn = jest.fn();
 
-    const log = addGlobalOperation('log', func(['...data']),
+    const log = createGenericEffect('log', func(['...data']),
       ({ resume }) => (...data) => resume(logfn(...data)));
 
     function* program(x) {

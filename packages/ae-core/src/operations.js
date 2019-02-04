@@ -5,7 +5,7 @@ import { Operation, func } from './utils';
 // handleTask :: (...a -> Task e b) -> FlowOperators -> (...a) -> CancelFunction
 const handleTask = fn => o => (...args) => fn(o)(...args).fork(o.throwError, o.resume);
 
-const globalOpHandlers = {
+const genericOpHandlers = {
   sleep: ({ resume }) => duration => setTimeout(resume, duration),
   awaitPromise: ({ promise }) => promise,
   runTask: ({ resume, throwError }) => t => t.fork(throwError, resume),
@@ -27,10 +27,10 @@ export const race = Operation('race', func(['...(generator ...a b)'], 'b'));
 export const parallel = Operation('parallel', func(['...(generator ...a b)'], '[b]'));
 export const background = Operation('background', func(['...(generator ...a b)'], '[b]'));
 
-// addGlobalOperation :: (String, Function, Runner) -> Operation
-export const addGlobalOperation = (name, signature, handler) => {
-  globalOpHandlers[name] = handler;
+// createGenericEffect :: (String, OpSignature, OpBehavior) -> Operation
+export const createGenericEffect = (name, signature, handler) => {
+  genericOpHandlers[name] = handler;
   return Operation(name, signature);
 };
 
-export default globalOpHandlers;
+export default genericOpHandlers;

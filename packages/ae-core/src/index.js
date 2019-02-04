@@ -1,12 +1,10 @@
 import Task from '@algebraic-effects/task';
+import { isGenerator } from '@algebraic-effects/utils';
 import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
-import globalHandlers from './operations';
+import genericHandlers, { createGenericEffect } from './operations';
 
 // type Program = GeneratorFunction
 // type Runner = (Program ...a b, ...a) -> Task e b
-
-// isGenerator :: Generator? -> Boolean
-const isGenerator = p => p.constructor === (function*(){}()).constructor;
 
 // runProgram :: (Program, ...a) -> Iterator
 const runProgram = (program, ...args) => {
@@ -66,7 +64,7 @@ const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
         if (done) return valueHandler(flowOperators)(value);
   
         if (isOperation(value)) {
-          const runOp = handlers[value.name] || globalHandlers[value.name];
+          const runOp = handlers[value.name] || genericHandlers[value.name];
 
           if (!runOp) {
             throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
@@ -88,7 +86,7 @@ const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
     return task;
   };
 
-  effectRunner.effectName = effect || 'GlobalEffect';
+  effectRunner.effectName = effect || 'GenericEffect';
   effectRunner.handlers = handlers;
 
   // concat, with :: Runner -> Runner
@@ -123,4 +121,4 @@ export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat
 // run :: Runner
 export const run = createRunner();
 
-export { func };
+export { func, createGenericEffect, Operation };

@@ -31,7 +31,7 @@ const routes: Routes = {
     order: 2,
     title: 'Core modules',
     render: CoreModule,
-    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run',
+    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run,generic',
   },
   lingo: {
     order: 3,
@@ -43,7 +43,7 @@ const routes: Routes = {
     order: 4,
     title: 'Global operations',
     render: Operations,
-    keywords: 'sleep,call,background,race,parallel,series,awaitPromise,addGlobalOperation',
+    keywords: 'sleep,call,background,race,parallel,series,awaitPromise,createGenericEffect',
   },
   task: {
     order: 10,
