@@ -7,9 +7,12 @@ const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage"
 const Questions = React.lazy(() => import(/* webpackChunkName: "QuestionsPage" */ './pages/questions.mdx'));
 const Lingo = React.lazy(() => import(/* webpackChunkName: "LingoPage" */ './pages/lingo.mdx'));
 const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/Operations.mdx'));
-const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionPage" */ './pages/Exception.mdx'));
-const State = React.lazy(() => import(/* webpackChunkName: "StatePage" */ './pages/State.mdx'));
-const Random = React.lazy(() => import(/* webpackChunkName: "RandomPage" */ './pages/Random.mdx'));
+
+const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionEffectPage" */ './pages/Exception.mdx'));
+const State = React.lazy(() => import(/* webpackChunkName: "StateEffectPage" */ './pages/State.mdx'));
+const Random = React.lazy(() => import(/* webpackChunkName: "RandomEffectPage" */ './pages/Random.mdx'));
+const Logger = React.lazy(() => import(/* webpackChunkName: "LoggerEffectPage" */ './pages/Logger.mdx'));
+
 const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/Task.mdx'));
 
 const EFFECTS = 'Effects';
@@ -72,6 +75,13 @@ const routes: Routes = {
     title: 'Random Effect',
     render: Random,
     keywords: 'seed,unseeded,crypto,fromArray,number,getInt',
+    group: EFFECTS,
+  },
+  logger: {
+    order: 23,
+    title: 'Logger Effect',
+    render: Logger,
+    keywords: 'console,log,warn,error,message,info',
     group: EFFECTS,
   },
 };
