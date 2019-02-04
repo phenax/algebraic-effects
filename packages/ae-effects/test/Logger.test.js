@@ -4,12 +4,6 @@ import Logger from '../src/Logger';
 describe('Logger', () => {
   describe('Logger.from', () => {
     const logFn = jest.fn();
-    const loggerInterface = {
-      log: logFn.bind(null, '>log'),
-      error: logFn.bind(null, '>error'),
-      warn: logFn.bind(null, '>warn'),
-      info: logFn.bind(null, '>info'),
-    };
 
     const program = function *() {
       yield Logger.message('Hello world');
@@ -23,7 +17,14 @@ describe('Logger', () => {
 
     afterEach(() => { logFn.mockClear(); });
   
-    it('should result in a random number b/w 0,1 every time', done => {
+    it('should log all stuff', done => {
+      const loggerInterface = {
+        log: logFn.bind(null, '>log'),
+        error: logFn.bind(null, '>error'),
+        warn: logFn.bind(null, '>warn'),
+        info: logFn.bind(null, '>info'),
+      };
+
       Logger.from(loggerInterface)
         .run(program)
         .map(result => {
@@ -34,6 +35,16 @@ describe('Logger', () => {
           expect(logFn).toHaveBeenCalledWith('>info', 'Info');
           expect(logFn).toHaveBeenCalledWith('>warn', 'Warn message');
           expect(logFn).toHaveBeenCalledWith('>log', 'Data: 5');
+        })
+        .fork(done, () => done());
+    });
+
+    it('should not call shit if no interface', done => {
+      Logger.from(null)
+        .run(program)
+        .map(result => {
+          expect(result).toBe(5);
+          expect(logFn).not.toBeCalled();
         })
         .fork(done, () => done());
     });

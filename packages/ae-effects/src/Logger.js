@@ -8,15 +8,24 @@ const Logger = createEffect('Logger', {
   warn: func(['e']),
 });
 
-Logger.from = (konsole = console) => Logger.handler({
+const noop = () => {};
+
+const guard = konsole => konsole || {
+  log: (_, d) => d,
+  error: noop,
+  warn: noop,
+  info: noop,
+};
+
+Logger.from = konsole => Logger.handler({
   log: ({ resume }) => (label, data) => {
-    konsole.log(label, data);
+    guard(konsole).log(label, data);
     resume(data);
   },
-  message: ({ resume }) => (...str) => resume(konsole.log(...str)),
-  info: ({ resume }) => str => resume(konsole.info(str)),
-  error: ({ resume }) => e => resume(konsole.error(e)),
-  warn: ({ resume }) => e => resume(konsole.warn(e)),
+  message: ({ resume }) => (...str) => resume(guard(konsole).log(...str)),
+  info: ({ resume }) => str => resume(guard(konsole).info(str)),
+  error: ({ resume }) => e => resume(guard(konsole).error(e)),
+  warn: ({ resume }) => e => resume(guard(konsole).warn(e)),
 });
 
 export default Logger;
