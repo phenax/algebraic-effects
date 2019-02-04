@@ -107,12 +107,12 @@ export const createEffect = (name, operations) => ({
   name,
   operations,
   handler: handlers => createRunner(handlers, { effect: name }),
+  extendAs: (newName, newOps) => createEffect(newName, { ...operations, ...newOps }),
+
   ...Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
     [opName]: Operation(operationName(name, opName), operations[opName]),
   }), {}),
-  extendAs: (newName, newOperations) =>
-    createEffect(newName, { ...operations, ...newOperations }),
 });
 
 // composeHandlers :: ...Runner -> Runner

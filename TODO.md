@@ -16,6 +16,7 @@
 - [x] Use something lazy instead of promises (Like Async) or something custom to allow chaing programs and pure operations with an api similar to Async.
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
+- [x] "global" handlers to generic effects
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] ?Multiple continuations
 
@@ -41,8 +42,10 @@
 - [x] Cancellation
 - [x] FAQ
 - [x] Clone/Extend
+- [ ] "global" handlers to generic effects
 - [ ] Parameterized custom effects (like State)
 - [ ] Custom global operations
+- [ ] Multiple continuations (or lack of it)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 
