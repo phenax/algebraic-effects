@@ -1,0 +1,72 @@
+
+# Logger Effect
+Logger effect allows you add loggin abilities to your application with full control over what "logging" means.
+
+---
+
+
+## Import it in your project
+```js
+import { Logger } from '@algebraic-effects/effects';
+```
+
+
+## API
+
+### Functions
+
+* `Logger.from`
+This handler is a pre-seeded random number generator (Seed is generated randomly too).
+```haskell
+Logger.from :: ConsoleInterface -> (Program<Logger> ...b c, ...b) -> Task e c
+```
+
+### Operations
+```js
+Logger = {
+  log: func(['label', 'data'], 'data'),
+  message: func(['...messages']),
+  info: func(['info']),
+  error: func(['error']),
+  warn: func(['warning']),
+}
+```
+
+## Usage examples
+
+### Using Logger effect
+
+```js
+import { Logger } from '@algebraic-effects/effects';
+import { call, sleep } from '@algebraic-effects/core/operations';
+
+const program = function*() {
+  const number = yield Logger.log('label', 5);
+  yield sleep(1000);
+  yield Logger.message('Waking up after 1 second');
+
+  yield Logger.error('Error message');
+  yield Logger.info('Info');
+  yield Logger.warn('Warn message');
+
+  yield Logger.message(`Data: ${number}`);
+  return number;
+};
+
+Logger.from(console)
+  .run(program)
+  .fork(onError, result => {
+    assert(result === 5);
+  });
+```
+
+
+You can manually disable this for production by passing in null
+
+```js
+Logger.from(isProduction ? console : null)
+  .run(program)
+  .fork(onError, result => {
+    assert(result === 5);
+  });
+```
