@@ -19,12 +19,14 @@
 - [x] "global" handlers to generic effects
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] ?Multiple continuations
+- [ ] Debounce/Throttle
+
 
 **Add more effect classes ...**
   - [x] Exception
   - [x] State
   - [x] Random Number
-  - [ ] Console
+  - [x] Logger
 
 **Running programs inside programs**
   - [x] Synchronously call program
@@ -42,7 +44,7 @@
 - [x] Cancellation
 - [x] FAQ
 - [x] Clone/Extend
-- [ ] "global" handlers to generic effects
+- [x] "global" handlers to generic effects
 - [ ] Parameterized custom effects (like State)
 - [ ] Custom global operations
 - [ ] Multiple continuations (or lack of it)

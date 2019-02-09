@@ -1,16 +1,33 @@
-# Operations
-Most operations are grouped inside effects but there are a few global operations that can be invoked by any program.
+# Generic effects
+Conceptually, a generic effect is both an effect and an operation but you can think of it as an operation that is grouped inside a GlobalEffect.
 
 ---
 
 
 ## Import it in your project
 ```js
+import { createGenericEffect } from '@algebraic-effects/core';
 import { sleep, call, background, parallel, race } from '@algebraic-effects/core/operations';
 ```
 
 
 ## API
+
+### createGenericEffect
+Create a generic effect.
+
+```haskell
+createGenericEffect :: (String, OpSignature, OpBehavior) -> Operation
+```
+
+```js
+const callMyProgram = createGenericEffect(
+  'callMyProgram',
+  func(['a'], 'b'),
+  ({ call, resume, throwError }) => call(someProgram).fork(throwError, resume),
+);
+```
+
 
 ### sleep
 Sleep operation allows you to put add delay to your program.
