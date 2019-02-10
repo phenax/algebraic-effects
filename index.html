@@ -1,14 +1,21 @@
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name=”description” content="Documentation algebraic-effects in javascript" />
-    
+    <meta name=”description” content="Algebraic effects is a javascript library that allows you to write and manage effects in a clean and composable way" />
+    <meta name=keywords content="algebraic,effects,javascript,compose" />
+
     <title>Algebraic Effects</title>
+    <link rel="preconnect" crossorigin href="https://fonts.googleapis.com" />
+    <link rel="preconnect" crossorigin href="https://cdnjs.cloudflare.com" />
     <style>
       /* http://meyerweb.com/eric/tools/css/reset/ 
         v2.0 | 20110126
         License: none (public domain)
       */
+      html * { font-display: swap; }
       html, body, div, span, applet, object, iframe,
       h1, h2, h3, h4, h5, h6, p, blockquote, pre,
       a, abbr, acronym, address, big, cite, code,
@@ -154,11 +161,39 @@
       li { margin: 1em 0; }
     </style>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/atom-one-dark-reasonable.min.css" />
+    <link rel="preload" href="https://fonts.googleapis.com/css?family=Fira+Mono|Raleway|Nanum+Myeongjo" as="style" />
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/atom-one-dark-reasonable.min.css" as="style" />
+
+    <script>
+      (function(w, d) {
+        function supportsPreload() {
+          try {
+            return d.createElement('link').relList.supports('preload');
+          } catch(e) {
+            return false;
+          }
+        }
+
+        function onLoad(l) {
+          l.rel = 'stylesheet';
+          l.onload = null;
+        }
+
+        var links = d.querySelectorAll('[rel=preload]');
+        if (!supportsPreload()) {
+          setTimeout(function() {
+            links.forEach(onLoad);
+          }, 500);
+        } else {
+          links.forEach(function(l) {
+            l.onload = onLoad.bind(null, l);
+          });
+        }
+      })(window, document);
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script src="./assets/bundle.js"></script>
+    <script src="./assets/bundle.js" async defer></script>
   </body>
 </html>
