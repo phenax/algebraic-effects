@@ -1,4 +1,4 @@
-
+import { Logger } from '@algebraic-effects/effects';
 import { createEffect, func, composeHandlers } from '../src';
 import { sleep } from '../src/operations';
 
@@ -80,6 +80,23 @@ describe('createEffect', () => {
         .fork(done, () => {
           expect(myFn).toBeCalledTimes(1);
           expect(logg).toBeCalledTimes(1);
+          done();
+        });
+    });
+
+    it('should allow adding custom behavior to generic effects using .with', done => {
+      const action = function *() {
+        yield Logger.message('Nothing');
+        yield DummyEff.myFn();
+        return yield sleep('Hello world');
+      };
+
+      Logger.from(null)
+        .with(DummyEff.handler({ myFn: ({ resume }) => () => resume() }))
+        .with({ sleep: ({ resume }) => d => resume(d) })
+        .run(action)
+        .fork(done, res => {
+          expect(res).toBe('Hello world');
           done();
         });
     });
@@ -248,42 +265,42 @@ describe('createEffect', () => {
     });
   });
 
-  // describe('example usage', () => {
-  //   it('should resolve with the correct value for valid operation (fetch example)', done => {
-  //     const api = ApiEffect.handler({
-  //       fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
-  //     });
+  describe('example usage', () => {
+    it('should resolve with the correct value for valid operation (fetch example)', done => {
+      const api = ApiEffect.handler({
+        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+      });
 
-  //     const action = function *() {
-  //       const response = yield ApiEffect.fetch('/some-api');
-  //       yield response.data;
-  //     };
+      const action = function *() {
+        const response = yield ApiEffect.fetch('/some-api');
+        yield response.data;
+      };
 
-  //     api(action)
-  //       .fork(done, data => {
-  //         expect(data).toBe('wow');
-  //         done();
-  //       });
-  //   });
+      api(action)
+        .fork(done, data => {
+          expect(data).toBe('wow');
+          done();
+        });
+    });
 
-  //   it('should resolve with the correct value for valid operation (fetch example)', done => {
-  //     const api = ApiEffect.handler({
-  //       fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
-  //     });
+    it('should resolve with the correct value for valid operation (fetch example)', done => {
+      const api = ApiEffect.handler({
+        fetch: ({ resume }) => (url, req) => setTimeout(() => resume({ url, req, data: 'wow' }), 500),
+      });
 
-  //     const action = function *() {
-  //       const response = yield ApiEffect.fetch('/some-api');
-  //       yield ConsoleEff.log('Wrong operation');
-  //       yield response.data;
-  //     };
+      const action = function *() {
+        const response = yield ApiEffect.fetch('/some-api');
+        yield ConsoleEff.log('Wrong operation');
+        yield response.data;
+      };
 
-  //     api(action)
-  //       .fork(e => {
-  //         expect(e.message).toContain('Invalid operation');
-  //         expect(e.message).toContain('"log"');
-  //         done();
-  //       }, () => done('Shouldve thrown error'));
-  //   });
-  // });
+      api(action)
+        .fork(e => {
+          expect(e.message).toContain('Invalid operation');
+          expect(e.message).toContain('"ConsoleEff[log]"');
+          done();
+        }, () => done('Shouldve thrown error'));
+    });
+  });
 });
 
