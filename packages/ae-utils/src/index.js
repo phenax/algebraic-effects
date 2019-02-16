@@ -1,4 +1,19 @@
 
+// symbolObjectPool :: Object SymbolObject
+const symbolObjectPool = {};
+
+// createSymbolObject :: String -> SymbolObject
+export const createSymbolObject = name => {
+  if (symbolObjectPool[name]) return symbolObjectPool[name];
+  symbolObjectPool[name] = { name };
+  return symbolObjectPool[name];
+};
+
+// createSymbol :: String -> Symbol | { name :: String }
+export const createSymbol = key => typeof Symbol === 'function'
+  ? Symbol.for(key)
+  : createSymbolObject(key);
+
 // isGenerator :: Generator? -> Boolean
 export const isGenerator = p => p.constructor === (function*(){}()).constructor;
 

@@ -1,6 +1,7 @@
+import { createSymbol } from '@algebraic-effects/utils';
 
-export const OPERATION = Symbol.for('algebraic-effects/operation');
-export const HANDLER = Symbol.for('algebraic-effects/handler');
+export const OPERATION = createSymbol('algebraic-effects/operation');
+export const HANDLER = createSymbol('algebraic-effects/handler');
 
 // VALUE_HANDLER :: Operation
 export const VALUE_HANDLER = ({ end }) => x => end(x);
