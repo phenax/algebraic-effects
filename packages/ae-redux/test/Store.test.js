@@ -99,12 +99,12 @@ describe('Store effect', () => {
 
   describe('.take', () => {
 
-    it('should select the required value from the state', done => {
-      function *program() {
-        yield Store.take('Hello');
-        yield Store.dispatch({ type: 'Done', payload: 'World' });
-      }
+    function *program() {
+      yield Store.take('Hello');
+      yield Store.dispatch({ type: 'Done', payload: 'World' });
+    }
 
+    const getStore = (done) => {
       const reducer = (state = 0, action) => {
         switch(action.type) {
         case 'Hello': return state;
@@ -114,8 +114,12 @@ describe('Store effect', () => {
         default: return state;
         }
       };
+  
+      return createStore(reducer);
+    };
 
-      const store = createStore(reducer);
+    it('should only execute the rest of the program if the action type matches', done => {
+      const store = getStore(done);
       const dispatch = action => {
         Store.of({ store, action })
           .run(program)
@@ -124,5 +128,87 @@ describe('Store effect', () => {
       
       dispatch({ type: 'Hello' });
     });
+
+    it('should skip the rest of the program if action type doesnt match', done => {
+      const store = getStore(done);
+      const dispatch = action => {
+        Store.of({ store, action })
+          .run(program)
+          .fork(done, x => {
+            expect(x.type).toBe('NotHello');
+            done();
+          });
+      };
+
+      dispatch({ type: 'NotHello' });
+    });
+
+    describe('with function filter', () => {
+      function *program() {
+        yield Store.take(x => x.type === 'Hello');
+        yield Store.dispatch({ type: 'Done', payload: 'World' });
+      }
+
+      it('should only execute the rest of the program if the action type matches', done => {
+        const store = getStore(done);
+        const dispatch = action => {
+          Store.of({ store, action })
+            .run(program)
+            .fork(done, () => {});
+        };
+        
+        dispatch({ type: 'Hello' });
+      });
+  
+      it('should skip the rest of the program if action type doesnt match', done => {
+        const store = getStore(done);
+        const dispatch = action => {
+          Store.of({ store, action })
+            .run(program)
+            .fork(done, x => {
+              expect(x.type).toBe('NotHello');
+              done();
+            });
+        };
+  
+        dispatch({ type: 'NotHello' });
+      });
+    });
   });
+
+  // describe('.takeEvery', () => {
+
+  //   function *helloProgram() {
+  //     yield Store.dispatch({ type: 'Done', payload: 'World' });
+  //   }
+  //   function *program() {
+  //     const isHello = ({ type }) => type === 'Hello';
+  //     yield Store.takeEvery(isHello, helloProgram);
+  //   }
+
+  //   const getStore = () => {
+  //     const reducer = (state = 0, action) => {
+  //       switch(action.type) {
+  //       case 'Hello': return state;
+  //       case 'Done':
+  //         expect(action.payload).toBe('World');
+  //         return done();
+  //       default: return state;
+  //       }
+  //     };
+  
+  //     return createStore(reducer);
+  //   };
+
+  //   it('should execute the rest of the program every time the dispatch matches', done => {
+  //     const store = getStore();
+  //     const dispatch = action => {
+  //       Store.of({ store, action })
+  //         .run(program)
+  //         .fork(done, () => {});
+  //     };
+
+  //     dispatch({ type: 'Hello' });
+  //   });
+  // });
 });

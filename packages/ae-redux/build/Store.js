@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _core = require("@algebraic-effects/core");
 
+var _generic = require("@algebraic-effects/core/generic");
+
 var _utils = require("@algebraic-effects/utils");
 
 var Store = (0, _core.createEffect)('Store', {
