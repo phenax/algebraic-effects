@@ -44,7 +44,7 @@ Random = {
 
 ```js
 import { Random } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const myNumGenerator = function*() {
   const randomNumber = yield Random.number(); // Yields a random nunmber between 0 and 1

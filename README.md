@@ -28,7 +28,7 @@ yarn add @algebraic-effects/core @algebraic-effects/effects
 ### Import it to your file
 ```js
 import { createEffect, func } from '@algebraic-effects/core';
-import { sleep } from '@algebraic-effects/core/operations';
+import { sleep } from '@algebraic-effects/core/generic';
 ```
 
 
@@ -36,7 +36,7 @@ import { sleep } from '@algebraic-effects/core/operations';
 
 ```js
 import { State } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const countdown = function*() {
   const count = yield State.get();

@@ -7,7 +7,7 @@ Conceptually, a generic effect is both an effect and an operation but you can th
 ## Import it in your project
 ```js
 import { createGenericEffect } from '@algebraic-effects/core';
-import { sleep, call, background, parallel, race } from '@algebraic-effects/core/operations';
+import { sleep, call, background, parallel, race } from '@algebraic-effects/core/generic';
 ```
 
 
@@ -37,7 +37,7 @@ sleep :: Operation (Number) ()
 ```
 
 ```js
-import { sleep } from '@algebraic-effects/core/operations';
+import { sleep } from '@algebraic-effects/core/generic';
 
 // Program that returns 5 after 1 second
 const program = function*() {
@@ -55,7 +55,7 @@ call :: Operation (Program ...a b,...a) b
 ```
 
 ```js
-import { sleep, call } from '@algebraic-effects/core/operations';
+import { sleep, call } from '@algebraic-effects/core/generic';
 
 // Program that logs `Hello ${n}` every 1 second
 const program = function*(count) {
@@ -74,7 +74,7 @@ background :: Operation (Program ...a b,...a) CancelFunction
 ```
 
 ```js
-import { sleep, background } from '@algebraic-effects/core/operations';
+import { sleep, background } from '@algebraic-effects/core/generic';
 
 // waitFor n seconds and log the duration to console
 const waitFor = function*(delay) {
@@ -104,7 +104,7 @@ race :: Operation [Program () b] b
 ```
 
 ```js
-import { sleep, race } from '@algebraic-effects/core/operations';
+import { sleep, race } from '@algebraic-effects/core/generic';
 
 function* programA() {
   yield sleep(100);
@@ -132,7 +132,7 @@ parallel :: Operation [Program () b] b
 ```
 
 ```js
-import { sleep, parallel } from '@algebraic-effects/core/operations';
+import { sleep, parallel } from '@algebraic-effects/core/generic';
 
 function* programA() {
   yield sleep(100);
@@ -160,7 +160,7 @@ awaitPromise :: Operation (Promise a) a
 ```
 
 ```js
-import { awaitPromise } from '@algebraic-effects/core/operations';
+import { awaitPromise } from '@algebraic-effects/core/generic';
 
 // Program that calls your api and logs it to console
 const program = function*() {

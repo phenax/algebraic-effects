@@ -38,7 +38,7 @@ Logger = {
 
 ```js
 import { Logger } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const program = function*() {
   const number = yield Logger.log('label', 5);

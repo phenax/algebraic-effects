@@ -1,6 +1,6 @@
 import { Logger } from '@algebraic-effects/effects';
 import { createEffect, func, composeHandlers } from '../src';
-import { sleep } from '../src/operations';
+import { sleep } from '../src/generic';
 
 describe('createEffect', () => {
   const ConsoleEff = createEffect('ConsoleEff', {

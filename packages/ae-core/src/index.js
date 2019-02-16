@@ -1,7 +1,7 @@
 import Task from '@algebraic-effects/task';
 import { isGenerator } from '@algebraic-effects/utils';
 import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
-import genericHandlers, { createGenericEffect } from './operations';
+import genericHandlers, { createGenericEffect } from './generic';
 
 // type Program = GeneratorFunction
 // type Runner = (Program ...a b, ...a) -> Task e b
