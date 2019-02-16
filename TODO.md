@@ -51,6 +51,7 @@
 - [x] "global" handlers to generic effects
 - [ ] Testing
 - [ ] Parameterized custom effects (like State)
+- [ ] Usage with redux
 - [ ] Custom global operations
 - [ ] Multiple continuations (or lack of it)
 - [ ] All links to next document below for readers to continue reeading
