@@ -26,7 +26,7 @@ const isBuildable = dir => {
 };
 
 const saveCodeFile = ({ buildPath, code }) => fsextra.outputFile(buildPath, code);
-const compileFile = file => babel.transformFileAsync(file, { minified: true, comments: false });
+const compileFile = file => babel.transformFileAsync(file, { comments: false });
 const compileDirectory = dir => globber(`${dir}/**/*.js`).then(map(compileFile)).then(resolveAll);
 const compileSourceFiles = dir => {
   const srcPath = toSrcPath(dir);
