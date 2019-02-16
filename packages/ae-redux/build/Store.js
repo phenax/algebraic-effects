@@ -13,13 +13,14 @@ var Store = (0, _core.createEffect)('Store', {
   dispatch: (0, _core.func)(['action']),
   getState: (0, _core.func)([], 'state'),
   selectState: (0, _core.func)(['?state -> a'], 'a'),
-  waitFor: (0, _core.func)(['actionType'])
+  take: (0, _core.func)(['actionType | Action -> Boolean'])
 });
 
 Store.of = function (_ref) {
-  var subscribe = _ref.subscribe,
-      _dispatch = _ref.dispatch,
-      _getState = _ref.getState;
+  var _ref$store = _ref.store,
+      _dispatch = _ref$store.dispatch,
+      _getState = _ref$store.getState,
+      action = _ref.action;
   return Store.handler({
     dispatch: function dispatch(_ref2) {
       var resume = _ref2.resume;
@@ -35,10 +36,19 @@ Store.of = function (_ref) {
         return (0, _utils.compose)(resume, fn || _utils.identity, _getState)();
       };
     },
-    waitFor: function waitFor(_ref5) {
+    take: function take(_ref5) {
       var resume = _ref5.resume,
           end = _ref5.end;
-      return function (type) {};
+      return function (filter) {
+        var isMatch = function isMatch() {
+          if (!action) return false;
+          if (typeof filter === 'string') return filter === action.type;
+          if (typeof filter === 'function') return filter(action);
+          return false;
+        };
+
+        return isMatch() ? resume(action) : end(action);
+      };
     }
   });
 };

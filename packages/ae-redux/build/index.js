@@ -19,7 +19,10 @@ var createEffectsMiddleware = function createEffectsMiddleware(program, handler)
   var middleware = function middleware(store) {
     return function (next) {
       return function (action) {
-        _Store.default.of(store).with(handler).run(program).fork(console.error, console.log);
+        _Store.default.of({
+          store: store,
+          action: action
+        }).with(handler).run(program).fork(console.error, console.log);
 
         return next(action);
       };

@@ -5,15 +5,22 @@ const Store = createEffect('Store', {
   dispatch: func(['action']),
   getState: func([], 'state'),
   selectState: func(['?state -> a'], 'a'),
-  waitFor: func(['actionType']),
+  take: func(['actionType | Action -> Boolean']),
 });
 
-Store.of = ({ subscribe, dispatch, getState }) => Store.handler({
+Store.of = ({ store: { dispatch, getState }, action }) => Store.handler({
   dispatch: ({ resume }) => compose(resume, dispatch),
   getState: ({ resume }) => compose(resume, getState),
   selectState: ({ resume }) => fn => compose(resume, fn || identity, getState)(),
-  waitFor: ({ resume, end }) => type => {
-    // subscribe()
+  take: ({ resume, end }) => filter => {
+    const isMatch = () => {
+      if (!action) return false;
+      if (typeof filter === 'string') return filter === action.type;
+      if (typeof filter === 'function') return filter(action);
+      return false;
+    };
+
+    return isMatch() ? resume(action) : end(action);
   },
 });
 

@@ -3,6 +3,10 @@ import Store from '../src/Store';
 
 describe('Store effect', () => {
 
+  beforeEach(() => {
+    global.jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
+  });
+
   describe('.dispatch', () => {
 
     it('should dispatch action passed to it', done => {
@@ -23,7 +27,7 @@ describe('Store effect', () => {
         }
       };
 
-      Store.of(createStore(reducer))
+      Store.of({ store: createStore(reducer) })
         .run(program)
         .fork(done, () => {});
     });
@@ -55,7 +59,7 @@ describe('Store effect', () => {
         }
       };
 
-      Store.of(createStore(reducer))
+      Store.of({ store: createStore(reducer) })
         .run(program)
         .fork(done, () => {});
     });
@@ -87,9 +91,38 @@ describe('Store effect', () => {
         }
       };
 
-      Store.of(createStore(reducer))
+      Store.of({ store: createStore(reducer) })
         .run(program)
         .fork(done, () => {});
+    });
+  });
+
+  describe('.take', () => {
+
+    it('should select the required value from the state', done => {
+      function *program() {
+        yield Store.take('Hello');
+        yield Store.dispatch({ type: 'Done', payload: 'World' });
+      }
+
+      const reducer = (state = 0, action) => {
+        switch(action.type) {
+        case 'Hello': return state;
+        case 'Done':
+          expect(action.payload).toBe('World');
+          return done();
+        default: return state;
+        }
+      };
+
+      const store = createStore(reducer);
+      const dispatch = action => {
+        Store.of({ store, action })
+          .run(program)
+          .fork(done, () => {});
+      };
+      
+      dispatch({ type: 'Hello' });
     });
   });
 });
