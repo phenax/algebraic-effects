@@ -6,7 +6,7 @@ import Homepage from './pages/homepage.mdx';
 const CoreModule = React.lazy(() => import(/* webpackChunkName: "CoreModulePage" */ './pages/Core.mdx'));
 const Questions = React.lazy(() => import(/* webpackChunkName: "QuestionsPage" */ './pages/questions.mdx'));
 const Lingo = React.lazy(() => import(/* webpackChunkName: "LingoPage" */ './pages/lingo.mdx'));
-const Operations = React.lazy(() => import(/* webpackChunkName: "OperationsPage" */ './pages/Operations.mdx'));
+const GenericEffects = React.lazy(() => import(/* webpackChunkName: "GenericEffectsPage" */ './pages/GenericEffects.mdx'));
 
 const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionEffectPage" */ './pages/Exception.mdx'));
 const State = React.lazy(() => import(/* webpackChunkName: "StateEffectPage" */ './pages/State.mdx'));
@@ -44,8 +44,8 @@ const routes: Routes = {
   },
   operations: {
     order: 4,
-    title: 'Global operations',
-    render: Operations,
+    title: 'Generic effects',
+    render: GenericEffects,
     keywords: 'sleep,call,background,race,parallel,series,awaitPromise,createGenericEffect',
   },
   task: {

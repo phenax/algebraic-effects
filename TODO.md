@@ -19,18 +19,24 @@
 - [x] "global" handlers to generic effects
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] ?Multiple continuations
+- [ ] Typescript types
 
-**Add more effect classes ...**
+**Task**
+  - [ ] Fix resolveWith, rejectWith and empty to reolve/reject after the previous operations
+
+**Add more effects ...**
   - [x] Exception
   - [x] State
   - [x] Random Number
-  - [ ] Console
+  - [x] Logger
+  - [ ] Debounce/Throttle
 
 **Running programs inside programs**
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
   - [x] Run program in background
+
 
 ### Documentation
 - [x] Call, Race, etc global operations
@@ -42,12 +48,15 @@
 - [x] Cancellation
 - [x] FAQ
 - [x] Clone/Extend
-- [ ] "global" handlers to generic effects
+- [x] "global" handlers to generic effects
+- [ ] Testing
 - [ ] Parameterized custom effects (like State)
+- [ ] Usage with redux
 - [ ] Custom global operations
 - [ ] Multiple continuations (or lack of it)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
+
 
 ### Scripts and doc builder
 - [x] Version upgrade in publish script should upgrade matching dependencies as well

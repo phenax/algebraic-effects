@@ -1,5 +1,6 @@
 
 export const OPERATION = Symbol.for('algebraic-effects/operation');
+export const HANDLER = Symbol.for('algebraic-effects/handler');
 
 // VALUE_HANDLER :: Operation
 export const VALUE_HANDLER = ({ end }) => x => end(x);

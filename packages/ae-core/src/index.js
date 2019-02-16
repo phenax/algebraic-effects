@@ -1,7 +1,7 @@
 import Task from '@algebraic-effects/task';
 import { isGenerator } from '@algebraic-effects/utils';
-import { Operation, isOperation, VALUE_HANDLER, func } from './utils';
-import genericHandlers, { createGenericEffect } from './operations';
+import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
+import genericHandlers, { createGenericEffect } from './generic';
 
 // type Program = GeneratorFunction
 // type Runner = (Program ...a b, ...a) -> Task e b
@@ -15,10 +15,10 @@ const runProgram = (program, ...args) => {
 };
 
 // operationName :: (String, String) -> String
-const operationName = (effect, op) => `${effect}[${op}]`;
+const operationName = (effect, op) => effect ? `${effect}[${op}]` : op;
 
 // createRunner :: (Object Function, { effect :: String }) -> Runner
-const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
+const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = false } = {}) => {
   const valueHandler = _handlers._ || VALUE_HANDLER;
 
   const handlers = isComposed ? _handlers : Object.keys(_handlers).reduce((acc, key) => ({
@@ -70,7 +70,7 @@ const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
             throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
             return;
           }
-  
+
           runOp(flowOperators)(...value.payload);
         } else {
           valueHandler(flowOperators)(value);
@@ -86,15 +86,22 @@ const createRunner = (_handlers = {}, { effect, isComposed = false } = {}) => {
     return task;
   };
 
-  effectRunner.effectName = effect || 'GenericEffect';
+  effectRunner.$$type = HANDLER;
+  effectRunner.effectName = effect;
   effectRunner.handlers = handlers;
 
-  // concat, with :: Runner -> Runner
+  // concat :: Runner -> Runner
   effectRunner.concat = run1 => createRunner(
     { ...handlers, ...run1.handlers },
     { effect: `${effectRunner.effectName}.${run1.effectName}`, isComposed: true },
   );
-  effectRunner.with = effectRunner.concat;
+
+  // with :: (Runner | Object OpBehavior) -> Runner
+  effectRunner.with = runner => effectRunner.concat(
+    runner.$$type === HANDLER
+      ? runner
+      : createRunner(runner, { effect: '' })
+  );
 
   // run :: Runner
   effectRunner.run = effectRunner;

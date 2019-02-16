@@ -1,6 +1,6 @@
 
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect } from '../src/operations';
+import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect } from '../src/generic';
 
 describe('Global operations', () => {
   describe('sleep', () => {

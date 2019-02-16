@@ -35,7 +35,7 @@ State effect allows you to maintain state in your program accross multiple calls
 
 ```js
 import { State } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const countdown = function*() {
   const count = yield State.get();
@@ -58,7 +58,7 @@ You can compose State effect with custom effects to make a really cool api
 ```js
 import { createEffect } from '@algebraic-effects/core';
 import { State } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const CounterButtonEff = createEffect('CounterButtonEff', {
   takeButtonClick: func(),
@@ -98,7 +98,7 @@ You can have multiple sets of states in your program by [extending](#core.extend
 
 ```js
 import { State } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/operations';
+import { call, sleep } from '@algebraic-effects/core/generic';
 
 const CountState = State.extendAs('CountState');
 const ListState = State.extendAs('ListState');
