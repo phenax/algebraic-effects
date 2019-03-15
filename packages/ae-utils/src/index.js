@@ -9,7 +9,7 @@ export const createSymbolObject = name => {
   return symbolObjectPool[name];
 };
 
-// createSymbol :: String -> Symbol | { name :: String }
+// createSymbol :: String -> Symbol | SymbolObject
 export const createSymbol = key => typeof Symbol === 'function'
   ? Symbol.for(key)
   : createSymbolObject(key);
@@ -30,6 +30,6 @@ export const compose = function() {
 // identity :: a -> a
 export const identity = x => x;
 
-// constant :: a -> a
+// constant :: a -> () -> a
 export const constant = x => () => x;
 

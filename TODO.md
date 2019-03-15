@@ -17,9 +17,9 @@
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
+- [ ] Typescript types
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] ?Multiple continuations
-- [ ] Typescript types
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
