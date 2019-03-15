@@ -1,4 +1,4 @@
-import { compose, identity } from '@algebraic-effects/utils';
+import { compose, identity, constant } from '@algebraic-effects/utils';
 import { fork } from './pointfree';
 
 // Task (constructor) :: ((RejectFn, ResolveFn) -> ()) -> Task e a
@@ -22,6 +22,8 @@ const Task = (taskFn) => {
 
   // fold :: (e -> b, a -> b) -> Task () b
   const fold = (mapErr, mapVal) => Task((_, res) => forkTask(compose(res, mapErr), compose(res, mapVal)));
+  // foldReject :: (e -> b, a -> b) -> Task () b
+  const foldReject = (mapErr, mapVal) => Task(rej => forkTask(compose(rej, mapErr), compose(rej, mapVal)));
 
   // bimap :: (e -> e', a -> a') -> Task e' a'
   const bimap = (mapErr, mapVal) => Task((rej, res) => forkTask(compose(rej, mapErr), compose(res, mapVal)));
@@ -33,9 +35,10 @@ const Task = (taskFn) => {
     fork: forkTask,
     bimap,
     fold,
+    foldReject,
     chain,
-    resolveWith: Task.Resolved, // TODO: Fix this to reolve/reject after the previous operations
-    rejectWith: Task.Rejected,
+    resolveWith: value => fold(constant(value), constant(value)),
+    rejectWith: value => foldReject(constant(value), constant(value)),
     empty: Task.Empty,
 
     // map :: (a -> a') -> Task e a'
@@ -50,7 +53,7 @@ const Task = (taskFn) => {
 };
 
 // Task.Empty :: () -> Task
-Task.Empty = () => Task(() => {});
+Task.Empty = () => Task(constant(null));
 
 // Task.Resolved :: a -> Task () a
 Task.Resolved = data => Task((_, resolve) => resolve(data));

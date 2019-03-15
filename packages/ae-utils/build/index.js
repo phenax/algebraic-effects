@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.identity = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.constant = exports.identity = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
@@ -64,3 +64,11 @@ var identity = function identity(x) {
 };
 
 exports.identity = identity;
+
+var constant = function constant(x) {
+  return function () {
+    return x;
+  };
+};
+
+exports.constant = constant;

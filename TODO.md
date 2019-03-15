@@ -22,7 +22,7 @@
 - [ ] Typescript types
 
 **Task**
-  - [ ] Fix resolveWith, rejectWith and empty to reolve/reject after the previous operations
+  - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
 
 **Add more effects ...**
   - [x] Exception

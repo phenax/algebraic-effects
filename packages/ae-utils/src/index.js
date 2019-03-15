@@ -29,3 +29,7 @@ export const compose = function() {
 
 // identity :: a -> a
 export const identity = x => x;
+
+// constant :: a -> a
+export const constant = x => () => x;
+

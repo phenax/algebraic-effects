@@ -36,6 +36,12 @@ var Task = function Task(taskFn) {
     });
   };
 
+  var foldReject = function foldReject(mapErr, mapVal) {
+    return Task(function (rej) {
+      return forkTask((0, _utils.compose)(rej, mapErr), (0, _utils.compose)(rej, mapVal));
+    });
+  };
+
   var bimap = function bimap(mapErr, mapVal) {
     return Task(function (rej, res) {
       return forkTask((0, _utils.compose)(rej, mapErr), (0, _utils.compose)(res, mapVal));
@@ -52,9 +58,14 @@ var Task = function Task(taskFn) {
     fork: forkTask,
     bimap: bimap,
     fold: fold,
+    foldReject: foldReject,
     chain: chain,
-    resolveWith: Task.Resolved,
-    rejectWith: Task.Rejected,
+    resolveWith: function resolveWith(value) {
+      return fold((0, _utils.constant)(value), (0, _utils.constant)(value));
+    },
+    rejectWith: function rejectWith(value) {
+      return foldReject((0, _utils.constant)(value), (0, _utils.constant)(value));
+    },
     empty: Task.Empty,
     map: function map(fn) {
       return bimap(_utils.identity, fn);
@@ -71,7 +82,7 @@ var Task = function Task(taskFn) {
 };
 
 Task.Empty = function () {
-  return Task(function () {});
+  return Task((0, _utils.constant)(null));
 };
 
 Task.Resolved = function (data) {
