@@ -65,6 +65,32 @@ describe('Store effect', () => {
     });
   });
 
+  describe('.getAction', () => {
+
+    it('should select the required value from the state', done => {
+      function *program() {
+        const action = yield Store.getAction();
+        yield Store.dispatch({ type: 'Done', payload: action });
+      }
+
+      const reducer = (state, action) => {
+        switch(action.type) {
+        case 'Done':
+          expect(action.payload.type).toEqual('Hello world');
+          return done();
+        default: return state;
+        }
+      };
+
+      const dispatch = action =>
+        Store.of({ store: createStore(reducer), action })
+          .run(program)
+          .fork(done, () => {});
+
+      dispatch({ type: 'Hello world' });
+    });
+  });
+
   describe('.selectState', () => {
 
     it('should select the required value from the state', done => {
@@ -97,10 +123,10 @@ describe('Store effect', () => {
     });
   });
 
-  describe('.take', () => {
+  describe('.waitFor', () => {
 
     function *program() {
-      yield Store.take('Hello');
+      yield Store.waitFor('Hello');
       yield Store.dispatch({ type: 'Done', payload: 'World' });
     }
 
@@ -145,7 +171,7 @@ describe('Store effect', () => {
 
     describe('with function filter', () => {
       function *program() {
-        yield Store.take(x => x.type === 'Hello');
+        yield Store.waitFor(x => x.type === 'Hello');
         yield Store.dispatch({ type: 'Done', payload: 'World' });
       }
 
@@ -175,40 +201,4 @@ describe('Store effect', () => {
       });
     });
   });
-
-  // describe('.takeEvery', () => {
-
-  //   function *helloProgram() {
-  //     yield Store.dispatch({ type: 'Done', payload: 'World' });
-  //   }
-  //   function *program() {
-  //     const isHello = ({ type }) => type === 'Hello';
-  //     yield Store.takeEvery(isHello, helloProgram);
-  //   }
-
-  //   const getStore = () => {
-  //     const reducer = (state = 0, action) => {
-  //       switch(action.type) {
-  //       case 'Hello': return state;
-  //       case 'Done':
-  //         expect(action.payload).toBe('World');
-  //         return done();
-  //       default: return state;
-  //       }
-  //     };
-  
-  //     return createStore(reducer);
-  //   };
-
-  //   it('should execute the rest of the program every time the dispatch matches', done => {
-  //     const store = getStore();
-  //     const dispatch = action => {
-  //       Store.of({ store, action })
-  //         .run(program)
-  //         .fork(done, () => {});
-  //     };
-
-  //     dispatch({ type: 'Hello' });
-  //   });
-  // });
 });

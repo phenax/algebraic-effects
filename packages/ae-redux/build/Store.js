@@ -7,15 +7,16 @@ exports.default = void 0;
 
 var _core = require("@algebraic-effects/core");
 
-var _generic = require("@algebraic-effects/core/generic");
-
 var _utils = require("@algebraic-effects/utils");
+
+var _utils2 = require("./utils");
 
 var Store = (0, _core.createEffect)('Store', {
   dispatch: (0, _core.func)(['action']),
   getState: (0, _core.func)([], 'state'),
   selectState: (0, _core.func)(['?state -> a'], 'a'),
-  take: (0, _core.func)(['actionType | Action -> Boolean'])
+  getAction: (0, _core.func)([], 'action'),
+  waitFor: (0, _core.func)(['actionType | Action -> Boolean'])
 });
 
 Store.of = function (_ref) {
@@ -26,7 +27,7 @@ Store.of = function (_ref) {
   return Store.handler({
     dispatch: function dispatch(_ref2) {
       var resume = _ref2.resume;
-      return (0, _utils.compose)(resume, _dispatch);
+      return (0, _utils.compose)(resume, _dispatch, _utils2.decorateAction);
     },
     getState: function getState(_ref3) {
       var resume = _ref3.resume;
@@ -38,18 +39,17 @@ Store.of = function (_ref) {
         return (0, _utils.compose)(resume, fn || _utils.identity, _getState)();
       };
     },
-    take: function take(_ref5) {
-      var resume = _ref5.resume,
-          end = _ref5.end;
+    getAction: function getAction(_ref5) {
+      var resume = _ref5.resume;
+      return function () {
+        return resume(action);
+      };
+    },
+    waitFor: function waitFor(_ref6) {
+      var resume = _ref6.resume,
+          end = _ref6.end;
       return function (filter) {
-        var isMatch = function isMatch() {
-          if (!action) return false;
-          if (typeof filter === 'string') return filter === action.type;
-          if (typeof filter === 'function') return filter(action);
-          return false;
-        };
-
-        return isMatch() ? resume(action) : end(action);
+        return (0, _utils2.filterAction)(filter, action) ? resume(action) : end(action);
       };
     }
   });
