@@ -57,8 +57,13 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
         if(task.isCancelled) return program.return(null);
 
         const call = (p, ...a) => effectRunner(p, ...a);
-        const promise = promise => promise.then(resume).catch(throwError);
-        const flowOperators = { resume, end, throwError, call, promise };
+        let isResumed = false;
+        const resumeOperation = (...args) => {
+          !isResumed && resume(...args);
+          isResumed = true;
+        };
+        const promise = promise => promise.then(resumeOperation).catch(throwError);
+        const flowOperators = { resume: resumeOperation, end, throwError, call, promise };
 
         const { value, done } = nextValue(program, x);
         if (done) return valueHandler(flowOperators)(value);
