@@ -255,6 +255,7 @@ var createRunner = function createRunner() {
                     return runInstance(val, _toConsumableArray(stateCache));
                   });
                   (0, _fns.series)(tasks).fork(throwError, function (r) {
+                    isResumed = false;
                     end.apply(void 0, _toConsumableArray((0, _utils.flatten)(r)));
                   });
                 });

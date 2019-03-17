@@ -1,6 +1,5 @@
 import { State } from '@algebraic-effects/effects';
 import { createEffect, func } from '../src';
-import { sleep, call } from '../src/generic';
 
 describe('Multiple continuations', () => {
   const LoopEffect = createEffect('LoopEffect', {
@@ -56,6 +55,58 @@ describe('Multiple continuations', () => {
           expect(sums).toHaveLength(4);
           expect(sums[3]).toEqual(23);
           expect(sums).toEqual([7, 12, 17, 23]);
+          done();
+        },
+      );
+  });
+
+
+  it('should do async mutliple continuations', done => {
+    const runner = LoopEffect.handler({
+      takeItem: ({ resume }) => list => list.forEach((x, i) => setTimeout(resume, 10 * i, x)),
+    });
+
+    let count = 0;
+
+    function *program() {
+      const item1 = yield LoopEffect.takeItem([ 1, 2 ]);
+      const item2 = yield LoopEffect.takeItem([ 3, 4 ]);
+
+      yield State.update(log => [...log, item1 + item2]);
+      count = count + 1;
+
+      const sumLog = yield State.get();
+      if (sumLog.length === 4) {
+        expect(sumLog).toEqual([4, 5, 5, 6]);
+        done();
+      }
+    }
+
+    runner
+      .with(State.of([]))
+      .runMulti(program)
+      .fork(
+        done,
+        () => {},
+      );
+  });
+
+  it('should do sync mutlple continuation without multi ops', done => {
+    function *program() {
+      yield State.set(3);
+
+      yield State.update(c => c + 1);
+      yield State.update(c => c + 5);
+
+      return yield State.get();
+    }
+
+    State.of(0)
+      .runMulti(program)
+      .fork(
+        done,
+        data => {
+          expect(data).toEqual([9]);
           done();
         },
       );

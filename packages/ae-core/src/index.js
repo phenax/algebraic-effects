@@ -169,6 +169,7 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
                     series(tasks).fork(
                       throwError,
                       r => {
+                        isResumed = false;
                         end(...flatten(r));
                       },
                     );

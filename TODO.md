@@ -17,8 +17,9 @@
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
+- [x] Multiple continuations
+- [ ] Multiple continuations - Async resume calls
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
-- [ ] ?Multiple continuations
 - [ ] Typescript types
 
 **Task**
@@ -49,11 +50,11 @@
 - [x] FAQ
 - [x] Clone/Extend
 - [x] "global" handlers to generic effects
+- [ ] Multiple continuations
 - [ ] Testing
 - [ ] Parameterized custom effects (like State)
 - [ ] Usage with redux
 - [ ] Custom global operations
-- [ ] Multiple continuations (or lack of it)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 
