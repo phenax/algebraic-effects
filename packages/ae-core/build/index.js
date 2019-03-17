@@ -25,6 +25,8 @@ exports.run = exports.composeHandlers = exports.createEffect = void 0;
 
 var _task = _interopRequireDefault(require("@algebraic-effects/task"));
 
+var _fns = require("@algebraic-effects/task/fns");
+
 var _utils = require("@algebraic-effects/utils");
 
 var _utils2 = require("./utils");
@@ -115,12 +117,19 @@ var createRunner = function createRunner() {
           return effectRunner.apply(void 0, [p].concat(a));
         };
 
+        var isResumed = false;
+
+        var resumeOperation = function resumeOperation() {
+          !isResumed && resume.apply(void 0, arguments);
+          isResumed = true;
+        };
+
         var promise = function promise(_promise) {
-          return _promise.then(resume).catch(throwError);
+          return _promise.then(resumeOperation).catch(throwError);
         };
 
         var flowOperators = {
-          resume: resume,
+          resume: resumeOperation,
           end: end,
           throwError: throwError,
           call: call,
@@ -174,6 +183,127 @@ var createRunner = function createRunner() {
   };
 
   effectRunner.run = effectRunner;
+
+  effectRunner.runMulti = function (p) {
+    for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+      args[_key4 - 1] = arguments[_key4];
+    }
+
+    var runInstance = function runInstance() {
+      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var stateCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var task = (0, _task.default)(function (reject, resolve) {
+        var program = runProgram.apply(void 0, [p].concat(args));
+        var results = [];
+        stateCache.forEach(function (x) {
+          return program.next(x);
+        });
+
+        var throwError = function throwError(x) {
+          program.return(x);
+          !task.isCancelled && reject(x);
+        };
+
+        var end = function end() {
+          for (var _len5 = arguments.length, x = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+            x[_key5] = arguments[_key5];
+          }
+
+          program.return(x);
+          !task.isCancelled && resolve([].concat(_toConsumableArray(results), x));
+        };
+
+        var nextValue = function nextValue(program, returnVal) {
+          try {
+            return program.next(returnVal);
+          } catch (e) {
+            throwError(e);
+            return {
+              done: true
+            };
+          }
+        };
+
+        var resume = function resume(x) {
+          if (task.isCancelled) return program.return(null);
+          stateCache.push(x);
+
+          var _nextValue2 = nextValue(program, x),
+              value = _nextValue2.value,
+              done = _nextValue2.done;
+
+          var call = function call(p) {
+            for (var _len6 = arguments.length, a = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
+              a[_key6 - 1] = arguments[_key6];
+            }
+
+            return effectRunner.apply(void 0, [p].concat(a));
+          };
+
+          var isResumed = false;
+          var pendingTasks = [];
+
+          var resumeOperation = function resumeOperation(v) {
+            if ((0, _utils2.isOperation)(value) && value.isMulti) {
+              if (isResumed) {
+                pendingTasks.push(v);
+              } else {
+                isResumed = true;
+                runInstance(v, _toConsumableArray(stateCache)).fork(throwError, function (result) {
+                  results = [].concat(_toConsumableArray(results), _toConsumableArray(result));
+                  var tasks = pendingTasks.map(function (val) {
+                    return runInstance(val, _toConsumableArray(stateCache));
+                  });
+                  (0, _fns.series)(tasks).fork(throwError, function (r) {
+                    end.apply(void 0, _toConsumableArray((0, _utils.flatten)(r)));
+                  });
+                });
+              }
+            } else if (!isResumed) {
+              isResumed = true;
+              resume(v);
+            }
+          };
+
+          var promise = function promise(_promise2) {
+            return _promise2.then(resumeOperation).catch(throwError);
+          };
+
+          var flowOperators = {
+            resume: resumeOperation,
+            end: end,
+            throwError: throwError,
+            call: call,
+            promise: promise
+          };
+          if (done) return valueHandler(flowOperators)(value);
+
+          if ((0, _utils2.isOperation)(value)) {
+            var runOp = handlers[value.name] || _generic.default[value.name];
+
+            if (!runOp) {
+              throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
+              return;
+            }
+
+            runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
+          } else {
+            valueHandler(flowOperators)(value);
+          }
+        };
+
+        setTimeout(resume, 0, value);
+        return function () {
+          return task.isCancelled = true;
+        };
+      });
+      task.isCancelled = false;
+      return task;
+    };
+
+    return runInstance();
+  };
+
   return effectRunner;
 };
 
@@ -197,8 +327,8 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len4 = arguments.length, runners = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-    runners[_key4] = arguments[_key4];
+  for (var _len7 = arguments.length, runners = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
+    runners[_key7] = arguments[_key7];
   }
 
   return runners.reduce(function (a, b) {

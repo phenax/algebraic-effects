@@ -1,5 +1,6 @@
 import Task from '@algebraic-effects/task';
-import { isGenerator } from '@algebraic-effects/utils';
+import { series } from '@algebraic-effects/task/fns';
+import { isGenerator, flatten } from '@algebraic-effects/utils';
 import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 
@@ -110,6 +111,106 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
 
   // run :: Runner
   effectRunner.run = effectRunner;
+
+  effectRunner.runMulti = (p, ...args) => {
+    const runInstance = (value = null, stateCache = []) => {
+      const task = Task((reject, resolve) => {
+        const program = runProgram(p, ...args);
+        let results = [];
+
+        // Fast forward
+        stateCache.forEach(x => program.next(x));
+    
+        // throwError :: * -> ()
+        const throwError = x => {
+          program.return(x);
+          !task.isCancelled && reject(x);
+        };
+
+        // end  :: * -> ()
+        const end = (...x) => {
+          program.return(x);
+          !task.isCancelled && resolve([...results, ...x]);
+        };
+  
+        // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
+        const nextValue = (program, returnVal) => {
+          try {
+            return program.next(returnVal);
+          } catch(e) {
+            throwError(e);
+            return { done: true };
+          }
+        };
+    
+        // resume :: * -> ()
+        const resume = x => {
+          if(task.isCancelled) return program.return(null);
+
+          stateCache.push(x);
+
+          const { value, done } = nextValue(program, x);
+  
+          const call = (p, ...a) => effectRunner(p, ...a);
+          let isResumed = false; // Identifier for multiple resume calls from one op
+          const pendingTasks = [];
+
+          const resumeOperation = v => {
+            if(isOperation(value) && value.isMulti) {
+              if(isResumed) {
+                pendingTasks.push(v);
+              } else {
+                isResumed = true;
+                runInstance(v, [...stateCache]).fork(
+                  throwError,
+                  result => {
+                    results = [...results, ...result];
+                    const tasks = pendingTasks.map(val => runInstance(val, [...stateCache]));
+                    series(tasks).fork(
+                      throwError,
+                      r => {
+                        end(...flatten(r));
+                      },
+                    );
+                  },
+                );
+              }
+            } else if(!isResumed) {
+              isResumed = true;
+              resume(v);
+            }
+          };
+          const promise = promise => promise.then(resumeOperation).catch(throwError);
+          const flowOperators = { resume: resumeOperation, end, throwError, call, promise };
+
+          // Return
+          if (done) return valueHandler(flowOperators)(value);
+      
+          if (isOperation(value)) {
+            const runOp = handlers[value.name] || genericHandlers[value.name];
+  
+            if (!runOp) {
+              throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
+              return;
+            }
+  
+            runOp(flowOperators)(...value.payload);
+          } else {
+            valueHandler(flowOperators)(value);
+          }
+        };
+  
+        setTimeout(resume, 0, value);
+  
+        return () => (task.isCancelled = true);
+      });
+  
+      task.isCancelled = false;
+      return task;
+    };
+
+    return runInstance();
+  };
 
   return effectRunner;
 };
