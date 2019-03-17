@@ -1,6 +1,6 @@
 import Task from '@algebraic-effects/task';
 import { series } from '@algebraic-effects/task/fns';
-import { isGenerator, flatten } from '@algebraic-effects/utils';
+import { isGenerator, flatten, identity } from '@algebraic-effects/utils';
 import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 
@@ -18,6 +18,15 @@ const runProgram = (program, ...args) => {
 // operationName :: (String, String) -> String
 const operationName = (effect, op) => effect ? `${effect}[${op}]` : op;
 
+// getNextValue :: (Program, *) -> { value :: *, done :: Boolean, error :: ?Error }
+const getNextValue = (program, nextVal) => {
+  try {
+    return program.next(nextVal);
+  } catch(e) {
+    return { done: true, error: e };
+  }
+};
+
 // createHandler :: (Object Function, { effect :: String }) -> Handler
 const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = false } = {}) => {
   const valueHandler = _handlers._ || VALUE_HANDLER;
@@ -27,60 +36,66 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
     [operationName(effect, key)]: _handlers[key],
   }), {});
 
+  const evaluateYieldedValue = ({ value, done, error }, flowOperators) => {
+    if (error) return flowOperators.throwError(error);
+    if (done) return valueHandler(flowOperators)(value);
+
+    if (isOperation(value)) {
+      const runOp = handlers[value.name] || genericHandlers[value.name];
+
+      if (!runOp) {
+        flowOperators.throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
+        return;
+      }
+
+      runOp(flowOperators)(...value.payload);
+    } else {
+      valueHandler(flowOperators)(value);
+    }
+  };
+
+  const getTerminationOps = ({ program, task, reject, resolve, mapResult = identity }) => {
+
+    // throwError :: * -> ()
+    const throwError = x => {
+      program.return(x);
+      !task.isCancelled && reject(x);
+    };
+
+    // end  :: * -> ()
+    const end = (...args) => {
+      const value = mapResult(...args);
+      program.return(value);
+      !task.isCancelled && resolve(value);
+    };
+
+    return { throwError, end };
+  };
+
+  const FlowOps = ({ resume, end, throwError }) => {
+    const call = (p, ...a) => effectHandlerInstance(p, ...a);
+    const promise = promise => promise.then(resume).catch(throwError);
+    return { resume, end, throwError, call, promise };
+  };
+
   const effectHandlerInstance = (p, ...args) => {
     const task = Task((reject, resolve) => {
       const program = runProgram(p, ...args);
   
-      // throwError :: * -> ()
-      const throwError = x => {
-        program.return(x);
-        !task.isCancelled && reject(x);
-      };
-  
-      // end  :: * -> ()
-      const end = x => {
-        program.return(x);
-        !task.isCancelled && resolve(x);
-      };
-
-      // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
-      const nextValue = (program, returnVal) => {
-        try {
-          return program.next(returnVal);
-        } catch(e) {
-          throwError(e);
-          return { done: true };
-        }
-      };
+      const { end, throwError } = getTerminationOps({ program, task, reject, resolve });
   
       // resume :: * -> ()
       const resume = x => {
         if(task.isCancelled) return program.return(null);
 
-        const call = (p, ...a) => effectHandlerInstance(p, ...a);
         let isResumed = false;
         const resumeOperation = (...args) => {
           !isResumed && resume(...args);
           isResumed = true;
         };
-        const promise = promise => promise.then(resumeOperation).catch(throwError);
-        const flowOperators = { resume: resumeOperation, end, throwError, call, promise };
 
-        const { value, done } = nextValue(program, x);
-        if (done) return valueHandler(flowOperators)(value);
-  
-        if (isOperation(value)) {
-          const runOp = handlers[value.name] || genericHandlers[value.name];
-
-          if (!runOp) {
-            throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
-            return;
-          }
-
-          runOp(flowOperators)(...value.payload);
-        } else {
-          valueHandler(flowOperators)(value);
-        }
+        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError });
+        evaluateYieldedValue(getNextValue(program, x), flowOperators);
       };
 
       setTimeout(resume, 0);
@@ -122,38 +137,18 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
         // Fast forward
         stateCache.forEach(x => program.next(x));
     
-        // throwError :: * -> ()
-        const throwError = x => {
-          program.return(x);
-          !task.isCancelled && reject(x);
-        };
+        const { end, throwError } =
+          getTerminationOps({ program, task, reject, resolve, mapResult: (...x) => [...results, ...x] });
 
-        // end  :: * -> ()
-        const end = (...x) => {
-          const endVal = [...results, ...x];
-          program.return(endVal);
-          !task.isCancelled && resolve(endVal);
-        };
-  
-        // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
-        const nextValue = (program, returnVal) => {
-          try {
-            return program.next(returnVal);
-          } catch(e) {
-            throwError(e);
-            return { done: true };
-          }
-        };
-    
         // resume :: * -> ()
         const resume = x => {
           if(task.isCancelled) return program.return(null);
 
           stateCache = [...stateCache, x];
 
-          const { value, done } = nextValue(program, x);
+          const iterationValue = getNextValue(program, x);
+          const { value } = iterationValue;
   
-          const call = (p, ...a) => effectHandlerInstance(p, ...a);
           let isResumed = false; // Identifier for multiple resume calls from one op
           const pendingTasks = [];
 
@@ -183,24 +178,9 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
               resume(v);
             }
           };
-          const promise = promise => promise.then(resumeOperation).catch(throwError);
-          const flowOperators = { resume: resumeOperation, end, throwError, call, promise };
 
-          // Return
-          if (done) return valueHandler(flowOperators)(value);
-      
-          if (isOperation(value)) {
-            const runOp = handlers[value.name] || genericHandlers[value.name];
-  
-            if (!runOp) {
-              throwError(new Error(`Invalid operation executed. The handler for operation "${value.name}", was not provided`));
-              return;
-            }
-  
-            runOp(flowOperators)(...value.payload);
-          } else {
-            valueHandler(flowOperators)(value);
-          }
+          const flowOperators = FlowOps({ resume: resumeOperation, end, throwError });
+          evaluateYieldedValue(iterationValue, flowOperators);
         };
   
         setTimeout(resume, 0, value);
