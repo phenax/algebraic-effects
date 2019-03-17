@@ -1,6 +1,6 @@
 {
   "name": "@algebraic-effects/effects",
-  "version": "0.0.3",
+  "version": "0.0.5-alpha.0",
   "description": "Common effects for working with algebraic effects",
   "main": "index.js",
   "isBuildTarget": true,
@@ -8,7 +8,7 @@
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@algebraic-effects/core": "0.0.3"
+    "@algebraic-effects/core": "0.0.5-alpha.0"
   },
   "keywords": [
     "functional",
