@@ -63,7 +63,18 @@ var operationName = function operationName(effect, op) {
   return effect ? "".concat(effect, "[").concat(op, "]") : op;
 };
 
-var createRunner = function createRunner() {
+var getNextValue = function getNextValue(program, nextVal) {
+  try {
+    return program.next(nextVal);
+  } catch (e) {
+    return {
+      done: true,
+      error: e
+    };
+  }
+};
+
+var createHandler = function createHandler() {
   var _handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
@@ -77,46 +88,97 @@ var createRunner = function createRunner() {
     return _objectSpread({}, acc, _defineProperty({}, operationName(effect, key), _handlers[key]));
   }, {});
 
-  var effectRunner = function effectRunner(p) {
-    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
+  var evaluateYieldedValue = function evaluateYieldedValue(_ref2, flowOperators) {
+    var value = _ref2.value,
+        done = _ref2.done,
+        error = _ref2.error;
+    if (error) return flowOperators.throwError(error);
+    if (done) return valueHandler(flowOperators)(value);
+
+    if ((0, _utils2.isOperation)(value)) {
+      var runOp = handlers[value.name] || _generic.default[value.name];
+
+      if (!runOp) {
+        flowOperators.throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
+        return;
+      }
+
+      runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
+    } else {
+      valueHandler(flowOperators)(value);
+    }
+  };
+
+  var getTerminationOps = function getTerminationOps(_ref3) {
+    var program = _ref3.program,
+        task = _ref3.task,
+        reject = _ref3.reject,
+        resolve = _ref3.resolve,
+        _ref3$mapResult = _ref3.mapResult,
+        mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult;
+
+    var throwError = function throwError(x) {
+      program.return(x);
+      !task.isCancelled && reject(x);
+    };
+
+    var end = function end() {
+      var value = mapResult.apply(void 0, arguments);
+      program.return(value);
+      !task.isCancelled && resolve(value);
+    };
+
+    return {
+      throwError: throwError,
+      end: end
+    };
+  };
+
+  var FlowOps = function FlowOps(_ref4) {
+    var resume = _ref4.resume,
+        end = _ref4.end,
+        throwError = _ref4.throwError;
+
+    var call = function call(p) {
+      for (var _len2 = arguments.length, a = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        a[_key2 - 1] = arguments[_key2];
+      }
+
+      return effectHandlerInstance.apply(void 0, [p].concat(a));
+    };
+
+    var promise = function promise(_promise) {
+      return _promise.then(resume).catch(throwError);
+    };
+
+    return {
+      resume: resume,
+      end: end,
+      throwError: throwError,
+      call: call,
+      promise: promise
+    };
+  };
+
+  var effectHandlerInstance = function effectHandlerInstance(p) {
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
     }
 
     var task = (0, _task.default)(function (reject, resolve) {
       var program = runProgram.apply(void 0, [p].concat(args));
 
-      var throwError = function throwError(x) {
-        program.return(x);
-        !task.isCancelled && reject(x);
-      };
-
-      var end = function end(x) {
-        program.return(x);
-        !task.isCancelled && resolve(x);
-      };
-
-      var nextValue = function nextValue(program, returnVal) {
-        try {
-          return program.next(returnVal);
-        } catch (e) {
-          throwError(e);
-          return {
-            done: true
-          };
-        }
-      };
+      var _getTerminationOps = getTerminationOps({
+        program: program,
+        task: task,
+        reject: reject,
+        resolve: resolve
+      }),
+          end = _getTerminationOps.end,
+          throwError = _getTerminationOps.throwError;
 
       var resume = function resume(x) {
         if (task.isCancelled) return program.return(null);
-
-        var call = function call(p) {
-          for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            a[_key3 - 1] = arguments[_key3];
-          }
-
-          return effectRunner.apply(void 0, [p].concat(a));
-        };
-
         var isResumed = false;
 
         var resumeOperation = function resumeOperation() {
@@ -124,36 +186,12 @@ var createRunner = function createRunner() {
           isResumed = true;
         };
 
-        var promise = function promise(_promise) {
-          return _promise.then(resumeOperation).catch(throwError);
-        };
-
-        var flowOperators = {
+        var flowOperators = FlowOps({
           resume: resumeOperation,
           end: end,
-          throwError: throwError,
-          call: call,
-          promise: promise
-        };
-
-        var _nextValue = nextValue(program, x),
-            value = _nextValue.value,
-            done = _nextValue.done;
-
-        if (done) return valueHandler(flowOperators)(value);
-
-        if ((0, _utils2.isOperation)(value)) {
-          var runOp = handlers[value.name] || _generic.default[value.name];
-
-          if (!runOp) {
-            throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
-            return;
-          }
-
-          runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
-        } else {
-          valueHandler(flowOperators)(value);
-        }
+          throwError: throwError
+        });
+        evaluateYieldedValue(getNextValue(program, x), flowOperators);
       };
 
       setTimeout(resume, 0);
@@ -165,26 +203,26 @@ var createRunner = function createRunner() {
     return task;
   };
 
-  effectRunner.$$type = _utils2.HANDLER;
-  effectRunner.effectName = effect;
-  effectRunner.handlers = handlers;
+  effectHandlerInstance.$$type = _utils2.HANDLER;
+  effectHandlerInstance.effectName = effect;
+  effectHandlerInstance.handlers = handlers;
 
-  effectRunner.concat = function (run1) {
-    return createRunner(_objectSpread({}, handlers, run1.handlers), {
-      effect: "".concat(effectRunner.effectName, ".").concat(run1.effectName),
+  effectHandlerInstance.concat = function (run1) {
+    return createHandler(_objectSpread({}, handlers, run1.handlers), {
+      effect: "".concat(effectHandlerInstance.effectName, ".").concat(run1.effectName),
       isComposed: true
     });
   };
 
-  effectRunner.with = function (runner) {
-    return effectRunner.concat(runner.$$type === _utils2.HANDLER ? runner : createRunner(runner, {
+  effectHandlerInstance.with = function (runner) {
+    return effectHandlerInstance.concat(runner.$$type === _utils2.HANDLER ? runner : createHandler(runner, {
       effect: ''
     }));
   };
 
-  effectRunner.run = effectRunner;
+  effectHandlerInstance.run = effectHandlerInstance;
 
-  effectRunner.runMulti = function (p) {
+  effectHandlerInstance.runMulti = function (p) {
     for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
       args[_key4 - 1] = arguments[_key4];
     }
@@ -199,47 +237,27 @@ var createRunner = function createRunner() {
           return program.next(x);
         });
 
-        var throwError = function throwError(x) {
-          program.return(x);
-          !task.isCancelled && reject(x);
-        };
+        var _getTerminationOps2 = getTerminationOps({
+          program: program,
+          task: task,
+          reject: reject,
+          resolve: resolve,
+          mapResult: function mapResult() {
+            for (var _len5 = arguments.length, x = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+              x[_key5] = arguments[_key5];
+            }
 
-        var end = function end() {
-          for (var _len5 = arguments.length, x = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-            x[_key5] = arguments[_key5];
+            return [].concat(_toConsumableArray(results), x);
           }
-
-          program.return(x);
-          !task.isCancelled && resolve([].concat(_toConsumableArray(results), x));
-        };
-
-        var nextValue = function nextValue(program, returnVal) {
-          try {
-            return program.next(returnVal);
-          } catch (e) {
-            throwError(e);
-            return {
-              done: true
-            };
-          }
-        };
+        }),
+            end = _getTerminationOps2.end,
+            throwError = _getTerminationOps2.throwError;
 
         var resume = function resume(x) {
           if (task.isCancelled) return program.return(null);
-          stateCache.push(x);
-
-          var _nextValue2 = nextValue(program, x),
-              value = _nextValue2.value,
-              done = _nextValue2.done;
-
-          var call = function call(p) {
-            for (var _len6 = arguments.length, a = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
-              a[_key6 - 1] = arguments[_key6];
-            }
-
-            return effectRunner.apply(void 0, [p].concat(a));
-          };
-
+          stateCache = [].concat(_toConsumableArray(stateCache), [x]);
+          var iterationValue = getNextValue(program, x);
+          var value = iterationValue.value;
           var isResumed = false;
           var pendingTasks = [];
 
@@ -249,10 +267,10 @@ var createRunner = function createRunner() {
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
-                runInstance(v, _toConsumableArray(stateCache)).fork(throwError, function (result) {
+                runInstance(v, stateCache).fork(throwError, function (result) {
                   results = [].concat(_toConsumableArray(results), _toConsumableArray(result));
                   var tasks = pendingTasks.map(function (val) {
-                    return runInstance(val, _toConsumableArray(stateCache));
+                    return runInstance(val, stateCache);
                   });
                   (0, _fns.series)(tasks).fork(throwError, function (r) {
                     isResumed = false;
@@ -266,31 +284,12 @@ var createRunner = function createRunner() {
             }
           };
 
-          var promise = function promise(_promise2) {
-            return _promise2.then(resumeOperation).catch(throwError);
-          };
-
-          var flowOperators = {
+          var flowOperators = FlowOps({
             resume: resumeOperation,
             end: end,
-            throwError: throwError,
-            call: call,
-            promise: promise
-          };
-          if (done) return valueHandler(flowOperators)(value);
-
-          if ((0, _utils2.isOperation)(value)) {
-            var runOp = handlers[value.name] || _generic.default[value.name];
-
-            if (!runOp) {
-              throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
-              return;
-            }
-
-            runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
-          } else {
-            valueHandler(flowOperators)(value);
-          }
+            throwError: throwError
+          });
+          evaluateYieldedValue(iterationValue, flowOperators);
         };
 
         setTimeout(resume, 0, value);
@@ -305,7 +304,7 @@ var createRunner = function createRunner() {
     return runInstance();
   };
 
-  return effectRunner;
+  return effectHandlerInstance;
 };
 
 var createEffect = function createEffect(name, operations) {
@@ -313,7 +312,7 @@ var createEffect = function createEffect(name, operations) {
     name: name,
     operations: operations,
     handler: function handler(handlers) {
-      return createRunner(handlers, {
+      return createHandler(handlers, {
         effect: name
       });
     },
@@ -328,8 +327,8 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len7 = arguments.length, runners = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
-    runners[_key7] = arguments[_key7];
+  for (var _len6 = arguments.length, runners = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+    runners[_key6] = arguments[_key6];
   }
 
   return runners.reduce(function (a, b) {
@@ -338,5 +337,5 @@ var composeHandlers = function composeHandlers() {
 };
 
 exports.composeHandlers = composeHandlers;
-var run = createRunner();
+var run = createHandler();
 exports.run = run;
