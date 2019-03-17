@@ -99,7 +99,10 @@ myEffHandler.run(program('Hello world')).fork(onError, onSuccess);
 
 
 ## Multiple continuations
-Handler instance has a method called `runMulti`. You can use this method to execute your program in multiple continuations mode.
+Handler instance has a method called `runMulti`. You can use this method to execute your program in multiple continuations mode. This allows you to call resume multiple times synchronously.
+
+>> NOTE: Asynchronous calls to resume may result in your program exiting earlier than expected but it will still execute the required operations.
+
 
 ```js
 const ListEffect = createEffect('ListEffect', {

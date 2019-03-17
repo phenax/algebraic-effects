@@ -123,8 +123,6 @@ api.with(logger) // Compose your effect handlers togather and run them
 ### Multiple continuations
 You can call resume multiple times from your operation synchronously.
 
->> NOTE: Asynchronous calls to resume may result in your program exiting earlier than expected but it will still execute the required operations.
-
 ```js
 const ListEffect = createEffect('ListEffect', {
   takeItem: func(['list'], '*', { isMulti: true }), // isMulti flag indicates that this operation resumes multiple times
