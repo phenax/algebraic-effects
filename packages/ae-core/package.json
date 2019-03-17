@@ -7,6 +7,10 @@
   "repository": "https://github.com/phenax/algebraic-effects",
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",
+  "dependencies": {
+    "@algebraic-effects/task": "0.0.5-alpha.0",
+    "@algebraic-effects/utils": "0.0.5-alpha.0"
+  },
   "keywords": [
     "functional",
     "algebraic",
