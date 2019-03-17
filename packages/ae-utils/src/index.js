@@ -27,6 +27,12 @@ export const compose = function() {
   return [...arguments].reduce((a, b) => (...args) => a(b(...args)));
 };
 
+// isArray :: Array|any -> Boolean
+export const isArray = Array.isArray || (a => ({}).toString.call(a)=='[object Array]');
+
+// flatten :: ([[a]]) -> [a]
+export const flatten = arr => arr.reduce((list, item) => list.concat(isArray(item) ? item : [item]), []);
+
 // identity :: a -> a
 export const identity = x => x;
 

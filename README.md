@@ -120,6 +120,37 @@ api.with(logger) // Compose your effect handlers togather and run them
 
 
 
+### Multiple continuations
+You can call resume multiple times from your operation synchronously.
+
+```js
+const ListEffect = createEffect('ListEffect', {
+  takeItem: func(['list'], '*', { isMulti: true }), // isMulti flag indicates that this operation resumes multiple times
+});
+
+// Program will resolve with [3, 4, 6, 7]
+function *program() {
+  const item1 = yield ListEffect.takeItem([ 1, 4 ]);
+  const item2 = yield ListEffect.takeItem([ 2, 3 ]);
+
+  return item1 + item2;
+}
+
+const loopEff = ListEffect.handler({
+  takeItem: ({ resume }) => list => list.forEach(resume),
+});
+
+// runMulti method will start your program in mutiple continuations mode
+loopEff.runMulti(program).fork(
+  handleError,
+  data => {
+    console.log(data); // [3, 4, 6, 7]
+  }
+);
+```
+
+
+
 ## Contributing
 
 * [Code of Conduct](./CODE_OF_CONDUCT.md)

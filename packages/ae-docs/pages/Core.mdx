@@ -98,6 +98,41 @@ myEffHandler.run(program('Hello world')).fork(onError, onSuccess);
 ```
 
 
+## Multiple continuations
+Handler instance has a method called `runMulti`. You can use this method to execute your program in multiple continuations mode. This allows you to call resume multiple times synchronously.
+
+>> NOTE: Asynchronous calls to resume may result in your program exiting earlier than expected but it will still execute the required operations.
+
+
+```js
+const ListEffect = createEffect('ListEffect', {
+  takeItem: func(['list'], '*', { isMulti: true }), // isMulti flag indicates that this operation resumes multiple times
+});
+
+// Program will resolve with [3, 4, 6, 7]
+function *program() {
+  const item1 = yield ListEffect.takeItem([ 1, 4 ]);
+  const item2 = yield ListEffect.takeItem([ 2, 3 ]);
+
+  yield Logger.log(item, item2); // Logs 1 2 then 1 3 then 4 2 and finally 4 3
+
+  return item1 + item2;
+}
+
+const loopEff = ListEffect.handler({
+  takeItem: ({ resume }) => list => list.forEach(resume),
+});
+
+// runMulti method will start your program in mutiple continuations mode
+loopEff
+  .with(Logger.from(console))
+  .runMulti(program)
+  .fork(
+    handleError,
+    data => console.log(data), // [3, 4, 6, 7]
+  );
+```
+
 
 ## Cancelling 
 A call to [`.fork`](#task.instance-methods) returns a function that when called, will cancel your program and stop its execution at the last run operation.

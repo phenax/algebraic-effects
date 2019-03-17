@@ -1,4 +1,4 @@
-import { pointfree, compose, identity } from '../src';
+import { pointfree, compose, identity, createSymbolObject } from '../src';
 
 describe('pointfree', () => {
 
@@ -32,3 +32,18 @@ describe('identity', () => {
     expect(identity(5)).toBe(5);
   });
 });
+
+describe('createSymbolObject', () => {
+  const s1 = createSymbolObject('hello-world');
+  const s2 = createSymbolObject('hello-world');
+  const s3 = createSymbolObject('hello-world-1');
+
+  it('should return from pool if symbol already exists', () => {
+    expect(s1 === s2).toBe(true);
+  });
+
+  it('should create new symbol otherwise', () => {
+    expect(s1 === s3).toBe(false);
+  });
+});
+

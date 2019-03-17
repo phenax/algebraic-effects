@@ -18,8 +18,12 @@
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
-- [ ] ?Multiple continuations
 - [ ] Typescript types
+
+**Multiple continuations**
+  - [x] Implement
+  - [ ] Handle cancellation
+  - [ ] Async resume calls
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
@@ -36,6 +40,7 @@
   - [x] Race between programs
   - [x] Parallel execution of programs
   - [x] Run program in background
+  - [ ] callMulti
 
 
 ### Documentation
@@ -49,11 +54,11 @@
 - [x] FAQ
 - [x] Clone/Extend
 - [x] "global" handlers to generic effects
+- [ ] Multiple continuations
 - [ ] Testing
 - [ ] Parameterized custom effects (like State)
 - [ ] Usage with redux
 - [ ] Custom global operations
-- [ ] Multiple continuations (or lack of it)
 - [ ] All links to next document below for readers to continue reeading
 - [ ] Explain motivation and inspiration
 

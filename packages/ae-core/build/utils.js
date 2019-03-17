@@ -45,9 +45,14 @@ var validateArguments = function validateArguments(args, values) {
 };
 
 var Operation = function Operation(name, _ref2) {
-  var _ref3 = _slicedToArray(_ref2, 2),
+  var _ref3 = _slicedToArray(_ref2, 3),
       args = _ref3[0],
-      returnType = _ref3[1];
+      returnType = _ref3[1],
+      _ref3$ = _ref3[2];
+
+  _ref3$ = _ref3$ === void 0 ? {} : _ref3$;
+  var _ref3$$isMulti = _ref3$.isMulti,
+      isMulti = _ref3$$isMulti === void 0 ? false : _ref3$$isMulti;
 
   var op = function op() {
     for (var _len = arguments.length, payload = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -58,6 +63,7 @@ var Operation = function Operation(name, _ref2) {
     return {
       name: name,
       payload: payload,
+      isMulti: isMulti,
       $$type: OPERATION,
       toString: toString
     };
@@ -72,8 +78,8 @@ var Operation = function Operation(name, _ref2) {
 
 exports.Operation = Operation;
 
-var func = function func(args, ret) {
-  return [args, ret];
+var func = function func(args, ret, options) {
+  return [args, ret, options];
 };
 
 exports.func = func;

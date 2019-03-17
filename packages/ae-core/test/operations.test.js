@@ -1,6 +1,7 @@
 
+import Task from '@algebraic-effects/task';
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect } from '../src/generic';
+import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -57,10 +58,40 @@ describe('Global operations', () => {
         });
     });
 
-    it('should resolve normally for resolves promise', done => {
+    it('should reject for rejected promise', done => {
       run(runFailPromise)
         .fork(e => {
           expect(e).toBe('rror');
+          done();
+        }, done);
+    });
+  });
+
+  describe('runTask', () => {
+    function* runSuccPromise() {
+      const resp = yield runTask(Task.of({
+        data: 'Some data',
+      }));
+      return resp.data;
+    }
+
+    function* runFailPromise() {
+      const resp = yield runTask(Task.Rejected('error'));
+      return resp.data;
+    }
+
+    it('should resolve normally for resolves promise', done => {
+      run(runSuccPromise)
+        .fork(done, x => {
+          expect(x).toBe('Some data');
+          done();
+        });
+    });
+
+    it('should reject for rejected task', done => {
+      run(runFailPromise)
+        .fork(e => {
+          expect(e).toBe('error');
           done();
         }, done);
     });
