@@ -60,3 +60,16 @@ const io = IOEffect.handler({
 // io :: Handler
 io.run(program, 'Hello world'); // Program, ...arguments
 ```
+
+
+## Mutli mode/Multiple continuations mode
+`.runMulti` runs your program in multi mode allowing you to call resume function synchronously multiple times.
+
+[Read more about it](#core.multiple-continuations)
+
+```js
+// io :: Handler
+io.runMulti(program, 'Hello world'); // Program, ...arguments
+```
+
+

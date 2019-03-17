@@ -12,8 +12,8 @@ describe('Multiple continuations', () => {
     });
 
     function *program() {
-      const item1 = yield LoopEffect.takeItem([ 1, 2 ]);
-      const item2 = yield LoopEffect.takeItem([ 3, 4 ]);
+      const item1 = yield LoopEffect.takeItem([ 1, 4 ]);
+      const item2 = yield LoopEffect.takeItem([ 2, 3 ]);
 
       return item1 + item2;
     }
@@ -23,7 +23,7 @@ describe('Multiple continuations', () => {
       .fork(
         done,
         data => {
-          expect(data).toEqual([4, 5, 5, 6]);
+          expect(data).toEqual([ 3, 4, 6, 7 ]);
           done();
         },
       );
