@@ -5,7 +5,7 @@ import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 
 // type Program = GeneratorFunction
-// type Runner = (Program ...a b, ...a) -> Task e b
+// type Handler = (Program ...a b, ...a) -> Task e b
 
 // runProgram :: (Program, ...a) -> Iterator
 const runProgram = (program, ...args) => {
@@ -18,8 +18,8 @@ const runProgram = (program, ...args) => {
 // operationName :: (String, String) -> String
 const operationName = (effect, op) => effect ? `${effect}[${op}]` : op;
 
-// createRunner :: (Object Function, { effect :: String }) -> Runner
-const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = false } = {}) => {
+// createHandler :: (Object Function, { effect :: String }) -> Handler
+const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = false } = {}) => {
   const valueHandler = _handlers._ || VALUE_HANDLER;
 
   const handlers = isComposed ? _handlers : Object.keys(_handlers).reduce((acc, key) => ({
@@ -27,7 +27,7 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
     [operationName(effect, key)]: _handlers[key],
   }), {});
 
-  const effectRunner = (p, ...args) => {
+  const effectHandlerInstance = (p, ...args) => {
     const task = Task((reject, resolve) => {
       const program = runProgram(p, ...args);
   
@@ -57,7 +57,7 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
       const resume = x => {
         if(task.isCancelled) return program.return(null);
 
-        const call = (p, ...a) => effectRunner(p, ...a);
+        const call = (p, ...a) => effectHandlerInstance(p, ...a);
         let isResumed = false;
         const resumeOperation = (...args) => {
           !isResumed && resume(...args);
@@ -92,27 +92,28 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
     return task;
   };
 
-  effectRunner.$$type = HANDLER;
-  effectRunner.effectName = effect;
-  effectRunner.handlers = handlers;
+  effectHandlerInstance.$$type = HANDLER;
+  effectHandlerInstance.effectName = effect;
+  effectHandlerInstance.handlers = handlers;
 
-  // concat :: Runner -> Runner
-  effectRunner.concat = run1 => createRunner(
+  // concat :: Handler -> Handler
+  effectHandlerInstance.concat = run1 => createHandler(
     { ...handlers, ...run1.handlers },
-    { effect: `${effectRunner.effectName}.${run1.effectName}`, isComposed: true },
+    { effect: `${effectHandlerInstance.effectName}.${run1.effectName}`, isComposed: true },
   );
 
-  // with :: (Runner | Object OpBehavior) -> Runner
-  effectRunner.with = runner => effectRunner.concat(
+  // with :: (Handler | Object OpBehavior) -> Handler
+  effectHandlerInstance.with = runner => effectHandlerInstance.concat(
     runner.$$type === HANDLER
       ? runner
-      : createRunner(runner, { effect: '' })
+      : createHandler(runner, { effect: '' })
   );
 
-  // run :: Runner
-  effectRunner.run = effectRunner;
+  // run :: Handler
+  effectHandlerInstance.run = effectHandlerInstance;
 
-  effectRunner.runMulti = (p, ...args) => {
+  // runMulti :: Handler
+  effectHandlerInstance.runMulti = (p, ...args) => {
     const runInstance = (value = null, stateCache = []) => {
       const task = Task((reject, resolve) => {
         const program = runProgram(p, ...args);
@@ -129,8 +130,9 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
 
         // end  :: * -> ()
         const end = (...x) => {
-          program.return(x);
-          !task.isCancelled && resolve([...results, ...x]);
+          const endVal = [...results, ...x];
+          program.return(endVal);
+          !task.isCancelled && resolve(endVal);
         };
   
         // nextValue :: (Program, *) -> { value :: *, done :: Boolean }
@@ -147,11 +149,11 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
         const resume = x => {
           if(task.isCancelled) return program.return(null);
 
-          stateCache.push(x);
+          stateCache = [...stateCache, x];
 
           const { value, done } = nextValue(program, x);
   
-          const call = (p, ...a) => effectRunner(p, ...a);
+          const call = (p, ...a) => effectHandlerInstance(p, ...a);
           let isResumed = false; // Identifier for multiple resume calls from one op
           const pendingTasks = [];
 
@@ -161,11 +163,11 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
-                runInstance(v, [...stateCache]).fork(
+                runInstance(v, stateCache).fork(
                   throwError,
                   result => {
                     results = [...results, ...result];
-                    const tasks = pendingTasks.map(val => runInstance(val, [...stateCache]));
+                    const tasks = pendingTasks.map(val => runInstance(val, stateCache));
                     series(tasks).fork(
                       throwError,
                       r => {
@@ -213,14 +215,14 @@ const createRunner = (_handlers = {}, { effect = 'GenericEffect', isComposed = f
     return runInstance();
   };
 
-  return effectRunner;
+  return effectHandlerInstance;
 };
 
 // createEffect :: (String, Object *) -> Effect
 export const createEffect = (name, operations) => ({
   name,
   operations,
-  handler: handlers => createRunner(handlers, { effect: name }),
+  handler: handlers => createHandler(handlers, { effect: name }),
   extendAs: (newName, newOps) => createEffect(newName, { ...operations, ...newOps }),
 
   ...Object.keys(operations).reduce((acc, opName) => ({
@@ -229,10 +231,10 @@ export const createEffect = (name, operations) => ({
   }), {}),
 });
 
-// composeHandlers :: ...Runner -> Runner
+// composeHandlers :: ...Handler -> Handler
 export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
 
-// run :: Runner
-export const run = createRunner();
+// run :: Handler
+export const run = createHandler();
 
 export { func, createGenericEffect, Operation };
