@@ -98,4 +98,9 @@ runLinter()
       .then(() => dir))
   )
   .then(resolveAll)
+  .then(async () => {
+    const { version } = getPackageJson('.');
+    await runCommand('git', [ 'commit', '-am', `"${version}"` ], { cwd: path.resolve('.') });
+    await runCommand('git', [ 'tag', '-a', `"${version}"`, '-m', `"${version}"` ], { cwd: path.resolve('.') });
+  })
   .catch(errorHandler);
