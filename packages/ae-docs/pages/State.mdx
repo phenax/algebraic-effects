@@ -124,3 +124,35 @@ State.of(10, CountState)
     console.log(list); // 10, 9, 8,...,0
   });
 ```
+
+### Using state in multiple continuations mode
+You can use State to maintain program state in multiple continuations mode.
+
+[Read more about it](#core.multiple-continuations)
+
+```js
+const runner = LoopEffect.handler({
+  takeItem: ({ resume }) => list => list.forEach(resume),
+});
+
+function *program() {
+  yield State.set(3); // Overwrite initial state
+
+  const item1 = yield LoopEffect.takeItem([ 1, 2 ]);
+  const item2 = yield LoopEffect.takeItem([ 3, 4 ]);
+
+  yield State.update(c => c + item1 + item2);
+
+  return yield State.get();
+}
+
+runner
+  .with(State.of(0))
+  .runMulti(program)
+  .fork(
+    () => {},
+    sums => {
+      expect(sums).toEqual([7, 12, 17, 23]); // Last item is the final state
+    },
+  );
+```

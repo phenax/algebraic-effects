@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.identity = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
@@ -59,8 +59,30 @@ var compose = function compose() {
 
 exports.compose = compose;
 
+var isArray = Array.isArray || function (a) {
+  return {}.toString.call(a) == '[object Array]';
+};
+
+exports.isArray = isArray;
+
+var flatten = function flatten(arr) {
+  return arr.reduce(function (list, item) {
+    return list.concat(isArray(item) ? item : [item]);
+  }, []);
+};
+
+exports.flatten = flatten;
+
 var identity = function identity(x) {
   return x;
 };
 
 exports.identity = identity;
+
+var constant = function constant(x) {
+  return function () {
+    return x;
+  };
+};
+
+exports.constant = constant;

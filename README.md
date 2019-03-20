@@ -2,9 +2,9 @@
 # Algebraic Effects
 Define side-effects in a pure and composible way using algebraic effects. [https://phenax.github.io/algebraic-effects](https://phenax.github.io/algebraic-effects)
 
-<!-- [![CircleCI](https://img.shields.io/circleci/project/github/phenax/algebraic-effects/master.svg?style=for-the-badge)](https://circleci.com/gh/phenax/algebraic-effects) -->
-[![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/algebraic-effects.svg?style=for-the-badge)](https://www.npmjs.com/package/algebraic-effects)
-<!-- [![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects) -->
+[![CircleCI](https://img.shields.io/circleci/project/github/phenax/algebraic-effects/master.svg?style=for-the-badge)](https://circleci.com/gh/phenax/algebraic-effects)
+[![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/@algebraic-effects/core.svg?style=for-the-badge)](https://www.npmjs.com/package/@algebraic-effects/core)
+[![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects)
 
 
 [Documentation](https://phenax.github.io/algebraic-effects)
@@ -118,3 +118,47 @@ api.with(logger) // Compose your effect handlers togather and run them
   )
 ```
 
+
+
+### Multiple continuations
+You can call resume multiple times from your operation synchronously.
+
+```js
+const ListEffect = createEffect('ListEffect', {
+  takeItem: func(['list'], '*', { isMulti: true }), // isMulti flag indicates that this operation resumes multiple times
+});
+
+// Program will resolve with [3, 4, 6, 7]
+function *program() {
+  const item1 = yield ListEffect.takeItem([ 1, 4 ]);
+  const item2 = yield ListEffect.takeItem([ 2, 3 ]);
+
+  return item1 + item2;
+}
+
+const loopEff = ListEffect.handler({
+  takeItem: ({ resume }) => list => list.forEach(resume),
+});
+
+// runMulti method will start your program in mutiple continuations mode
+loopEff.runMulti(program).fork(
+  handleError,
+  data => {
+    console.log(data); // [3, 4, 6, 7]
+  }
+);
+```
+
+
+
+## Contributing
+
+* [Code of Conduct](./CODE_OF_CONDUCT.md)
+
+* [Contributing Guide](./CONTRIBUTING.md)
+
+* [Good first issues/Help wanted](https://github.com/phenax/algebraic-effects/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
+
+
+### License
+Algebraic effects is under [MIT licensed](./LICENSE).

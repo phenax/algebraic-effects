@@ -1,6 +1,6 @@
 {
   "name": "@algebraic-effects/utils",
-  "version": "0.0.2",
+  "version": "0.0.5-alpha.1",
   "description": "Common utility functions",
   "main": "index.js",
   "isBuildTarget": true,

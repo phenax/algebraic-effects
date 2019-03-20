@@ -100,20 +100,10 @@ const SidebarContainer = styled.div`
   overflow: auto;
 `;
 
-// const BottomBar = styled.div`
-//   display: flex;
-//   justify-content: space-around;
-//   align-items: center;
-//   width: 100%;
-//   height: 100%;
-//   flex: 0 0 50px;
-//   border-top: 1px solid #f3f3f3;
 
-//   font-size: 16px;
-// `;
-// const IconLink = styled(Link)`
-//   color: #555;
-// `;
+const IconLink = styled(Link)`
+  font-size: .8em;
+`;
 
 
 const { map, filter, sort } = fromClassPrototype(Array);
@@ -155,6 +145,9 @@ const Sidenav = ({ routes }: SidenavProps) => {
 
           <div style={{ textAlign: 'center', padding: '1em 0' }}>
             algebraic-effects
+            <div>
+              <IconLink to="https://github.com/phenax/algebraic-effects" isExternal>View on Github</IconLink>
+            </div>
           </div>
 
           <div style={{ paddingTop: '.5em' }}>
@@ -179,11 +172,6 @@ const Sidenav = ({ routes }: SidenavProps) => {
             )(routes)}
           </div>
         </div>
-
-        {/* <BottomBar>
-          <IconLink to="https://github.com/phenax" isExternal>Github</IconLink>
-          <IconLink to="https://github.com/phenax" isExternal>Twitter</IconLink>
-        </BottomBar> */}
       </SidebarContainer>
     </Wrapper>
   );
