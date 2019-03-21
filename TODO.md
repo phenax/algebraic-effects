@@ -17,25 +17,34 @@
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
+- [ ] Support try-catch inside program
+- [ ] Allow custom handling for errors. (One handler to fork method)
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] Typescript types
+- [ ] ?Redux middleware
 
 **Multiple continuations**
   - [x] Implement
   - [ ] Handle cancellation
-  - [ ] Async resume calls
+  - [ ] Async resume calls (with custom value handler)
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
+  - [ ] One handler to fork method
 
 **Add more effects ...**
   - [x] Exception
   - [x] State
   - [x] Random Number
   - [x] Logger
-  - [ ] Debounce/Throttle
+  - [ ] Scheduler
+    - [ ] requestAnimationFrame
+    - [ ] requestIdleCallback
+    - [ ] setTimeout
+    - [ ] setInterval (multi)
+  - [ ] Something for Debounce/Throttle
 
-**Running programs inside programs**
+**Generic effects**
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
@@ -54,7 +63,7 @@
 - [x] FAQ
 - [x] Clone/Extend
 - [x] "global" handlers to generic effects
-- [ ] Multiple continuations
+- [x] Multiple continuations
 - [ ] Testing
 - [ ] Parameterized custom effects (like State)
 - [ ] Usage with redux
@@ -66,4 +75,5 @@
 ### Scripts and doc builder
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
 - [x] Build and publish ae-docs as html github pages. (Maybe mdx?)
+- [ ] ?Mobile issues  (not confirmed yet)
 - [ ] Docs issue with scrolling to link hook. (Should attempt scrolling after page load)
