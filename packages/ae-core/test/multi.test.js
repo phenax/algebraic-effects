@@ -63,7 +63,7 @@ describe('Multiple continuations', () => {
 
   it('should do async mutliple continuations', done => {
     const runner = LoopEffect.handler({
-      takeItem: ({ resume }) => list => list.forEach((x, i) => setTimeout(resume, 10 * i, x)),
+      takeItem: ({ resume }) => list => list.forEach((x, i) => setTimeout(resume, 50 * (i + 1), x)),
     });
 
     let count = 0;
@@ -110,5 +110,46 @@ describe('Multiple continuations', () => {
           done();
         },
       );
+  });
+
+  describe('coin flip test', () => {
+    const Coin = createEffect('Coin', {
+      flip: func(['?times'], 'bool', { isMulti: true }),
+    });
+
+    const myCoin = Coin.handler({
+      flip: ({ resume }) => (times = 1) => {
+        Array(times).fill(null)
+          .map((_, i) => i % 2) // Imagine this was Math.round(Math.random()) === 1
+          .forEach(resume);
+      },
+    });
+
+    function *randomness() {
+      const isHead1 = yield Coin.flip(1);
+      const isHead2 = yield Coin.flip(2);
+      const isHead3 = yield Coin.flip(4);
+    
+      return [isHead1, isHead2, isHead3];
+    }
+
+    it('should generate a random set of states', done => {
+      myCoin.runMulti(randomness).fork(
+        done,
+        data => {
+          expect(data).toEqual([
+            [ 0, 0, 0 ],
+            [ 0, 0, 1 ],
+            [ 0, 0, 0 ],
+            [ 0, 0, 1 ],
+            [ 0, 1, 0 ],
+            [ 0, 1, 1 ],
+            [ 0, 1, 0 ],
+            [ 0, 1, 1 ],
+          ]);
+          done();
+        }
+      );
+    });
   });
 });

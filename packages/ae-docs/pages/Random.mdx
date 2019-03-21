@@ -2,7 +2,7 @@
 # Random Effect
 Random effect allows you get random numbers, items from lists and ints.
 
-> NOTE: Do not use for any kind of cryptographic operation
+> NOTE: Do not use for any kind of cryptographic operation. It uses a simple seed based algorithm for random number generation. You can use this interface and add your own custom handler using the `.handler` method.
 
 ---
 
@@ -32,11 +32,13 @@ Random.seed :: Number -> (Program<Random> ...b c, ...b) -> Task e c
 ### Operations
 ```js
 Random = {
-  number: func([], 'number'),
-  getInt: func(['number', 'number'], 'number'),
-  fromArray: func(['array a'], 'a'),
+  number: func(['?times'], 'number', { isMulti: true }),
+  getInt: func(['number', 'number', '?times'], 'number', { isMulti: true }),
+  fromArray: func(['array a', '?times'], 'a', { isMulti: true }),
+  flipCoin: func(['?times'], 'bool', { isMulti: true }),
 }
 ```
+
 
 ## Usage examples
 
@@ -44,15 +46,46 @@ Random = {
 
 ```js
 import { Random } from '@algebraic-effects/effects';
-import { call, sleep } from '@algebraic-effects/core/generic';
 
-const myNumGenerator = function*() {
+function *myNumGenerator() {
   const randomNumber = yield Random.number(); // Yields a random nunmber between 0 and 1
   const rInt = yield Random.getInt(5, 20); // Yields a random int beteen 5 and 20 inclusive
   const iceCream = yield Random.fromArray([ 'chocolate', 'strawberry' ]); // Yields a random item from the array
 }
 
 Random.random(myNumGenerator).fork(() => {}, onSuccess);
+// OR
 Random.seed(10).run(myNumGenerator).fork(() => {}, onSuccess); // Seed value 10
 ```
+
+### With multiple continuations
+In all the operations, the last arguement is an options `times` parameter. You can use this to specify the number of times you want the operation to run in multiple continuations mode.
+
+```js
+import { Random } from '@algebraic-effects/effects';
+
+function *randomizer() {
+  const randInt = yield Random.getInt(0, 100, 2); // Generates a random int bw 0 and 100, twice
+  const coinFlip = yield Random.flipCoin(4); // Flips a coin 4 times
+  // Will run anothing below, 8 times and generate 8 results
+  return [randInt, coinFlip];
+}
+
+Random.random.runMulti(randomizer).fork(() => {}, onSuccess);
+// OR
+Random.seed(10).runMulti(randomizer).fork(() => {}, onSuccess); // Seed value 10
+
+// Will result in something of the form
+// [
+//   [4, true],
+//   [4, false],
+//   [4, false],
+//   [4, true],
+//   [72, false],
+//   [72, true],
+//   [72, true],
+//   [72, true],
+// ]
+```
+
 

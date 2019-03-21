@@ -7,12 +7,19 @@ exports.default = void 0;
 
 var _core = require("@algebraic-effects/core");
 
-var _utils = require("@algebraic-effects/utils");
-
 var Random = (0, _core.createEffect)('Random', {
-  number: (0, _core.func)([], 'number'),
-  getInt: (0, _core.func)(['number', 'number'], 'number'),
-  fromArray: (0, _core.func)(['array a'], 'a')
+  number: (0, _core.func)(['?times'], 'number', {
+    isMulti: true
+  }),
+  getInt: (0, _core.func)(['number', 'number', '?times'], 'number', {
+    isMulti: true
+  }),
+  fromArray: (0, _core.func)(['array a', '?times'], 'a', {
+    isMulti: true
+  }),
+  flipCoin: (0, _core.func)(['?times'], 'bool', {
+    isMulti: true
+  })
 });
 
 Random.seed = function (seed) {
@@ -26,21 +33,33 @@ Random.seed = function (seed) {
     return Math.floor(random() * (max - min + 1)) + min;
   };
 
-  return Random.handler({
-    number: function number(_ref) {
+  var pickFromList = function pickFromList(list) {
+    return list[getRandomInt(0, list.length - 1)];
+  };
+
+  var flipCoin = function flipCoin() {
+    return !!(getRandomInt(0, 100) % 2);
+  };
+
+  var wrapMulti = function wrapMulti(fn) {
+    return function (_ref) {
       var resume = _ref.resume;
-      return (0, _utils.compose)(resume, random);
-    },
-    getInt: function getInt(_ref2) {
-      var resume = _ref2.resume;
-      return (0, _utils.compose)(resume, getRandomInt);
-    },
-    fromArray: function fromArray(_ref3) {
-      var resume = _ref3.resume;
-      return function (array) {
-        return resume(array[getRandomInt(0, array.length - 1)]);
+      return function () {
+        var _arguments = arguments;
+        var argLength = fn.length;
+        var times = typeof arguments[argLength] !== 'undefined' ? arguments[argLength] : 1;
+        Array(times).fill(null).forEach(function () {
+          return resume(fn.apply(null, _arguments));
+        });
       };
-    }
+    };
+  };
+
+  return Random.handler({
+    number: wrapMulti(random),
+    getInt: wrapMulti(getRandomInt),
+    fromArray: wrapMulti(pickFromList),
+    flipCoin: wrapMulti(flipCoin)
   });
 };
 
