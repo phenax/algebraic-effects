@@ -34,19 +34,19 @@ const routes: Routes = {
     order: 2,
     title: 'Core modules',
     render: CoreModule,
-    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run,generic',
+    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run,generic,multiple continuations',
   },
   lingo: {
     order: 3,
     title: 'Made up words',
     render: Lingo,
-    keywords: 'operation,signature,program,effect,handler,runner',
+    keywords: 'operation,signature,program,effect,handler,runner,multiple continuations',
   },
   operations: {
     order: 4,
     title: 'Generic effects',
     render: GenericEffects,
-    keywords: 'sleep,call,background,race,parallel,series,awaitPromise,createGenericEffect',
+    keywords: 'sleep,call,callMulti,background,race,parallel,series,awaitPromise,createGenericEffect',
   },
   task: {
     order: 10,
@@ -74,7 +74,7 @@ const routes: Routes = {
     order: 22,
     title: 'Random Effect',
     render: Random,
-    keywords: 'seed,unseeded,crypto,fromArray,number,getInt',
+    keywords: 'seed,unseeded,crypto,fromArray,number,getInt,flipCoin,multi',
     group: EFFECTS,
   },
   logger: {

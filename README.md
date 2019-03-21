@@ -1,6 +1,6 @@
 
 # Algebraic Effects
-Define side-effects in a pure and composible way using algebraic effects. [https://phenax.github.io/algebraic-effects](https://phenax.github.io/algebraic-effects)
+Manage your effects in a pure and composible way using algebraic effects with multiple continuations. [https://phenax.github.io/algebraic-effects](https://phenax.github.io/algebraic-effects)
 
 [![CircleCI](https://img.shields.io/circleci/project/github/phenax/algebraic-effects/master.svg?style=for-the-badge)](https://circleci.com/gh/phenax/algebraic-effects)
 [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/@algebraic-effects/core.svg?style=for-the-badge)](https://www.npmjs.com/package/@algebraic-effects/core)
@@ -101,7 +101,7 @@ const logger = ConsoleEffect.handler({
 
 const api = ApiEffect.handler({
   markUserAsViewed: ({ resume, throwError }) =>
-    uid => fetchJson(`/user/${uid}/mark-as-viewed`).then(() => resume()).catch(throwError),
+    uid => fetchJson(`/user/${uid}/mark-as-viewed`).then(resume).catch(throwError),
   fetchUser: ({ promise }) => uid => promise(fetchJson(`/user/${uid}`)),
 });
 ```
@@ -124,6 +124,24 @@ api.with(logger) // Compose your effect handlers togather and run them
 You can call resume multiple times from your operation synchronously.
 
 ```js
+function flipCoins() {
+  const isHead1 = yield Random.flipCoin(2);
+  const isHead2 = yield Random.flipCoin(2);
+  return [isHead1 ? 'H' : 'T', isHead2 ? 'H' : 'T'];
+}
+
+// // runMulti method will start your program in mutiple continuations mode
+Random.seed(10)
+  .runMulti(flipCoins)
+  .fork(identity, data => {
+    console.log(data); // Probably [[H, T], [H, T], [T, H], [T, T]]
+  });
+```
+
+
+##### Writing custom effect with multiple continuations
+
+```js
 const ListEffect = createEffect('ListEffect', {
   takeItem: func(['list'], '*', { isMulti: true }), // isMulti flag indicates that this operation resumes multiple times
 });
@@ -136,19 +154,18 @@ function *program() {
   return item1 + item2;
 }
 
-const loopEff = ListEffect.handler({
+const looper = ListEffect.handler({
   takeItem: ({ resume }) => list => list.forEach(resume),
 });
 
 // runMulti method will start your program in mutiple continuations mode
-loopEff.runMulti(program).fork(
+looper.runMulti(program).fork(
   handleError,
   data => {
     console.log(data); // [3, 4, 6, 7]
   }
 );
 ```
-
 
 
 ## Contributing

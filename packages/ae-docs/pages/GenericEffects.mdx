@@ -47,11 +47,12 @@ const program = function*() {
 ```
 
 
-### call
-Call another program from within your program with the same effects
+### call and callMulti
+Call another program from within your program with the same effects. callMulti is similar to call except that it runs in multiple continuations mode enabled.
 
 ```haskell
 call :: Operation (Program ...a b,...a) b
+callMulti :: Operation (Program ...a b,...a) b
 ```
 
 ```js

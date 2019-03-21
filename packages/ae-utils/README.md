@@ -1,7 +1,8 @@
-# @algebraic-effects/core
-The core module for creating and working with algebraic effects in javascript
+# @algebraic-effects/utils
+Utility functions being used internally over at [@algebraic-effects/core](https://github.com/phenax/algebraic-effects)
 
-[Documentation](https://phenax.github.io/algebraic-effects/#core)
+
+[Documentation](https://phenax.github.io/algebraic-effects)
 
 ## Contributing
 
