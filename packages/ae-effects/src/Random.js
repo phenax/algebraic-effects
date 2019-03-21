@@ -1,6 +1,5 @@
 
 import { createEffect, func } from '@algebraic-effects/core';
-import { compose } from '@algebraic-effects/utils';
 
 // Random :: Effect
 const Random = createEffect('Random', {
@@ -12,6 +11,7 @@ const Random = createEffect('Random', {
 
 // Random.seed :: Number -> Runner Number
 Random.seed = seed => {
+  // random :: () -> Number
   const random = () => {
     const x = Math.sin(seed) * 10000;
     seed = seed + 1;
@@ -22,15 +22,17 @@ Random.seed = seed => {
   // getRandomInt :: (Number, Number) -> Number
   const getRandomInt = (min, max) => Math.floor(random() * (max - min + 1)) + min;
 
+  // pickFromList :: [a] -> a
   const pickFromList = list => list[getRandomInt(0, list.length - 1)];
 
+  // flipCoin :: () -> Boolean
   const flipCoin = () => !!(getRandomInt(0, 100) % 2);
 
-  const wrapMulti = fn => ({ resume }) => (...args) => {
+  // wrapMulti :: (...a) -> FlowOperators -> (...a, ?Number) -> ()
+  const wrapMulti = fn => ({ resume }) => function() {
     const argLength = fn.length;
-    const times = typeof args[argLength] !== 'undefined' ? args[argLength] : 1;
-    times <= 0 && console.log(fn, times);
-    Array(times).fill(null).forEach(() => resume(fn(...args)));
+    const times = typeof arguments[argLength] !== 'undefined' ? arguments[argLength] : 1;
+    Array(times).fill(null).forEach(() => resume(fn.apply(null, arguments)));
   };
 
   return Random.handler({
