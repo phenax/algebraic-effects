@@ -1,7 +1,8 @@
 
 import Task from '@algebraic-effects/task';
+import { Random } from '@algebraic-effects/effects';
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
+import { sleep, awaitPromise, resolve, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -148,6 +149,33 @@ describe('Global operations', () => {
         .fork(done, () => {
           expect(logfn).toBeCalledTimes(2);
           expect(logfn.mock.calls.map(x => x[0])).toEqual([ 'A', 'B' ]);
+          done();
+        });
+    });
+  });
+
+  describe('callMulti', () => {
+    const logfn = jest.fn();
+
+    function *programB() {
+      yield Random.flipCoin(3);
+      logfn('B');
+    }
+
+    function *programA() {
+      yield callMulti(programB);
+      logfn('A');
+    }
+
+    afterEach(() => {
+      logfn.mockClear();
+    });
+
+    it('should call another program in multi mode', done => {
+      Random.seed(100)
+        .runMulti(programA).fork(done, () => {
+          expect(logfn).toBeCalledTimes(4);
+          expect(logfn.mock.calls).toEqual([ [ 'B' ], [ 'B' ], [ 'B' ], [ 'A' ] ]);
           done();
         });
     });

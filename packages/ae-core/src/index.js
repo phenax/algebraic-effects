@@ -73,9 +73,10 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
   };
 
   const FlowOps = ({ resume, end, throwError }) => {
-    const call = (p, ...a) => effectHandlerInstance(p, ...a);
+    const call = (p, ...a) => effectHandlerInstance.run(p, ...a);
+    const callMulti = (p, ...a) => effectHandlerInstance.runMulti(p, ...a);
     const promise = promise => promise.then(resume).catch(throwError);
-    return { resume, end, throwError, call, promise };
+    return { resume, end, throwError, call, callMulti, promise };
   };
 
   const effectHandlerInstance = (p, ...args) => {

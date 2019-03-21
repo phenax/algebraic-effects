@@ -144,7 +144,15 @@ var createHandler = function createHandler() {
         a[_key2 - 1] = arguments[_key2];
       }
 
-      return effectHandlerInstance.apply(void 0, [p].concat(a));
+      return effectHandlerInstance.run.apply(effectHandlerInstance, [p].concat(a));
+    };
+
+    var callMulti = function callMulti(p) {
+      for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+        a[_key3 - 1] = arguments[_key3];
+      }
+
+      return effectHandlerInstance.runMulti.apply(effectHandlerInstance, [p].concat(a));
     };
 
     var promise = function promise(_promise) {
@@ -156,13 +164,14 @@ var createHandler = function createHandler() {
       end: end,
       throwError: throwError,
       call: call,
+      callMulti: callMulti,
       promise: promise
     };
   };
 
   var effectHandlerInstance = function effectHandlerInstance(p) {
-    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-      args[_key3 - 1] = arguments[_key3];
+    for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+      args[_key4 - 1] = arguments[_key4];
     }
 
     var task = (0, _task.default)(function (reject, resolve) {
@@ -223,8 +232,8 @@ var createHandler = function createHandler() {
   effectHandlerInstance.run = effectHandlerInstance;
 
   effectHandlerInstance.runMulti = function (p) {
-    for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-      args[_key4 - 1] = arguments[_key4];
+    for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+      args[_key5 - 1] = arguments[_key5];
     }
 
     var runInstance = function runInstance() {
@@ -243,8 +252,8 @@ var createHandler = function createHandler() {
           reject: reject,
           resolve: resolve,
           mapResult: function mapResult() {
-            for (var _len5 = arguments.length, x = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-              x[_key5] = arguments[_key5];
+            for (var _len6 = arguments.length, x = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+              x[_key6] = arguments[_key6];
             }
 
             return [].concat(_toConsumableArray(results), x);
@@ -327,8 +336,8 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len6 = arguments.length, runners = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-    runners[_key6] = arguments[_key6];
+  for (var _len7 = arguments.length, runners = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
+    runners[_key7] = arguments[_key7];
   }
 
   return runners.reduce(function (a, b) {
