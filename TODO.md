@@ -25,8 +25,8 @@
 
 **Multiple continuations**
   - [x] Implement
-  - [ ] Handle cancellation
-  - [ ] Async resume calls (with custom value handler)
+  - [x] Handle cancellation
+  - [ ] Async multiple continuations (with custom value handler)
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations

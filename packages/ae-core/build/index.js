@@ -191,6 +191,7 @@ var createHandler = function createHandler() {
         var isResumed = false;
 
         var resumeOperation = function resumeOperation() {
+          if (task.isCancelled) return program.return(null);
           !isResumed && resume.apply(void 0, arguments);
           isResumed = true;
         };
@@ -241,6 +242,9 @@ var createHandler = function createHandler() {
       var stateCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
       var task = (0, _task.default)(function (reject, resolve) {
         var program = runProgram.apply(void 0, [p].concat(args));
+
+        var cleanup = function cleanup() {};
+
         var results = [];
         stateCache.forEach(function (x) {
           return program.next(x);
@@ -271,21 +275,25 @@ var createHandler = function createHandler() {
           var pendingTasks = [];
 
           var resumeOperation = function resumeOperation(v) {
+            if (task.isCancelled) return program.return(null);
+
             if ((0, _utils2.isOperation)(value) && value.isMulti) {
               if (isResumed) {
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
-                runInstance(v, stateCache).fork(throwError, function (result) {
+                var cancelFn = runInstance(v, stateCache).fork(throwError, function (result) {
                   results = [].concat(_toConsumableArray(results), _toConsumableArray(result));
                   var tasks = pendingTasks.map(function (val) {
                     return runInstance(val, stateCache);
                   });
-                  (0, _fns.series)(tasks).fork(throwError, function (r) {
+                  var cancelFn = (0, _fns.series)(tasks).fork(throwError, function (r) {
                     isResumed = false;
                     end.apply(void 0, _toConsumableArray((0, _utils.flatten)(r)));
                   });
+                  cleanup = (0, _utils.compose)(cleanup, cancelFn);
                 });
+                cleanup = (0, _utils.compose)(cleanup, cancelFn);
               }
             } else if (!isResumed) {
               isResumed = true;
@@ -303,7 +311,8 @@ var createHandler = function createHandler() {
 
         setTimeout(resume, 0, value);
         return function () {
-          return task.isCancelled = true;
+          task.isCancelled = true;
+          cleanup();
         };
       });
       task.isCancelled = false;

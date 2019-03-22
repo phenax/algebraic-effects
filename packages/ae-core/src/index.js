@@ -1,6 +1,6 @@
 import Task from '@algebraic-effects/task';
 import { series } from '@algebraic-effects/task/fns';
-import { isGenerator, flatten, identity } from '@algebraic-effects/utils';
+import { isGenerator, flatten, identity, compose } from '@algebraic-effects/utils';
 import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 
@@ -91,6 +91,7 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
 
         let isResumed = false;
         const resumeOperation = (...args) => {
+          if(task.isCancelled) return program.return(null);
           !isResumed && resume(...args);
           isResumed = true;
         };
@@ -133,6 +134,7 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
     const runInstance = (value = null, stateCache = []) => {
       const task = Task((reject, resolve) => {
         const program = runProgram(p, ...args);
+        let cleanup = () => {};
         let results = [];
 
         // Fast forward
@@ -154,25 +156,32 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
           const pendingTasks = [];
 
           const resumeOperation = v => {
+            if(task.isCancelled) return program.return(null);
+
             if(isOperation(value) && value.isMulti) {
               if(isResumed) {
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
-                runInstance(v, stateCache).fork(
+                const cancelFn = runInstance(v, stateCache).fork(
                   throwError,
                   result => {
                     results = [...results, ...result];
                     const tasks = pendingTasks.map(val => runInstance(val, stateCache));
-                    series(tasks).fork(
+
+                    const cancelFn = series(tasks).fork(
                       throwError,
                       r => {
                         isResumed = false;
                         end(...flatten(r));
                       },
                     );
+
+                    cleanup = compose(cleanup, cancelFn);
                   },
                 );
+
+                cleanup = compose(cleanup, cancelFn);
               }
             } else if(!isResumed) {
               isResumed = true;
@@ -186,7 +195,10 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
   
         setTimeout(resume, 0, value);
   
-        return () => (task.isCancelled = true);
+        return () => {
+          task.isCancelled = true;
+          cleanup();
+        };
       });
   
       task.isCancelled = false;

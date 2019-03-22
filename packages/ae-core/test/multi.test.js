@@ -112,6 +112,38 @@ describe('Multiple continuations', () => {
       );
   });
 
+  it('should do synchronous mutliple continuations cancellations', done => {
+    let cancel = () => {};
+    const breakpoint = jest.fn((_, fn) => fn && fn());
+    const runner = LoopEffect.handler({
+      takeItem: ({ resume }) => list => list.forEach(resume),
+    });
+
+    function *program() {
+      const item1 = yield LoopEffect.takeItem([ 1, 4 ]);
+
+      breakpoint('1', cancel);
+
+      const item2 = yield LoopEffect.takeItem([ 2, 3 ]);
+
+      breakpoint('2');
+
+      return item1 + item2;
+    }
+
+    cancel = runner
+      .runMulti(program)
+      .fork(
+        done,
+        () => done('Shouldnt have reached here'),
+      );
+
+    setTimeout(() => {
+      expect(breakpoint.mock.calls).toHaveLength(1);
+      done();
+    }, 100);
+  });
+
   describe('coin flip test', () => {
     const Coin = createEffect('Coin', {
       flip: func(['?times'], 'bool', { isMulti: true }),
