@@ -13,9 +13,7 @@ var Exception = (0, _core.createEffect)('Exception', {
 Exception.try = Exception.handler({
   throw: function _throw(_ref) {
     var throwError = _ref.throwError;
-    return function (e) {
-      return throwError(e);
-    };
+    return throwError;
   }
 });
 var _default = Exception;

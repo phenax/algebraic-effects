@@ -112,14 +112,12 @@ var createHandler = function createHandler() {
   var getTerminationOps = function getTerminationOps(_ref3) {
     var program = _ref3.program,
         task = _ref3.task,
-        reject = _ref3.reject,
         resolve = _ref3.resolve,
         _ref3$mapResult = _ref3.mapResult,
         mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult;
 
-    var throwError = function throwError(x) {
-      program.return(x);
-      !task.isCancelled && reject(x);
+    var throwError = function throwError(e) {
+      return program.throw(e);
     };
 
     var end = function end() {
@@ -196,12 +194,34 @@ var createHandler = function createHandler() {
           isResumed = true;
         };
 
+        var onError = function onError() {
+          for (var _len5 = arguments.length, args = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+            args[_key5] = arguments[_key5];
+          }
+
+          return tryNextValue(function () {
+            return throwError.apply(void 0, args);
+          });
+        };
+
         var flowOperators = FlowOps({
           resume: resumeOperation,
           end: end,
-          throwError: throwError
+          throwError: onError
         });
-        evaluateYieldedValue(getNextValue(program, x), flowOperators);
+
+        var tryNextValue = function tryNextValue(getValue) {
+          try {
+            var value = getValue();
+            value && evaluateYieldedValue(value, flowOperators);
+          } catch (e) {
+            !task.isCancelled && reject(e);
+          }
+        };
+
+        tryNextValue(function () {
+          return getNextValue(program, x);
+        });
       };
 
       setTimeout(resume, 0);
@@ -233,8 +253,8 @@ var createHandler = function createHandler() {
   effectHandlerInstance.run = effectHandlerInstance;
 
   effectHandlerInstance.runMulti = function (p) {
-    for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-      args[_key5 - 1] = arguments[_key5];
+    for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
+      args[_key6 - 1] = arguments[_key6];
     }
 
     var runInstance = function runInstance() {
@@ -256,8 +276,8 @@ var createHandler = function createHandler() {
           reject: reject,
           resolve: resolve,
           mapResult: function mapResult() {
-            for (var _len6 = arguments.length, x = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-              x[_key6] = arguments[_key6];
+            for (var _len7 = arguments.length, x = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
+              x[_key7] = arguments[_key7];
             }
 
             return [].concat(_toConsumableArray(results), x);
@@ -345,8 +365,8 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len7 = arguments.length, runners = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
-    runners[_key7] = arguments[_key7];
+  for (var _len8 = arguments.length, runners = new Array(_len8), _key8 = 0; _key8 < _len8; _key8++) {
+    runners[_key8] = arguments[_key8];
   }
 
   return runners.reduce(function (a, b) {

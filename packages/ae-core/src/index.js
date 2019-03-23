@@ -54,13 +54,10 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
     }
   };
 
-  const getTerminationOps = ({ program, task, reject, resolve, mapResult = identity }) => {
+  const getTerminationOps = ({ program, task, resolve, mapResult = identity }) => {
 
     // throwError :: * -> ()
-    const throwError = x => {
-      program.return(x);
-      !task.isCancelled && reject(x);
-    };
+    const throwError = e => program.throw(e);
 
     // end  :: * -> ()
     const end = (...args) => {
@@ -96,8 +93,20 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
           isResumed = true;
         };
 
-        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError });
-        evaluateYieldedValue(getNextValue(program, x), flowOperators);
+        const onError = (...args) => tryNextValue(() => throwError(...args));
+
+        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
+
+        const tryNextValue = getValue => {
+          try {
+            const value = getValue();
+            value && evaluateYieldedValue(value, flowOperators);
+          } catch(e) {
+            !task.isCancelled && reject(e);
+          }
+        };
+
+        tryNextValue(() => getNextValue(program, x));
       };
 
       setTimeout(resume, 0);

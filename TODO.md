@@ -31,6 +31,7 @@
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
   - [ ] One handler to fork method
+  - [ ] Allow cancellation from within
 
 **Add more effects ...**
   - [x] Exception

@@ -47,11 +47,11 @@ describe('Global operations', () => {
     }
 
     function* runFailPromise() {
-      const resp = yield awaitPromise(Promise.reject('rror'));
+      const resp = yield awaitPromise(Promise.reject(new Error('errorator')));
       return resp.data;
     }
 
-    it('should resolve normally for resolves promise', done => {
+    it('should resolve normally for resolved promise', done => {
       run(runSuccPromise)
         .fork(done, x => {
           expect(x).toBe('Some data');
@@ -62,9 +62,9 @@ describe('Global operations', () => {
     it('should reject for rejected promise', done => {
       run(runFailPromise)
         .fork(e => {
-          expect(e).toBe('rror');
+          expect(e.message).toBe('errorator');
           done();
-        }, done);
+        }, () => done('Shouldnt be here'));
     });
   });
 
@@ -81,7 +81,7 @@ describe('Global operations', () => {
       return resp.data;
     }
 
-    it('should resolve normally for resolves promise', done => {
+    it('should resolve normally for resolved task', done => {
       run(runSuccPromise)
         .fork(done, x => {
           expect(x).toBe('Some data');

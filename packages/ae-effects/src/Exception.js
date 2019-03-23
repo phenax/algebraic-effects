@@ -8,7 +8,7 @@ const Exception = createEffect('Exception', {
 
 // Exception.try :: Runner
 Exception.try = Exception.handler({
-  throw: ({ throwError }) => e => throwError(e),
+  throw: ({ throwError }) => throwError,
 });
 
 export default Exception;
