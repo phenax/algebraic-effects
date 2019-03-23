@@ -43,7 +43,7 @@ var Task = function Task(taskFn) {
     }
 
     var optns = guardOptns(parseOptions());
-    var cleanup = taskFn(optns.onFailure, optns.onSuccess);
+    var cleanup = taskFn(optns.onFailure, optns.onSuccess, cancelTask);
 
     function cancelTask() {
       cleanup && cleanup.apply(null, arguments);

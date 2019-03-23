@@ -33,7 +33,7 @@ const Task = (taskFn) => {
 
     const optns = guardOptns(parseOptions());
 
-    const cleanup = taskFn(optns.onFailure, optns.onSuccess);
+    const cleanup = taskFn(optns.onFailure, optns.onSuccess, cancelTask);
 
     function cancelTask() {
       cleanup && cleanup.apply(null, arguments);

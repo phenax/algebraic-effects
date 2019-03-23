@@ -262,6 +262,16 @@ describe('Task', () => {
 
       cancel();
     });
+
+    it('should cancel task from within a task', done => {
+      const task = Task((rej, res, cancel) => cancel());
+
+      task.fork({
+        onFailure: done,
+        onSuccess: () => done('shouldnt have reached here'),
+        onCancel: () => done(),
+      });
+    });
   });
 });
 

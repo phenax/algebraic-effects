@@ -29,8 +29,8 @@
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
-  - [ ] Allow cancellation from within
-  - [ ] Cancellation handler
+  - [x] Cancellation handler
+  - [x] Allow cancellation from within
 
 **Add more effects ...**
   - [x] Exception
