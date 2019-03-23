@@ -27,11 +27,7 @@ var Task = function Task(taskFn) {
       };
     }
 
-    function guardOptns(_ref) {
-      var onFailure = _ref.onFailure,
-          onSuccess = _ref.onSuccess,
-          onCancel = _ref.onCancel;
-
+    function guardOptns(o) {
       function guard(cb) {
         return function (a) {
           isCancelled || isDone || !cb ? null : cb(a);
@@ -40,24 +36,21 @@ var Task = function Task(taskFn) {
       }
 
       return {
-        onFailure: guard(onFailure),
-        onSuccess: guard(onSuccess),
-        onCancel: guard(onCancel)
+        onFailure: guard(o.onFailure),
+        onSuccess: guard(o.onSuccess),
+        onCancel: guard(o.onCancel)
       };
     }
 
-    var _guardOptns = guardOptns(parseOptions()),
-        onFailure = _guardOptns.onFailure,
-        onSuccess = _guardOptns.onSuccess,
-        onCancel = _guardOptns.onCancel;
+    var optns = guardOptns(parseOptions());
+    var cleanup = taskFn(optns.onFailure, optns.onSuccess);
 
-    var cleanup = taskFn(onFailure, onSuccess) || _utils.identity;
-
-    function globalCleanup() {
+    function cancelTask() {
+      cleanup && cleanup.apply(null, arguments);
+      optns.onCancel.apply(null, arguments);
       isCancelled = true;
     }
 
-    var cancelTask = (0, _utils.compose)(globalCleanup, onCancel, cleanup);
     return cancelTask;
   };
 

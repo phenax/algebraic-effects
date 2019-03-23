@@ -20,7 +20,7 @@ const Task = (taskFn) => {
       return { onFailure: args[0], onSuccess: args[1], onCancel: args[2] };
     }
 
-    function guardOptns({ onFailure, onSuccess, onCancel }) {
+    function guardOptns(o) {
       function guard(cb) {
         return function(a) {
           isCancelled || isDone || !cb ? null : cb(a);
@@ -28,15 +28,18 @@ const Task = (taskFn) => {
         };
       }
 
-      return { onFailure: guard(onFailure), onSuccess: guard(onSuccess), onCancel: guard(onCancel) };
+      return { onFailure: guard(o.onFailure), onSuccess: guard(o.onSuccess), onCancel: guard(o.onCancel) };
     }
 
-    const { onFailure, onSuccess, onCancel } = guardOptns(parseOptions());
+    const optns = guardOptns(parseOptions());
 
-    const cleanup = taskFn(onFailure, onSuccess) || identity;
+    const cleanup = taskFn(optns.onFailure, optns.onSuccess);
 
-    function globalCleanup() { isCancelled = true; }
-    const cancelTask = compose(globalCleanup, onCancel, cleanup);
+    function cancelTask() {
+      cleanup && cleanup.apply(null, arguments);
+      optns.onCancel.apply(null, arguments);
+      isCancelled = true;
+    }
 
     return cancelTask;
   };
