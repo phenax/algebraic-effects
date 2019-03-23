@@ -10,7 +10,7 @@ const Task = (taskFn) => {
     let isDone = false;
 
     const guard = cb => a => {
-      isCancelled || isDone ? null : cb(a);
+      isCancelled || isDone || !cb ? null : cb(a);
       isDone = true;
     };
 
