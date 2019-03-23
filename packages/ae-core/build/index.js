@@ -289,27 +289,30 @@ var createHandler = function createHandler() {
         var resume = function resume(x) {
           if (task.isCancelled) return program.return(null);
           stateCache = [].concat(_toConsumableArray(stateCache), [x]);
-          var iterationValue = getNextValue(program, x);
-          var value = iterationValue.value;
+          var flowOperators = {};
+          var iterationValue = {};
           var isResumed = false;
           var pendingTasks = [];
 
           var resumeOperation = function resumeOperation(v) {
             if (task.isCancelled) return program.return(null);
 
-            if ((0, _utils2.isOperation)(value) && value.isMulti) {
+            if ((0, _utils2.isOperation)(iterationValue.value) && iterationValue.value.isMulti) {
               if (isResumed) {
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
-                var cancelFn = runInstance(v, stateCache).fork(throwError, function (result) {
+                var cancelFn = runInstance(v, stateCache).fork(flowOperators.throwError, function (result) {
                   results = [].concat(_toConsumableArray(results), _toConsumableArray(result));
                   var tasks = pendingTasks.map(function (val) {
                     return runInstance(val, stateCache);
                   });
-                  var cancelFn = (0, _fns.series)(tasks).fork(throwError, function (r) {
+                  var cancelFn = (0, _fns.series)(tasks).fork(flowOperators.throwError, function (r) {
+                    var _flowOperators;
+
                     isResumed = false;
-                    end.apply(void 0, _toConsumableArray((0, _utils.flatten)(r)));
+
+                    (_flowOperators = flowOperators).end.apply(_flowOperators, _toConsumableArray((0, _utils.flatten)(r)));
                   });
                   cleanup = (0, _utils.compose)(cleanup, cancelFn);
                 });
@@ -321,12 +324,35 @@ var createHandler = function createHandler() {
             }
           };
 
-          var flowOperators = FlowOps({
+          var onError = function onError() {
+            for (var _len8 = arguments.length, args = new Array(_len8), _key8 = 0; _key8 < _len8; _key8++) {
+              args[_key8] = arguments[_key8];
+            }
+
+            return tryNextValue(function () {
+              return throwError.apply(void 0, args);
+            });
+          };
+
+          flowOperators = FlowOps({
             resume: resumeOperation,
             end: end,
-            throwError: throwError
+            throwError: onError
           });
-          evaluateYieldedValue(iterationValue, flowOperators);
+
+          var tryNextValue = function tryNextValue(getValue) {
+            try {
+              var _value = getValue();
+
+              _value && evaluateYieldedValue(_value, flowOperators);
+            } catch (e) {
+              !task.isCancelled && reject(e);
+            }
+          };
+
+          tryNextValue(function () {
+            return iterationValue = getNextValue(program, x);
+          });
         };
 
         setTimeout(resume, 0, value);
@@ -365,8 +391,8 @@ var createEffect = function createEffect(name, operations) {
 exports.createEffect = createEffect;
 
 var composeHandlers = function composeHandlers() {
-  for (var _len8 = arguments.length, runners = new Array(_len8), _key8 = 0; _key8 < _len8; _key8++) {
-    runners[_key8] = arguments[_key8];
+  for (var _len9 = arguments.length, runners = new Array(_len9), _key9 = 0; _key9 < _len9; _key9++) {
+    runners[_key9] = arguments[_key9];
   }
 
   return runners.reduce(function (a, b) {

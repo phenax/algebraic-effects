@@ -1,4 +1,4 @@
-import { State } from '@algebraic-effects/effects';
+import { State, Exception } from '@algebraic-effects/effects';
 import { createEffect, func } from '../src';
 
 describe('Multiple continuations', () => {
@@ -26,6 +26,33 @@ describe('Multiple continuations', () => {
           expect(data).toEqual([ 3, 4, 6, 7 ]);
           done();
         },
+      );
+  });
+
+  it('should do synchronous mutliple continuations with exception handling', done => {
+    const runner = LoopEffect.handler({
+      takeItem: ({ resume }) => list => list.forEach(resume),
+    });
+
+    function *program() {
+      const item1 = yield LoopEffect.takeItem([ 1, 4 ]);
+      const item2 = yield LoopEffect.takeItem([ 2, 3 ]);
+
+      if (item1 === 4 && item2 == 3)
+        yield Exception.throw(new Error('Erorry'));
+
+      return [item1, item2];
+    }
+
+    runner
+      .with(Exception.try)
+      .runMulti(program)
+      .fork(
+        e => {
+          expect(e.message).toBe('Erorry');
+          done();
+        },
+        () => done('shouldnt be here'),
       );
   });
 

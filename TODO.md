@@ -17,7 +17,7 @@
 - [x] Prevent operation name collisions with effect namespace
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
-- [ ] Support try-catch inside program
+- [x] Support try-catch inside program
 - [ ] Allow custom handling for errors. (One handler to fork method)
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] Typescript types

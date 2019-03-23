@@ -94,7 +94,6 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
         };
 
         const onError = (...args) => tryNextValue(() => throwError(...args));
-
         const flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
 
         const tryNextValue = getValue => {
@@ -158,8 +157,8 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
 
           stateCache = [...stateCache, x];
 
-          const iterationValue = getNextValue(program, x);
-          const { value } = iterationValue;
+          let flowOperators = {};
+          let iterationValue = {};
   
           let isResumed = false; // Identifier for multiple resume calls from one op
           const pendingTasks = [];
@@ -167,22 +166,22 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
           const resumeOperation = v => {
             if(task.isCancelled) return program.return(null);
 
-            if(isOperation(value) && value.isMulti) {
+            if(isOperation(iterationValue.value) && iterationValue.value.isMulti) {
               if(isResumed) {
                 pendingTasks.push(v);
               } else {
                 isResumed = true;
                 const cancelFn = runInstance(v, stateCache).fork(
-                  throwError,
+                  flowOperators.throwError,
                   result => {
                     results = [...results, ...result];
                     const tasks = pendingTasks.map(val => runInstance(val, stateCache));
 
                     const cancelFn = series(tasks).fork(
-                      throwError,
+                      flowOperators.throwError,
                       r => {
                         isResumed = false;
-                        end(...flatten(r));
+                        flowOperators.end(...flatten(r));
                       },
                     );
 
@@ -198,8 +197,19 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
             }
           };
 
-          const flowOperators = FlowOps({ resume: resumeOperation, end, throwError });
-          evaluateYieldedValue(iterationValue, flowOperators);
+          const onError = (...args) => tryNextValue(() => throwError(...args));
+          flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
+
+          const tryNextValue = getValue => {
+            try {
+              const value = getValue();
+              value && evaluateYieldedValue(value, flowOperators);
+            } catch(e) {
+              !task.isCancelled && reject(e);
+            }
+          };
+  
+          tryNextValue(() => (iterationValue = getNextValue(program, x)));
         };
   
         setTimeout(resume, 0, value);
