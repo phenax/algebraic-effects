@@ -16,7 +16,7 @@ var Task = function Task(taskFn) {
 
     var guard = function guard(cb) {
       return function (a) {
-        isCancelled || isDone ? null : cb(a);
+        isCancelled || isDone || !cb ? null : cb(a);
         isDone = true;
       };
     };
