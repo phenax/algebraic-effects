@@ -10,24 +10,55 @@ var _utils = require("@algebraic-effects/utils");
 var _pointfree = require("./pointfree");
 
 var Task = function Task(taskFn) {
-  var forkTask = function forkTask(onFailure, onSuccess) {
+  var forkTask = function forkTask() {
     var isCancelled = false;
     var isDone = false;
+    var args = arguments;
 
-    var guard = function guard(cb) {
-      return function (a) {
-        isCancelled || isDone || !cb ? null : cb(a);
-        isDone = true;
+    function parseOptions() {
+      if (args.length === 1 && args[0] && (args[0].onSuccess || args[0].onFailure || args[0].onCancel)) {
+        return args[0];
+      }
+
+      return {
+        onFailure: args[0],
+        onSuccess: args[1],
+        onCancel: args[2]
       };
-    };
+    }
 
-    var globalCleanup = function globalCleanup() {
-      return isCancelled = true;
-    };
+    function guardOptns(_ref) {
+      var onFailure = _ref.onFailure,
+          onSuccess = _ref.onSuccess,
+          onCancel = _ref.onCancel;
 
-    var cleanup = taskFn(guard(onFailure), guard(onSuccess)) || _utils.identity;
+      function guard(cb) {
+        return function (a) {
+          isCancelled || isDone || !cb ? null : cb(a);
+          isDone = true;
+        };
+      }
 
-    return (0, _utils.compose)(globalCleanup, cleanup);
+      return {
+        onFailure: guard(onFailure),
+        onSuccess: guard(onSuccess),
+        onCancel: guard(onCancel)
+      };
+    }
+
+    var _guardOptns = guardOptns(parseOptions()),
+        onFailure = _guardOptns.onFailure,
+        onSuccess = _guardOptns.onSuccess,
+        onCancel = _guardOptns.onCancel;
+
+    var cleanup = taskFn(onFailure, onSuccess) || _utils.identity;
+
+    function globalCleanup() {
+      isCancelled = true;
+    }
+
+    var cancelTask = (0, _utils.compose)(globalCleanup, onCancel, cleanup);
+    return cancelTask;
   };
 
   var fold = function fold(mapErr, mapVal) {

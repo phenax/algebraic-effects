@@ -5,19 +5,40 @@ import { fork } from './pointfree';
 const Task = (taskFn) => {
 
   // forkTask :: (e -> (), b -> ()) -> CancelFunction
-  const forkTask = (onFailure, onSuccess) => {
+  const forkTask = function() {
     let isCancelled = false;
     let isDone = false;
+    const args = arguments;
 
-    const guard = cb => a => {
-      isCancelled || isDone || !cb ? null : cb(a);
-      isDone = true;
-    };
+    function parseOptions() {
+      if (
+        args.length === 1 && args[0] &&
+        (args[0].onSuccess || args[0].onFailure || args[0].onCancel)
+      ) {
+        return args[0];
+      }
+      return { onFailure: args[0], onSuccess: args[1], onCancel: args[2] };
+    }
 
-    const globalCleanup = () => (isCancelled = true);
-    const cleanup = taskFn(guard(onFailure), guard(onSuccess)) || identity;
+    function guardOptns({ onFailure, onSuccess, onCancel }) {
+      function guard(cb) {
+        return function(a) {
+          isCancelled || isDone || !cb ? null : cb(a);
+          isDone = true;
+        };
+      }
 
-    return compose(globalCleanup, cleanup);
+      return { onFailure: guard(onFailure), onSuccess: guard(onSuccess), onCancel: guard(onCancel) };
+    }
+
+    const { onFailure, onSuccess, onCancel } = guardOptns(parseOptions());
+
+    const cleanup = taskFn(onFailure, onSuccess) || identity;
+
+    function globalCleanup() { isCancelled = true; }
+    const cancelTask = compose(globalCleanup, onCancel, cleanup);
+
+    return cancelTask;
   };
 
   // fold :: (e -> b, a -> b) -> Task () b

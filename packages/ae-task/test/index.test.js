@@ -1,5 +1,6 @@
 
 import Task from '../src';
+import { resolveAfter } from '../src/helpers';
 
 const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
   const timerid = setTimeout(() => resolve(), duration);
@@ -211,10 +212,12 @@ describe('Task', () => {
         .map(n => n + 50)
         .chain(delay)
         .map(() => 10)
-        .fork(done, x => {
-          expect(x).toBe(10);
-          expect(Date.now() - start).toBeGreaterThanOrEqual(200);
-          done();
+        .fork({
+          onSuccess: x => {
+            expect(x).toBe(10);
+            expect(Date.now() - start).toBeGreaterThanOrEqual(200);
+            done();
+          },
         });
     });
 
@@ -240,6 +243,24 @@ describe('Task', () => {
       const cancel = delay(50).fork(done, () => done('shouldnt have reached here'));
       cancel();
       setTimeout(() => done(), 150);
+    });
+  });
+
+  describe('Cancellation', () => {
+    it('should cancel task', done => {
+      const cancel = resolveAfter(50).fork(done, () => done('shouldnt have reached here'));
+      cancel();
+      setTimeout(() => done(), 150);
+    });
+
+    it('should cancel task and allow handling cancellation', done => {
+      const cancel = resolveAfter(50).fork({
+        onFailure: done,
+        onSuccess: () => done('shouldnt have reached here'),
+        onCancel: () => done(),
+      });
+
+      cancel();
     });
   });
 });
