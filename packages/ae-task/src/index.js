@@ -13,11 +13,11 @@ const Task = (taskFn) => {
     function parseOptions() {
       if (
         args.length === 1 && args[0] &&
-        (args[0].onResolved || args[0].onRejected || args[0].onCancelled)
+        (args[0].Resolved || args[0].Rejected || args[0].Cancelled)
       ) {
         return args[0];
       }
-      return { onRejected: args[0], onResolved: args[1], onCancelled: args[2] };
+      return { Rejected: args[0], Resolved: args[1], Cancelled: args[2] };
     }
 
     function guardOptns(o) {
@@ -28,16 +28,16 @@ const Task = (taskFn) => {
         };
       }
 
-      return { onRejected: guard(o.onRejected), onResolved: guard(o.onResolved), onCancelled: guard(o.onCancelled) };
+      return { Rejected: guard(o.Rejected), Resolved: guard(o.Resolved), Cancelled: guard(o.Cancelled) };
     }
 
     const optns = guardOptns(parseOptions());
 
-    const cleanup = taskFn(optns.onRejected, optns.onResolved, cancelTask);
+    const cleanup = taskFn(optns.Rejected, optns.Resolved, cancelTask);
 
     function cancelTask() {
       cleanup && cleanup.apply(null, arguments);
-      optns.onCancelled.apply(null, arguments);
+      optns.Cancelled.apply(null, arguments);
       isCancelled = true;
     }
 

@@ -213,7 +213,7 @@ describe('Task', () => {
         .chain(delay)
         .map(() => 10)
         .fork({
-          onResolved: x => {
+          Resolved: x => {
             expect(x).toBe(10);
             expect(Date.now() - start).toBeGreaterThanOrEqual(200);
             done();
@@ -255,9 +255,9 @@ describe('Task', () => {
 
     it('should cancel task and allow handling cancellation', done => {
       const cancel = resolveAfter(50).fork({
-        onRejected: done,
-        onResolved: () => done('shouldnt have reached here'),
-        onCancelled: () => done(),
+        Rejected: done,
+        Resolved: () => done('shouldnt have reached here'),
+        Cancelled: () => done(),
       });
 
       cancel();
@@ -267,9 +267,9 @@ describe('Task', () => {
       const task = Task((rej, res, cancel) => cancel());
 
       task.fork({
-        onRejected: done,
-        onResolved: () => done('shouldnt have reached here'),
-        onCancelled: () => done(),
+        Rejected: done,
+        Resolved: () => done('shouldnt have reached here'),
+        Cancelled: () => done(),
       });
     });
   });

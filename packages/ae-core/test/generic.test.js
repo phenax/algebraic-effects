@@ -132,13 +132,13 @@ describe('Global operations', () => {
       handler
         .run(program, 2)
         .fork({
-          onResolved: data => {
+          Resolved: data => {
             expect(logFn).toHaveBeenCalledTimes(1);
             expect(data).toBe(2);
             done();
           },
-          onRejected: done,
-          onCancelled: () => done('shoujndt be herre'),
+          Rejected: done,
+          Cancelled: () => done('shoujndt be herre'),
         });
     });
 
@@ -146,9 +146,9 @@ describe('Global operations', () => {
       handler
         .run(program, 5)
         .fork({
-          onResolved: () => done('shoujndt be herre'),
-          onRejected: done,
-          onCancelled: data => {
+          Resolved: () => done('shoujndt be herre'),
+          Rejected: done,
+          Cancelled: data => {
             expect(logFn).not.toHaveBeenCalled();
             expect(data).toBe(5);
             done();

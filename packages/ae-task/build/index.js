@@ -16,14 +16,14 @@ var Task = function Task(taskFn) {
     var args = arguments;
 
     function parseOptions() {
-      if (args.length === 1 && args[0] && (args[0].onResolved || args[0].onRejected || args[0].onCancelled)) {
+      if (args.length === 1 && args[0] && (args[0].Resolved || args[0].Rejected || args[0].Cancelled)) {
         return args[0];
       }
 
       return {
-        onRejected: args[0],
-        onResolved: args[1],
-        onCancelled: args[2]
+        Rejected: args[0],
+        Resolved: args[1],
+        Cancelled: args[2]
       };
     }
 
@@ -36,18 +36,18 @@ var Task = function Task(taskFn) {
       }
 
       return {
-        onRejected: guard(o.onRejected),
-        onResolved: guard(o.onResolved),
-        onCancelled: guard(o.onCancelled)
+        Rejected: guard(o.Rejected),
+        Resolved: guard(o.Resolved),
+        Cancelled: guard(o.Cancelled)
       };
     }
 
     var optns = guardOptns(parseOptions());
-    var cleanup = taskFn(optns.onRejected, optns.onResolved, cancelTask);
+    var cleanup = taskFn(optns.Rejected, optns.Resolved, cancelTask);
 
     function cancelTask() {
       cleanup && cleanup.apply(null, arguments);
-      optns.onCancelled.apply(null, arguments);
+      optns.Cancelled.apply(null, arguments);
       isCancelled = true;
     }
 
