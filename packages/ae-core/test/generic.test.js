@@ -2,7 +2,7 @@
 import Task from '@algebraic-effects/task';
 import { Random } from '@algebraic-effects/effects';
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
+import { sleep, awaitPromise, resolve, cancel, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -108,6 +108,51 @@ describe('Global operations', () => {
         .fork(done, x => {
           expect(x).toBe(5);
           done();
+        });
+    });
+  });
+
+  describe('cancel', () => {
+    const logFn = jest.fn();
+    function* program(x) {
+      if(x === 5) {
+        yield cancel(x);
+      }
+      yield sleep(100);
+      return x;
+    }
+
+    const handler = run.with({ sleep: ({ resume }) => () => resume(logFn()) });
+
+    beforeEach(() => {
+      logFn.mockClear();
+    });
+
+    it('should not cancel the task if input is not 5', done => {
+      handler
+        .run(program, 2)
+        .fork({
+          onResolved: data => {
+            expect(logFn).toHaveBeenCalledTimes(1);
+            expect(data).toBe(2);
+            done();
+          },
+          onRejected: done,
+          onCancelled: () => done('shoujndt be herre'),
+        });
+    });
+
+    it('should cancel the task if input is 5', done => {
+      handler
+        .run(program, 5)
+        .fork({
+          onResolved: () => done('shoujndt be herre'),
+          onRejected: done,
+          onCancelled: data => {
+            expect(logFn).not.toHaveBeenCalled();
+            expect(data).toBe(5);
+            done();
+          },
         });
     });
   });

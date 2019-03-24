@@ -54,7 +54,7 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
     }
   };
 
-  const getTerminationOps = ({ program, task, resolve, mapResult = identity }) => {
+  const getTerminationOps = ({ program, task, resolve, mapResult = identity, cancelTask }) => {
 
     // throwError :: * -> ()
     const throwError = e => program.throw(e);
@@ -66,21 +66,26 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
       !task.isCancelled && resolve(value);
     };
 
-    return { throwError, end };
+    const cancel = x => {
+      program.return(x);
+      cancelTask(x);
+    };
+
+    return { throwError, end, cancel };
   };
 
-  const FlowOps = ({ resume, end, throwError }) => {
+  const FlowOps = ({ resume, end, throwError, cancel }) => {
     const call = (p, ...a) => effectHandlerInstance.run(p, ...a);
     const callMulti = (p, ...a) => effectHandlerInstance.runMulti(p, ...a);
     const promise = promise => promise.then(resume).catch(throwError);
-    return { resume, end, throwError, call, callMulti, promise };
+    return { resume, end, throwError, cancel, call, callMulti, promise };
   };
 
   const effectHandlerInstance = (p, ...args) => {
-    const task = Task((reject, resolve) => {
+    const task = Task((reject, resolve, cancelTask) => {
       const program = runProgram(p, ...args);
   
-      const { end, throwError } = getTerminationOps({ program, task, reject, resolve });
+      const { end, throwError, cancel } = getTerminationOps({ program, task, reject, resolve, cancelTask });
   
       // resume :: * -> ()
       const resume = x => {
@@ -94,7 +99,7 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
         };
 
         const onError = (...args) => tryNextValue(() => throwError(...args));
-        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
+        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError, cancel });
 
         const tryNextValue = getValue => {
           try {
