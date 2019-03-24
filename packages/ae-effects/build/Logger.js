@@ -27,35 +27,30 @@ Logger.from = function (loggerInterface) {
     info: noop
   };
   return Logger.handler({
-    log: function log(_ref) {
-      var resume = _ref.resume;
+    log: function log(o) {
       return function (label, data) {
         logger.log(label, data);
-        resume(data);
+        o.resume(data);
       };
     },
-    message: function message(_ref2) {
-      var resume = _ref2.resume;
+    message: function message(o) {
       return function () {
-        return resume(logger.log.apply(logger, arguments));
+        return o.resume(logger.log.apply(logger, arguments));
       };
     },
-    info: function info(_ref3) {
-      var resume = _ref3.resume;
+    info: function info(o) {
       return function (str) {
-        return resume(logger.info(str));
+        return o.resume(logger.info(str));
       };
     },
-    error: function error(_ref4) {
-      var resume = _ref4.resume;
+    error: function error(o) {
       return function (e) {
-        return resume(logger.error(e));
+        return o.resume(logger.error(e));
       };
     },
-    warn: function warn(_ref5) {
-      var resume = _ref5.resume;
+    warn: function warn(o) {
       return function (e) {
-        return resume(logger.warn(e));
+        return o.resume(logger.warn(e));
       };
     }
   });

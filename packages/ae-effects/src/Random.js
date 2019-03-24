@@ -29,10 +29,10 @@ Random.seed = seed => {
   const flipCoin = () => !!(getRandomInt(0, 100) % 2);
 
   // wrapMulti :: (...a) -> FlowOperators -> (...a, ?Number) -> ()
-  const wrapMulti = fn => ({ resume }) => function() {
+  const wrapMulti = fn => o => function() {
     const argLength = fn.length;
     const times = typeof arguments[argLength] !== 'undefined' ? arguments[argLength] : 1;
-    Array(times).fill(null).forEach(() => resume(fn.apply(null, arguments)));
+    Array(times).fill(null).forEach(() => o.resume(fn.apply(null, arguments)));
   };
 
   return Random.handler({

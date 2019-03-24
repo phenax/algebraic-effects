@@ -42,14 +42,13 @@ Random.seed = function (seed) {
   };
 
   var wrapMulti = function wrapMulti(fn) {
-    return function (_ref) {
-      var resume = _ref.resume;
+    return function (o) {
       return function () {
         var _arguments = arguments;
         var argLength = fn.length;
         var times = typeof arguments[argLength] !== 'undefined' ? arguments[argLength] : 1;
         Array(times).fill(null).forEach(function () {
-          return resume(fn.apply(null, _arguments));
+          return o.resume(fn.apply(null, _arguments));
         });
       };
     };

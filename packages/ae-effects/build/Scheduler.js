@@ -7,10 +7,8 @@ exports.default = void 0;
 
 var _core = require("@algebraic-effects/core");
 
-var raf = function raf() {
-  return window.requestAnimationFrame || function (fn) {
-    return setTimeout(fn, 16);
-  };
+var raf = window.requestAnimationFrame || function (fn) {
+  return setTimeout(fn, 16);
 };
 
 var ric = function ric() {
@@ -23,22 +21,19 @@ var Scheduler = (0, _core.createEffect)('Scheduler', {
   waitFor: (0, _core.func)(['delay'])
 });
 Scheduler.scheduler = Scheduler.handler({
-  waitForNextFrame: function waitForNextFrame(_ref) {
-    var resume = _ref.resume;
+  waitForNextFrame: function waitForNextFrame(o) {
     return function () {
-      return raf()(resume);
+      return raf(o.resume);
     };
   },
-  waitForIdle: function waitForIdle(_ref2) {
-    var resume = _ref2.resume;
+  waitForIdle: function waitForIdle(o) {
     return function (options) {
-      return ric()(resume, options);
+      return ric()(o.resume, options);
     };
   },
-  waitFor: function waitFor(_ref3) {
-    var resume = _ref3.resume;
+  waitFor: function waitFor(o) {
     return function (time) {
-      return setTimeout(resume, time);
+      return setTimeout(o.resume, time);
     };
   }
 });

@@ -1,6 +1,6 @@
 import { createEffect, func } from '@algebraic-effects/core';
 
-const raf = () => window.requestAnimationFrame || (fn => setTimeout(fn, 16));
+const raf = window.requestAnimationFrame || (fn => setTimeout(fn, 16));
 const ric = () => window.requestIdleCallback || raf;
 
 const Scheduler = createEffect('Scheduler', {
@@ -10,9 +10,9 @@ const Scheduler = createEffect('Scheduler', {
 });
 
 Scheduler.scheduler = Scheduler.handler({
-  waitForNextFrame: ({ resume }) => () => raf()(resume),
-  waitForIdle: ({ resume }) => options => ric()(resume, options),
-  waitFor: ({ resume }) => time => setTimeout(resume, time),
+  waitForNextFrame: o => () => raf(o.resume),
+  waitForIdle: o => options => ric()(o.resume, options),
+  waitFor: o => time => setTimeout(o.resume, time),
 });
 
 export default Scheduler;
