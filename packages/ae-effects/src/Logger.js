@@ -13,14 +13,14 @@ Logger.from = loggerInterface => {
   const logger = loggerInterface || { log: (_, d) => d, error: noop, warn: noop, info: noop };
 
   return Logger.handler({
-    log: ({ resume }) => (label, data) => {
+    log: o => (label, data) => {
       logger.log(label, data);
-      resume(data);
+      o.resume(data);
     },
-    message: ({ resume }) => (...str) => resume(logger.log(...str)),
-    info: ({ resume }) => str => resume(logger.info(str)),
-    error: ({ resume }) => e => resume(logger.error(e)),
-    warn: ({ resume }) => e => resume(logger.warn(e)),
+    message: o => (...str) => o.resume(logger.log(...str)),
+    info: o => str => o.resume(logger.info(str)),
+    error: o => e => o.resume(logger.error(e)),
+    warn: o => e => o.resume(logger.warn(e)),
   });
 };
 

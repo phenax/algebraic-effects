@@ -4,7 +4,7 @@ export const OPERATION = createSymbol('algebraic-effects/operation');
 export const HANDLER = createSymbol('algebraic-effects/handler');
 
 // VALUE_HANDLER :: Operation
-export const VALUE_HANDLER = ({ end }) => x => end(x);
+export const VALUE_HANDLER = o => x => o.end(x);
 
 // isOperation :: Operation? -> Boolean
 export const isOperation = x => x && x.$$type === OPERATION;
@@ -24,11 +24,12 @@ const validateArguments = (args, values) => {
 // type Operation = ...a -> { name :: String, payload :: a }
 
 export const Operation = (name, [ args, returnType, { isMulti = false } = {} ]) => {
-  const op = (...payload) => {
+  function op() {
+    const payload = [].slice.call(arguments);
     if (!validateArguments(args, payload))
       throw new Error(`ArgumentError. The operation ${name} expected ${args.length} arguments, but got ${payload.length} arguments`);
     return { name, payload, isMulti, $$type: OPERATION, toString };
-  };
+  }
 
   op.toString = () => `func ${name}(${args.join(', ')}) -> ${returnType}`;
   return op;

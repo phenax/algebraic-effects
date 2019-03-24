@@ -8,12 +8,13 @@ import genericHandlers, { createGenericEffect } from './generic';
 // type Handler = (Program ...a b, ...a) -> Task e b
 
 // runProgram :: (Program, ...a) -> Iterator
-const runProgram = (program, ...args) => {
-  const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
+function runProgram(program) {
+  const args = [].slice.call(arguments, 1);
+  const p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!isGenerator(p))
     throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
-};
+}
 
 // operationName :: (String, String) -> String
 const operationName = (effect, op) => effect ? `${effect}[${op}]` : op;
@@ -28,7 +29,10 @@ const getNextValue = (program, nextVal) => {
 };
 
 // createHandler :: (Object Function, { effect :: String }) -> Handler
-const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = false } = {}) => {
+const createHandler = (_handlers, options) => {
+  _handlers = _handlers || {};
+  const { effect = 'GenericEffect', isComposed = false } = options || {};
+
   const valueHandler = _handlers._ || VALUE_HANDLER;
 
   const handlers = isComposed ? _handlers : Object.keys(_handlers).reduce((acc, key) => ({
@@ -74,32 +78,39 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
     return { throwError, end, cancel };
   };
 
-  const FlowOps = ({ resume, end, throwError, cancel }) => {
-    const call = (p, ...a) => effectHandlerInstance.run(p, ...a);
-    const callMulti = (p, ...a) => effectHandlerInstance.runMulti(p, ...a);
-    const promise = promise => promise.then(resume).catch(throwError);
-    return { resume, end, throwError, cancel, call, callMulti, promise };
+  const FlowOps = o => {
+    const call = effectHandlerInstance.run;
+    const callMulti = effectHandlerInstance.runMulti;
+    const promise = promise => promise.then(o.resume).catch(o.throwError);
+
+    return { resume: o.resume, end: o.end, throwError: o.throwError, cancel: o.cancel, call, callMulti, promise };
   };
 
-  const effectHandlerInstance = (p, ...args) => {
+  function effectHandlerInstance() {
+    const args = arguments;
     const task = Task((reject, resolve, cancelTask) => {
-      const program = runProgram(p, ...args);
+      const program = runProgram.apply(null, args);
   
-      const { end, throwError, cancel } = getTerminationOps({ program, task, reject, resolve, cancelTask });
+      const termination = getTerminationOps({ program, task, reject, resolve, cancelTask });
   
       // resume :: * -> ()
       const resume = x => {
         if(task.isCancelled) return program.return(null);
 
         let isResumed = false;
-        const resumeOperation = (...args) => {
+        const resumeOperation = x => {
           if(task.isCancelled) return program.return(null);
-          !isResumed && resume(...args);
+          !isResumed && resume(x);
           isResumed = true;
         };
 
-        const onError = (...args) => tryNextValue(() => throwError(...args));
-        const flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError, cancel });
+        const onError = e => tryNextValue(() => termination.throwError(e));
+        const flowOperators = FlowOps({
+          resume: resumeOperation,
+          throwError: onError,
+          end: termination.end,
+          cancel: termination.cancel,
+        });
 
         const tryNextValue = getValue => {
           try {
@@ -120,7 +131,7 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
 
     task.isCancelled = false;
     return task;
-  };
+  }
 
   effectHandlerInstance.$$type = HANDLER;
   effectHandlerInstance.effectName = effect;
@@ -143,18 +154,21 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
   effectHandlerInstance.run = effectHandlerInstance;
 
   // runMulti :: Handler
-  effectHandlerInstance.runMulti = (p, ...args) => {
-    const runInstance = (value = null, stateCache = []) => {
+  effectHandlerInstance.runMulti = function() {
+    const args = arguments;
+    const runInstance = (value, stateCache) => {
+      stateCache = stateCache || [];
       const task = Task((reject, resolve) => {
-        const program = runProgram(p, ...args);
+        const program = runProgram.apply(null, args);
         let cleanup = () => {};
         let results = [];
 
         // Fast forward
         stateCache.forEach(x => program.next(x));
     
+        function mapResult() { return [...results, ...arguments]; }
         const { end, throwError } =
-          getTerminationOps({ program, task, reject, resolve, mapResult: (...x) => [...results, ...x] });
+          getTerminationOps({ program, task, reject, resolve, mapResult });
 
         // resume :: * -> ()
         const resume = x => {
@@ -202,7 +216,10 @@ const createHandler = (_handlers = {}, { effect = 'GenericEffect', isComposed = 
             }
           };
 
-          const onError = (...args) => tryNextValue(() => throwError(...args));
+          function onError() {
+            const args = arguments;
+            tryNextValue(() => throwError.apply(null, args));
+          }
           flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
 
           const tryNextValue = getValue => {
@@ -249,7 +266,9 @@ export const createEffect = (name, operations) => ({
 });
 
 // composeHandlers :: ...Handler -> Handler
-export const composeHandlers = (...runners) => runners.reduce((a, b) => a.concat(b));
+export function composeHandlers() {
+  return [].slice.call(arguments).reduce((a, b) => a.concat(b));
+}
 
 // run :: Handler
 export const run = createHandler();

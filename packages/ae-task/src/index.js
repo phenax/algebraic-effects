@@ -91,7 +91,7 @@ Task.of = Task.Resolved;
 // Task.fromPromise :: ((...*) -> Promise e a, ...*) -> Task e a
 Task.fromPromise = function(factory) {
   return Task((rej, res) =>
-    factory.apply(null, Array.prototype.slice.call(arguments, 1))
+    factory.apply(null, [].slice.call(arguments, 1))
       .then(res)
       .catch(rej));
 };

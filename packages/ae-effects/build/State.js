@@ -17,22 +17,19 @@ State.of = function (initState) {
   var CustomState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : State;
   var current = initState;
   return CustomState.handler({
-    get: function get(_ref) {
-      var resume = _ref.resume;
+    get: function get(o) {
       return function () {
-        return resume(current);
+        return o.resume(current);
       };
     },
-    set: function set(_ref2) {
-      var resume = _ref2.resume;
+    set: function set(o) {
       return function (x) {
-        return resume(current = x);
+        return o.resume(current = x);
       };
     },
-    update: function update(_ref3) {
-      var resume = _ref3.resume;
+    update: function update(o) {
       return function (fn) {
-        return resume(current = fn(current));
+        return o.resume(current = fn(current));
       };
     }
   });

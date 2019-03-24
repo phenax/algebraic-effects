@@ -20,64 +20,49 @@ var handleTask = function handleTask(fn) {
 };
 
 var genericOpHandlers = {
-  sleep: function sleep(_ref) {
-    var resume = _ref.resume;
+  sleep: function sleep(o) {
     return function (duration) {
-      return setTimeout(resume, duration);
+      return setTimeout(o.resume, duration);
     };
   },
-  awaitPromise: function awaitPromise(_ref2) {
-    var promise = _ref2.promise;
-    return promise;
+  awaitPromise: function awaitPromise(o) {
+    return o.promise;
   },
-  runTask: function runTask(_ref3) {
-    var resume = _ref3.resume,
-        throwError = _ref3.throwError;
+  runTask: function runTask(o) {
     return function (t) {
-      return t.fork(throwError, resume);
+      return t.fork(o.throwError, o.resume);
     };
   },
-  call: handleTask(function (_ref4) {
-    var call = _ref4.call;
-    return call;
+  call: handleTask(function (o) {
+    return o.call;
   }),
-  callMulti: handleTask(function (_ref5) {
-    var callMulti = _ref5.callMulti;
-    return callMulti;
+  callMulti: handleTask(function (o) {
+    return o.callMulti;
   }),
-  resolve: function resolve(_ref6) {
-    var end = _ref6.end;
-    return end;
+  resolve: function resolve(o) {
+    return o.end;
   },
-  cancel: function cancel(_ref7) {
-    var _cancel = _ref7.cancel;
-    return _cancel;
+  cancel: function cancel(o) {
+    return o.cancel;
   },
-  race: handleTask(function (_ref8) {
-    var call = _ref8.call;
+  race: handleTask(function (o) {
     return function (programs) {
       return (0, _fns.race)(programs.map(function (p) {
-        return call(p);
+        return o.call(p);
       }));
     };
   }),
-  parallel: handleTask(function (_ref9) {
-    var call = _ref9.call;
+  parallel: handleTask(function (o) {
     return function (programs) {
       return (0, _fns.parallel)(programs.map(function (p) {
-        return call(p);
+        return o.call(p);
       }));
     };
   }),
-  background: function background(_ref10) {
-    var call = _ref10.call,
-        resume = _ref10.resume;
-    return function (p) {
-      for (var _len = arguments.length, a = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        a[_key - 1] = arguments[_key];
-      }
-
-      return resume(call.apply(void 0, [p].concat(a)).fork(_utils.identity, _utils.identity));
+  background: function background(o) {
+    return function () {
+      var args = arguments;
+      return o.resume(o.call.apply(null, args).fork(_utils.identity, _utils.identity));
     };
   }
 };

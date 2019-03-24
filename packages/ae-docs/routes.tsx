@@ -12,6 +12,7 @@ const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionEffectP
 const State = React.lazy(() => import(/* webpackChunkName: "StateEffectPage" */ './pages/State.mdx'));
 const Random = React.lazy(() => import(/* webpackChunkName: "RandomEffectPage" */ './pages/Random.mdx'));
 const Logger = React.lazy(() => import(/* webpackChunkName: "LoggerEffectPage" */ './pages/Logger.mdx'));
+const Scheduler = React.lazy(() => import(/* webpackChunkName: "SchedulerEffectPage" */ './pages/Scheduler.mdx'));
 
 const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/Task.mdx'));
 
@@ -67,7 +68,14 @@ const routes: Routes = {
     order: 21,
     title: 'State Effect',
     render: State,
-    keywords: 'get,set,update',
+    keywords: 'get,set,update,cache',
+    group: EFFECTS,
+  },
+  scheduler: {
+    order: 23,
+    title: 'Scheduler Effect',
+    render: Scheduler,
+    keywords: 'requestAnimationFrame,requestIdleCallback,delay,sleep,timeout,skip,wait',
     group: EFFECTS,
   },
   random: {
