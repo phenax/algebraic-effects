@@ -1,0 +1,81 @@
+
+# Scheduler Effect
+Scheduler effect is a group of operations that allow you to work with scheduling time sensitive operations like waiting for next frame, waiting for idle and delays.
+
+---
+
+
+## Import it in your project
+```js
+import { Scheduler } from '@algebraic-effects/effects';
+```
+
+
+## API
+
+### With handler
+
+* `Scheduler.scheduler`
+```haskell
+Scheduler.scheduler :: ConsoleInterface -> (Program<Scheduler> ...b c, ...b) -> Task e c
+```
+
+### Operations
+```js
+Scheduler = {
+  waitForNextFrame: func(),
+  waitForIdle: func(['?options']),
+  waitFor: func(['delay']),
+}
+```
+
+## Usage examples
+
+### Wait for the next frame
+
+```js
+import { Scheduler } from '@algebraic-effects/effects';
+
+function *scrollToMyDiv(selector) {
+  const scrollPosition = yield SomeDomEffect.getElementScrollPosition(selector);
+  yield Scheduler.waitForNextFrame();
+  yield SomeDomEffect.scrollTo(scrollPosition);
+};
+
+Scheduler.scheduler
+  .with(SomeDomEffect.handler({ /* ... */ }))
+  .run(scrollToMyDiv, '#myElement')
+  .fork();
+```
+
+
+### Do stuff when idle
+
+```js
+function *scrollWheneverPossible() {
+  yield Scheduler.waitForIdle();
+  yield call(scrollToMyDiv, '#myElement');
+};
+```
+
+You can also specify max duration to wait before forcing continuation
+```js
+function *scrollWheneverPossibleOrAfter1sec() {
+  yield Scheduler.waitForIdle({ timeout: 1000 });
+  yield call(scrollToMyDiv, '#myElement');
+};
+```
+
+
+### sleep
+`waitFor` is the same as `sleep` generic effect.
+
+You should use this instead of `sleep` if you want to extend delay behavior because it is better to overwrite an effect operations behavior than a generic effect's behavior.
+
+```js
+function *scrollAfterSomeTime() {
+  yield Scheduler.waitFor(1000);
+  yield call(scrollToMyDiv, '#myElement');
+};
+```
+
