@@ -18,7 +18,6 @@
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
 - [x] Support try-catch inside program
-- [ ] Allow custom handling for errors. (One handler to fork method)
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] Typescript types
 - [ ] ?Redux middleware
@@ -30,8 +29,8 @@
 
 **Task**
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
-  - [ ] One handler to fork method
-  - [ ] Allow cancellation from within
+  - [x] Cancellation handler
+  - [x] Allow cancellation from within
 
 **Add more effects ...**
   - [x] Exception
@@ -43,14 +42,15 @@
     - [ ] requestIdleCallback
     - [ ] setTimeout
     - [ ] setInterval (multi)
-  - [ ] Something for Debounce/Throttle
+    - [ ] Debounce
+    - [ ] Throttling
 
 **Generic effects**
   - [x] Synchronously call program
   - [x] Race between programs
   - [x] Parallel execution of programs
   - [x] Run program in background
-  - [ ] callMulti
+  - [x] callMulti
 
 
 ### Documentation

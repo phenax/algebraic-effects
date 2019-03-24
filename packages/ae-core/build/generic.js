@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.callMulti = exports.call = exports.runTask = exports.awaitPromise = exports.resolve = exports.sleep = void 0;
+exports.default = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.callMulti = exports.call = exports.runTask = exports.awaitPromise = exports.cancel = exports.resolve = exports.sleep = void 0;
 
 var _fns = require("@algebraic-effects/task/fns");
 
@@ -49,25 +49,29 @@ var genericOpHandlers = {
     var end = _ref6.end;
     return end;
   },
-  race: handleTask(function (_ref7) {
-    var call = _ref7.call;
+  cancel: function cancel(_ref7) {
+    var _cancel = _ref7.cancel;
+    return _cancel;
+  },
+  race: handleTask(function (_ref8) {
+    var call = _ref8.call;
     return function (programs) {
       return (0, _fns.race)(programs.map(function (p) {
         return call(p);
       }));
     };
   }),
-  parallel: handleTask(function (_ref8) {
-    var call = _ref8.call;
+  parallel: handleTask(function (_ref9) {
+    var call = _ref9.call;
     return function (programs) {
       return (0, _fns.parallel)(programs.map(function (p) {
         return call(p);
       }));
     };
   }),
-  background: function background(_ref9) {
-    var call = _ref9.call,
-        resume = _ref9.resume;
+  background: function background(_ref10) {
+    var call = _ref10.call,
+        resume = _ref10.resume;
     return function (p) {
       for (var _len = arguments.length, a = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         a[_key - 1] = arguments[_key];
@@ -81,6 +85,8 @@ var sleep = (0, _utils2.Operation)('sleep', (0, _utils2.func)(['duration']));
 exports.sleep = sleep;
 var resolve = (0, _utils2.Operation)('resolve', (0, _utils2.func)(['*']));
 exports.resolve = resolve;
+var cancel = (0, _utils2.Operation)('cancel', (0, _utils2.func)(['*']));
+exports.cancel = cancel;
 var awaitPromise = (0, _utils2.Operation)('awaitPromise', (0, _utils2.func)(['promise e a'], 'a'));
 exports.awaitPromise = awaitPromise;
 var runTask = (0, _utils2.Operation)('runTask', (0, _utils2.func)(['task e a'], 'a'));

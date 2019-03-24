@@ -2,7 +2,7 @@
   "name": "@algebraic-effects/task",
   "version": "0.0.5-alpha.1",
   "description": "A lightweight task monad instead of promise",
-  "main": "index.js",
+  "main": "build/index.js",
   "isBuildTarget": true,
   "repository": "https://github.com/phenax/algebraic-effects",
   "author": "Akshay Nair <phenax5@gmail.com>",

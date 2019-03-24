@@ -12,6 +12,7 @@ const genericOpHandlers = {
   call: handleTask(({ call }) => call),
   callMulti: handleTask(({ callMulti }) => callMulti),
   resolve: ({ end }) => end,
+  cancel: ({ cancel }) => cancel,
   race: handleTask(({ call }) => programs => raceTasks(programs.map(p => call(p)))),
   parallel: handleTask(({ call }) => programs => runInParallel(programs.map(p => call(p)))),
   background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a).fork(identity, identity)),
@@ -20,9 +21,9 @@ const genericOpHandlers = {
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
 export const resolve = Operation('resolve', func(['*']));
+export const cancel = Operation('cancel', func(['*']));
 export const awaitPromise = Operation('awaitPromise', func(['promise e a'], 'a'));
 export const runTask = Operation('runTask', func(['task e a'], 'a'));
-
 export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
 export const callMulti = Operation('callMulti', func(['generator ...a b', '...a'], 'b', { isMulti: true }));
 export const race = Operation('race', func(['...(generator ...a b)'], 'b', { isMulti: true }));

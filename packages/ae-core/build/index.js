@@ -114,7 +114,8 @@ var createHandler = function createHandler() {
         task = _ref3.task,
         resolve = _ref3.resolve,
         _ref3$mapResult = _ref3.mapResult,
-        mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult;
+        mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult,
+        cancelTask = _ref3.cancelTask;
 
     var throwError = function throwError(e) {
       return program.throw(e);
@@ -126,16 +127,23 @@ var createHandler = function createHandler() {
       !task.isCancelled && resolve(value);
     };
 
+    var cancel = function cancel(x) {
+      program.return(x);
+      cancelTask(x);
+    };
+
     return {
       throwError: throwError,
-      end: end
+      end: end,
+      cancel: cancel
     };
   };
 
   var FlowOps = function FlowOps(_ref4) {
     var resume = _ref4.resume,
         end = _ref4.end,
-        throwError = _ref4.throwError;
+        throwError = _ref4.throwError,
+        cancel = _ref4.cancel;
 
     var call = function call(p) {
       for (var _len2 = arguments.length, a = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
@@ -161,6 +169,7 @@ var createHandler = function createHandler() {
       resume: resume,
       end: end,
       throwError: throwError,
+      cancel: cancel,
       call: call,
       callMulti: callMulti,
       promise: promise
@@ -172,17 +181,19 @@ var createHandler = function createHandler() {
       args[_key4 - 1] = arguments[_key4];
     }
 
-    var task = (0, _task.default)(function (reject, resolve) {
+    var task = (0, _task.default)(function (reject, resolve, cancelTask) {
       var program = runProgram.apply(void 0, [p].concat(args));
 
       var _getTerminationOps = getTerminationOps({
         program: program,
         task: task,
         reject: reject,
-        resolve: resolve
+        resolve: resolve,
+        cancelTask: cancelTask
       }),
           end = _getTerminationOps.end,
-          throwError = _getTerminationOps.throwError;
+          throwError = _getTerminationOps.throwError,
+          cancel = _getTerminationOps.cancel;
 
       var resume = function resume(x) {
         if (task.isCancelled) return program.return(null);
@@ -207,7 +218,8 @@ var createHandler = function createHandler() {
         var flowOperators = FlowOps({
           resume: resumeOperation,
           end: end,
-          throwError: onError
+          throwError: onError,
+          cancel: cancel
         });
 
         var tryNextValue = function tryNextValue(getValue) {

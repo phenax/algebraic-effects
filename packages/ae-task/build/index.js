@@ -10,24 +10,48 @@ var _utils = require("@algebraic-effects/utils");
 var _pointfree = require("./pointfree");
 
 var Task = function Task(taskFn) {
-  var forkTask = function forkTask(onFailure, onSuccess) {
+  var forkTask = function forkTask() {
     var isCancelled = false;
     var isDone = false;
+    var args = arguments;
 
-    var guard = function guard(cb) {
-      return function (a) {
-        isCancelled || isDone || !cb ? null : cb(a);
-        isDone = true;
+    function parseOptions() {
+      if (args.length === 1 && args[0] && (args[0].Resolved || args[0].Rejected || args[0].Cancelled)) {
+        return args[0];
+      }
+
+      return {
+        Rejected: args[0],
+        Resolved: args[1],
+        Cancelled: args[2]
       };
-    };
+    }
 
-    var globalCleanup = function globalCleanup() {
-      return isCancelled = true;
-    };
+    function guardOptns(o) {
+      function guard(cb) {
+        return function (a) {
+          isCancelled || isDone || !cb ? null : cb(a);
+          isDone = true;
+        };
+      }
 
-    var cleanup = taskFn(guard(onFailure), guard(onSuccess)) || _utils.identity;
+      return {
+        Rejected: guard(o.Rejected),
+        Resolved: guard(o.Resolved),
+        Cancelled: guard(o.Cancelled)
+      };
+    }
 
-    return (0, _utils.compose)(globalCleanup, cleanup);
+    var optns = guardOptns(parseOptions());
+    var cleanup = taskFn(optns.Rejected, optns.Resolved, cancelTask);
+
+    function cancelTask() {
+      cleanup && cleanup.apply(null, arguments);
+      optns.Cancelled.apply(null, arguments);
+      isCancelled = true;
+    }
+
+    return cancelTask;
   };
 
   var fold = function fold(mapErr, mapVal) {
