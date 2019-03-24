@@ -23,17 +23,7 @@ var createSymbol = function createSymbol(key) {
 exports.createSymbol = createSymbol;
 
 var isGenerator = function isGenerator(p) {
-  return p.constructor === regeneratorRuntime.mark(function _callee() {
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee, this);
-  })().constructor;
+  return p && p.constructor && (p.constructor.name + '').indexOf('GeneratorFunction') !== -1;
 };
 
 exports.isGenerator = isGenerator;
@@ -50,7 +40,7 @@ var pointfree = function pointfree(methodName) {
 exports.pointfree = pointfree;
 
 var compose = function compose() {
-  return Array.prototype.slice.call(arguments).reduce(function (a, b) {
+  return [].slice.apply(arguments).reduce(function (a, b) {
     return function () {
       return a(b.apply(void 0, arguments));
     };

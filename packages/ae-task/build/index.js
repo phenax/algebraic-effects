@@ -126,7 +126,7 @@ Task.of = Task.Resolved;
 Task.fromPromise = function (factory) {
   var _arguments = arguments;
   return Task(function (rej, res) {
-    return factory.apply(null, Array.prototype.slice.call(_arguments, 1)).then(res).catch(rej);
+    return factory.apply(null, [].slice.call(_arguments, 1)).then(res).catch(rej);
   });
 };
 

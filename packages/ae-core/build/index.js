@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.composeHandlers = composeHandlers;
 Object.defineProperty(exports, "Operation", {
   enumerable: true,
   get: function get() {
@@ -21,7 +22,7 @@ Object.defineProperty(exports, "createGenericEffect", {
     return _generic.createGenericEffect;
   }
 });
-exports.run = exports.composeHandlers = exports.createEffect = void 0;
+exports.run = exports.createEffect = void 0;
 
 var _task = _interopRequireDefault(require("@algebraic-effects/task"));
 
@@ -49,15 +50,12 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var runProgram = function runProgram(program) {
-  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-
-  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(void 0, args) : program;
+function runProgram(program) {
+  var args = [].slice.call(arguments, 1);
+  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
-};
+}
 
 var operationName = function operationName(effect, op) {
   return effect ? "".concat(effect, "[").concat(op, "]") : op;
@@ -74,10 +72,10 @@ var getNextValue = function getNextValue(program, nextVal) {
   }
 };
 
-var createHandler = function createHandler() {
-  var _handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+var createHandler = function createHandler(_handlers, options) {
+  _handlers = _handlers || {};
 
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+  var _ref = options || {},
       _ref$effect = _ref.effect,
       effect = _ref$effect === void 0 ? 'GenericEffect' : _ref$effect,
       _ref$isComposed = _ref.isComposed,
@@ -139,87 +137,58 @@ var createHandler = function createHandler() {
     };
   };
 
-  var FlowOps = function FlowOps(_ref4) {
-    var resume = _ref4.resume,
-        end = _ref4.end,
-        throwError = _ref4.throwError,
-        cancel = _ref4.cancel;
-
-    var call = function call(p) {
-      for (var _len2 = arguments.length, a = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-        a[_key2 - 1] = arguments[_key2];
-      }
-
-      return effectHandlerInstance.run.apply(effectHandlerInstance, [p].concat(a));
-    };
-
-    var callMulti = function callMulti(p) {
-      for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-        a[_key3 - 1] = arguments[_key3];
-      }
-
-      return effectHandlerInstance.runMulti.apply(effectHandlerInstance, [p].concat(a));
-    };
+  var FlowOps = function FlowOps(o) {
+    var call = effectHandlerInstance.run;
+    var callMulti = effectHandlerInstance.runMulti;
 
     var promise = function promise(_promise) {
-      return _promise.then(resume).catch(throwError);
+      return _promise.then(o.resume).catch(o.throwError);
     };
 
     return {
-      resume: resume,
-      end: end,
-      throwError: throwError,
-      cancel: cancel,
+      resume: o.resume,
+      end: o.end,
+      throwError: o.throwError,
+      cancel: o.cancel,
       call: call,
       callMulti: callMulti,
       promise: promise
     };
   };
 
-  var effectHandlerInstance = function effectHandlerInstance(p) {
-    for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-      args[_key4 - 1] = arguments[_key4];
-    }
-
+  function effectHandlerInstance() {
+    var args = arguments;
     var task = (0, _task.default)(function (reject, resolve, cancelTask) {
-      var program = runProgram.apply(void 0, [p].concat(args));
-
-      var _getTerminationOps = getTerminationOps({
+      var program = runProgram.apply(null, args);
+      var termination = getTerminationOps({
         program: program,
         task: task,
         reject: reject,
         resolve: resolve,
         cancelTask: cancelTask
-      }),
-          end = _getTerminationOps.end,
-          throwError = _getTerminationOps.throwError,
-          cancel = _getTerminationOps.cancel;
+      });
 
       var resume = function resume(x) {
         if (task.isCancelled) return program.return(null);
         var isResumed = false;
 
-        var resumeOperation = function resumeOperation() {
+        var resumeOperation = function resumeOperation(x) {
           if (task.isCancelled) return program.return(null);
-          !isResumed && resume.apply(void 0, arguments);
+          !isResumed && resume(x);
           isResumed = true;
         };
 
-        var onError = function onError() {
-          for (var _len5 = arguments.length, args = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-            args[_key5] = arguments[_key5];
-          }
-
+        var onError = function onError(e) {
           return tryNextValue(function () {
-            return throwError.apply(void 0, args);
+            return termination.throwError(e);
           });
         };
 
         var flowOperators = FlowOps({
           resume: resumeOperation,
-          end: end,
           throwError: onError,
-          cancel: cancel
+          end: termination.end,
+          cancel: termination.cancel
         });
 
         var tryNextValue = function tryNextValue(getValue) {
@@ -243,7 +212,7 @@ var createHandler = function createHandler() {
     });
     task.isCancelled = false;
     return task;
-  };
+  }
 
   effectHandlerInstance.$$type = _utils2.HANDLER;
   effectHandlerInstance.effectName = effect;
@@ -264,16 +233,13 @@ var createHandler = function createHandler() {
 
   effectHandlerInstance.run = effectHandlerInstance;
 
-  effectHandlerInstance.runMulti = function (p) {
-    for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
-      args[_key6 - 1] = arguments[_key6];
-    }
+  effectHandlerInstance.runMulti = function () {
+    var args = arguments;
 
-    var runInstance = function runInstance() {
-      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var stateCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    var runInstance = function runInstance(value, stateCache) {
+      stateCache = stateCache || [];
       var task = (0, _task.default)(function (reject, resolve) {
-        var program = runProgram.apply(void 0, [p].concat(args));
+        var program = runProgram.apply(null, args);
 
         var cleanup = function cleanup() {};
 
@@ -282,21 +248,19 @@ var createHandler = function createHandler() {
           return program.next(x);
         });
 
-        var _getTerminationOps2 = getTerminationOps({
+        function mapResult() {
+          return [].concat(_toConsumableArray(results), Array.prototype.slice.call(arguments));
+        }
+
+        var _getTerminationOps = getTerminationOps({
           program: program,
           task: task,
           reject: reject,
           resolve: resolve,
-          mapResult: function mapResult() {
-            for (var _len7 = arguments.length, x = new Array(_len7), _key7 = 0; _key7 < _len7; _key7++) {
-              x[_key7] = arguments[_key7];
-            }
-
-            return [].concat(_toConsumableArray(results), x);
-          }
+          mapResult: mapResult
         }),
-            end = _getTerminationOps2.end,
-            throwError = _getTerminationOps2.throwError;
+            end = _getTerminationOps.end,
+            throwError = _getTerminationOps.throwError;
 
         var resume = function resume(x) {
           if (task.isCancelled) return program.return(null);
@@ -336,15 +300,12 @@ var createHandler = function createHandler() {
             }
           };
 
-          var onError = function onError() {
-            for (var _len8 = arguments.length, args = new Array(_len8), _key8 = 0; _key8 < _len8; _key8++) {
-              args[_key8] = arguments[_key8];
-            }
-
-            return tryNextValue(function () {
-              return throwError.apply(void 0, args);
+          function onError() {
+            var args = arguments;
+            tryNextValue(function () {
+              return throwError.apply(null, args);
             });
-          };
+          }
 
           flowOperators = FlowOps({
             resume: resumeOperation,
@@ -402,16 +363,11 @@ var createEffect = function createEffect(name, operations) {
 
 exports.createEffect = createEffect;
 
-var composeHandlers = function composeHandlers() {
-  for (var _len9 = arguments.length, runners = new Array(_len9), _key9 = 0; _key9 < _len9; _key9++) {
-    runners[_key9] = arguments[_key9];
-  }
-
-  return runners.reduce(function (a, b) {
+function composeHandlers() {
+  return [].slice.call(arguments).reduce(function (a, b) {
     return a.concat(b);
   });
-};
+}
 
-exports.composeHandlers = composeHandlers;
 var run = createHandler();
 exports.run = run;
