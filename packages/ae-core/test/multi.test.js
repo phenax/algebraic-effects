@@ -118,6 +118,38 @@ describe('Multiple continuations', () => {
       );
   });
 
+  it('should do async mutliple continuations using value handler', done => {
+    const runner = LoopEffect.handler({
+      takeItem: ({ resume }) => list => list.forEach((x, i) => setTimeout(resume, 100 * i, x)),
+    });
+
+    let count = 0;
+
+    function *program() {
+      const item1 = yield LoopEffect.takeItem([ 1, 2 ]);
+      const item2 = yield LoopEffect.takeItem([ 3, 4 ]);
+
+      yield State.update(log => [...log, item1 + item2]);
+      count = count + 1;
+
+      return yield State.get();
+    }
+
+    runner
+      .with(State.of([]))
+      .with({
+        _: ({ end }) => v => {
+          if (v.length === 4) {
+            expect(v).toEqual([4, 5, 5, 6]);
+            done();
+          }
+          end();
+        },
+      })
+      .runMulti(program)
+      .fork(done);
+  });
+
   it('should do sync mutlple continuation without multi ops', done => {
     function *program() {
       yield State.set(3);
