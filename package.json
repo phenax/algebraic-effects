@@ -10,6 +10,7 @@
     "watch": "yarn build --watch",
     "lint": "eslint ./packages/**/src/**/*.js",
     "test": "jest --config ./scripts/jest.config.js --watch",
+    "bench": "yarn test --testRegex \"packages/.*\\.bench\\.js$\"",
     "test:ci": "jest --config ./scripts/jest.config.js --coverage",
     "coverage:ci": "codecov",
     "publish-all": "node ./scripts/publish.js",

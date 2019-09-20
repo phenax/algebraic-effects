@@ -11,6 +11,7 @@ function Bencho () {
   };
   const endMeasurement = () => {
     pendingMeasurements = Math.min(0, pendingMeasurements - 1);
+    console.log(pendingMeasurements);
 
     if (pendingMeasurements === 0) {
       setTimeout(onMeasureComplete, 10);
@@ -82,16 +83,32 @@ function Bencho () {
 
 
 
-Bencho.benchmark = (label, { measure, onComplete }) => {
+Bencho.benchmark = (label, { repeat = 1, threshold, keys = [], measure, onComplete }) => {
   it(label, done => {
-    const b = { label, ...Bencho() };
 
-    measure(b);
+    runTest(repeat);
 
-    b.onFinish(() => {
-      onComplete(b);
-      setTimeout(done, 10);
-    });
+    function runTest(runsLeft) {
+      const b = { label, ...Bencho() };
+  
+      b.measure('baseline', onEnd => onEnd());
+      measure(b);
+
+      b.onFinish(() => {
+        onComplete && onComplete(b);
+
+        if (keys.length >= 2 && threshold) {
+          const result = b.compare(...keys);
+          expect(result.time.perc).toBeLessThan(threshold.time);
+          expect(result.memory.perc).toBeLessThan(threshold.memory);
+        }
+
+        setTimeout(() => {
+          if (runsLeft === 0) done();
+          else runTest(runsLeft - 1);
+        }, 10);
+      });
+    }
   });
 };
 
