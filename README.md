@@ -110,7 +110,7 @@ const api = ApiEffect.handler({
 
 * Calling your program
 ```js
-api.with(logger) // Compose your effect handlers togather and run them
+api.with(logger) // Compose your effect handlers together and run them
   .run(fetchProfile)
   .fork(
     e => { /* Handle error */ },
@@ -130,7 +130,7 @@ function flipCoins() {
   return [isHead1 ? 'H' : 'T', isHead2 ? 'H' : 'T'];
 }
 
-// // runMulti method will start your program in mutiple continuations mode
+// // runMulti method will start your program in multiple continuations mode
 Random.seed(10)
   .runMulti(flipCoins)
   .fork(identity, data => {
@@ -158,7 +158,7 @@ const looper = ListEffect.handler({
   takeItem: ({ resume }) => list => list.forEach(resume),
 });
 
-// runMulti method will start your program in mutiple continuations mode
+// runMulti method will start your program in multiple continuations mode
 looper.runMulti(program).fork(
   handleError,
   data => {
