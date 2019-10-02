@@ -37,10 +37,10 @@
   - [x] State
   - [x] Random Number
   - [x] Logger
-  - [ ] Scheduler
-    - [ ] requestAnimationFrame
-    - [ ] requestIdleCallback
-    - [ ] setTimeout
+  - [x] Scheduler
+    - [x] requestAnimationFrame
+    - [x] requestIdleCallback
+    - [x] setTimeout
     - [ ] setInterval (multi)
     - [ ] Debounce
     - [ ] Throttling
@@ -65,12 +65,12 @@
 - [x] Clone/Extend
 - [x] "global" handlers to generic effects
 - [x] Multiple continuations
+- [ ] Explain motivation and inspiration
 - [ ] Testing
 - [ ] Parameterized custom effects (like State)
 - [ ] Usage with redux
 - [ ] Custom global operations
-- [ ] All links to next document below for readers to continue reeading
-- [ ] Explain motivation and inspiration
+- [ ] All links to next document below for readers to continue reading
 
 
 ### Scripts and doc builder
