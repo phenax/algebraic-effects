@@ -211,6 +211,23 @@ const CountState = State.extendAs('CountState'); // You dont need the second par
 ```
 
 
+## Parameterized effects
+There is no way to pass parameters to effect handlers.
+The reason for this is because it is a lot simpler if you just create a closure yourself that returns a handler.
+
+```js
+const MyEffect = createEffect('MyEffect', {
+  getGreeting: func([], 'data'),
+});
+
+const myEffect = greeting => MyEffect.handler({
+  getGreeting: ({ resume }) => async () =>
+    getUserName()
+      .then(name => resume(`${greeting}, ${name}`)),
+});
+```
+
+
 
 ## Putting it all to use
 
