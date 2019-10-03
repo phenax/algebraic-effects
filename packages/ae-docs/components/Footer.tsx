@@ -42,7 +42,7 @@ const FooterLinks = ({ routes }: FooterLinksProps) => {
   );
 
   const prevPage = matchingRoutes[currentPageIndex - 1];
-  const nextPage = matchingRoutes[currentPageIndex + 1];
+  const nextPage = matchingRoutes[currentPage ? currentPageIndex + 1 : 1];
 
   return (
     <FooterWrapper isPreviousLinkVisible={!!prevPage}>
