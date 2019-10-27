@@ -1,0 +1,26 @@
+{
+  "name": "@algebraic-effects/redux",
+  "version": "0.0.2",
+  "description": "Redux middleware to allow using algebraic effects to write your actions",
+  "main": "index.js",
+  "isBuildTarget": true,
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@algebraic-effects/core": "0.0.2"
+  },
+  "keywords": [
+    "functional",
+    "algebraic",
+    "effects",
+    "generators",
+    "fp",
+    "redux",
+    "saga",
+    "middleware"
+  ],
+  "peerDependencies": {
+    "redux": "^4.0.1"
+  }
+}
