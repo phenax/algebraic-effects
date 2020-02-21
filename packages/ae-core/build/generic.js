@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.call = exports.runTask = exports.awaitPromise = exports.resolve = exports.sleep = void 0;
+exports.default = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.callMulti = exports.call = exports.runTask = exports.awaitPromise = exports.cancel = exports.resolve = exports.sleep = void 0;
 
 var _fns = require("@algebraic-effects/task/fns");
 
@@ -20,64 +20,49 @@ var handleTask = function handleTask(fn) {
 };
 
 var genericOpHandlers = {
-  sleep: function sleep(_ref) {
-    var resume = _ref.resume;
+  sleep: function sleep(o) {
     return function (duration) {
-      return setTimeout(resume, duration);
+      return setTimeout(o.resume, duration);
     };
   },
-  awaitPromise: function awaitPromise(_ref2) {
-    var promise = _ref2.promise;
-    return promise;
+  awaitPromise: function awaitPromise(o) {
+    return o.promise;
   },
-  runTask: function runTask(_ref3) {
-    var resume = _ref3.resume,
-        throwError = _ref3.throwError;
+  runTask: function runTask(o) {
     return function (t) {
-      return t.fork(throwError, resume);
+      return t.fork(o.throwError, o.resume);
     };
   },
-  call: handleTask(function (_ref4) {
-    var call = _ref4.call;
-    return function (p) {
-      for (var _len = arguments.length, a = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        a[_key - 1] = arguments[_key];
-      }
-
-      return call.apply(void 0, [p].concat(a));
-    };
+  call: handleTask(function (o) {
+    return o.call;
   }),
-  resolve: function resolve(_ref5) {
-    var end = _ref5.end;
-    return function (v) {
-      return end(v);
-    };
+  callMulti: handleTask(function (o) {
+    return o.callMulti;
+  }),
+  resolve: function resolve(o) {
+    return o.end;
   },
-  race: handleTask(function (_ref6) {
-    var call = _ref6.call;
+  cancel: function cancel(o) {
+    return o.cancel;
+  },
+  race: handleTask(function (o) {
     return function (programs) {
       return (0, _fns.race)(programs.map(function (p) {
-        return call(p);
+        return o.call(p);
       }));
     };
   }),
-  parallel: handleTask(function (_ref7) {
-    var call = _ref7.call;
+  parallel: handleTask(function (o) {
     return function (programs) {
       return (0, _fns.parallel)(programs.map(function (p) {
-        return call(p);
+        return o.call(p);
       }));
     };
   }),
-  background: function background(_ref8) {
-    var call = _ref8.call,
-        resume = _ref8.resume;
-    return function (p) {
-      for (var _len2 = arguments.length, a = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-        a[_key2 - 1] = arguments[_key2];
-      }
-
-      return resume(call.apply(void 0, [p].concat(a)).fork(_utils.identity, _utils.identity));
+  background: function background(o) {
+    return function () {
+      var args = arguments;
+      return o.resume(o.call.apply(null, args).fork(_utils.identity, _utils.identity));
     };
   }
 };
@@ -85,17 +70,29 @@ var sleep = (0, _utils2.Operation)('sleep', (0, _utils2.func)(['duration']));
 exports.sleep = sleep;
 var resolve = (0, _utils2.Operation)('resolve', (0, _utils2.func)(['*']));
 exports.resolve = resolve;
+var cancel = (0, _utils2.Operation)('cancel', (0, _utils2.func)(['*']));
+exports.cancel = cancel;
 var awaitPromise = (0, _utils2.Operation)('awaitPromise', (0, _utils2.func)(['promise e a'], 'a'));
 exports.awaitPromise = awaitPromise;
 var runTask = (0, _utils2.Operation)('runTask', (0, _utils2.func)(['task e a'], 'a'));
 exports.runTask = runTask;
 var call = (0, _utils2.Operation)('call', (0, _utils2.func)(['generator ...a b', '...a'], 'b'));
 exports.call = call;
-var race = (0, _utils2.Operation)('race', (0, _utils2.func)(['...(generator ...a b)'], 'b'));
+var callMulti = (0, _utils2.Operation)('callMulti', (0, _utils2.func)(['generator ...a b', '...a'], 'b', {
+  isMulti: true
+}));
+exports.callMulti = callMulti;
+var race = (0, _utils2.Operation)('race', (0, _utils2.func)(['...(generator ...a b)'], 'b', {
+  isMulti: true
+}));
 exports.race = race;
-var parallel = (0, _utils2.Operation)('parallel', (0, _utils2.func)(['...(generator ...a b)'], '[b]'));
+var parallel = (0, _utils2.Operation)('parallel', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
+  isMulti: true
+}));
 exports.parallel = parallel;
-var background = (0, _utils2.Operation)('background', (0, _utils2.func)(['...(generator ...a b)'], '[b]'));
+var background = (0, _utils2.Operation)('background', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
+  isMulti: true
+}));
 exports.background = background;
 
 var createGenericEffect = function createGenericEffect(name, signature, handler) {

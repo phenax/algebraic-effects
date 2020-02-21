@@ -20,10 +20,9 @@ exports.OPERATION = OPERATION;
 var HANDLER = (0, _utils.createSymbol)('algebraic-effects/handler');
 exports.HANDLER = HANDLER;
 
-var VALUE_HANDLER = function VALUE_HANDLER(_ref) {
-  var end = _ref.end;
+var VALUE_HANDLER = function VALUE_HANDLER(o) {
   return function (x) {
-    return end(x);
+    return o.end(x);
   };
 };
 
@@ -44,24 +43,27 @@ var validateArguments = function validateArguments(args, values) {
   return args.length === values.length;
 };
 
-var Operation = function Operation(name, _ref2) {
-  var _ref3 = _slicedToArray(_ref2, 2),
-      args = _ref3[0],
-      returnType = _ref3[1];
+var Operation = function Operation(name, _ref) {
+  var _ref2 = _slicedToArray(_ref, 3),
+      args = _ref2[0],
+      returnType = _ref2[1],
+      _ref2$ = _ref2[2];
 
-  var op = function op() {
-    for (var _len = arguments.length, payload = new Array(_len), _key = 0; _key < _len; _key++) {
-      payload[_key] = arguments[_key];
-    }
+  _ref2$ = _ref2$ === void 0 ? {} : _ref2$;
+  var _ref2$$isMulti = _ref2$.isMulti,
+      isMulti = _ref2$$isMulti === void 0 ? false : _ref2$$isMulti;
 
+  function op() {
+    var payload = [].slice.call(arguments);
     if (!validateArguments(args, payload)) throw new Error("ArgumentError. The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
     return {
       name: name,
       payload: payload,
+      isMulti: isMulti,
       $$type: OPERATION,
       toString: toString
     };
-  };
+  }
 
   op.toString = function () {
     return "func ".concat(name, "(").concat(args.join(', '), ") -> ").concat(returnType);
@@ -72,8 +74,8 @@ var Operation = function Operation(name, _ref2) {
 
 exports.Operation = Operation;
 
-var func = function func(args, ret) {
-  return [args, ret];
+var func = function func(args, ret, options) {
+  return [args, ret, options];
 };
 
 exports.func = func;

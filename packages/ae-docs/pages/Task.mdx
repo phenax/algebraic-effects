@@ -17,11 +17,11 @@ import { race, parallel, bimap, fork } from '@algebraic-effects/task/fns'; // He
 ### Task constructor
 You can pass it the initial state for your program and run it.
 ```haskell
-Task :: (e -> (), a -> ()) -> Task e a
+Task :: (e -> (), a -> (), * -> ()) -> Task e a
 ```
 
 ```js
-const waitASec = Task((reject, resolve) => setTimeout(resolve, 1000));
+const waitASec = Task((reject, resolve, cancel) => setTimeout(resolve, 1000));
 ```
 
 ### Static methods
@@ -68,14 +68,32 @@ Task.fromPromise(async function() {
 
 * `fork`
 `fork` is the function that runs your task and allows to to handle to result of execution. `Task` is lazy so you can compose your functions and it will only execute the chain when this method is called. When you call this method, you will recieve a cancel function in return. Calling this function will cancel your task.
+
+NOTE: All handlers are optional. So, you can pass 0 arguements to fork if you dont care about the result.
 ```haskell
-(Task e a).fork :: (e -> (), a -> ()) -> CancelFunction
+(Task e a).fork :: (e -> (), a -> (), * -> ()) -> CancelFunction
+(Task e a).fork :: ({ Rejected :: e -> (), Resolved :: a -> (), Cancelled: * -> () }) -> CancelFunction
 ```
 ```js
 const cancelTimeout = Task((_, resolve) => setTimeout(() => resolve(10), 1000))
-  .fork(handleError, console.log); // Will log 10 to console
+  .fork(handleError, console.log, handleCancel); // Will log 10 to console
 
-// Call cancelTimeout() will prevent the console.log
+cancelTimeout();
+// Call cancelTimeout() will prevent the console.log and will instead call only handleCancel
+```
+
+Of you can call cancel from inside the task
+```js
+const task = Task((_, resolve, cancel) => {
+  cancel(5);
+});
+
+task.fork({
+  Cancelled: data => {
+    console.log(data); // > 5
+  },
+});
+
 ```
 
 

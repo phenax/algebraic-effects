@@ -12,6 +12,7 @@ const Exception = React.lazy(() => import(/* webpackChunkName: "ExceptionEffectP
 const State = React.lazy(() => import(/* webpackChunkName: "StateEffectPage" */ './pages/State.mdx'));
 const Random = React.lazy(() => import(/* webpackChunkName: "RandomEffectPage" */ './pages/Random.mdx'));
 const Logger = React.lazy(() => import(/* webpackChunkName: "LoggerEffectPage" */ './pages/Logger.mdx'));
+const Scheduler = React.lazy(() => import(/* webpackChunkName: "SchedulerEffectPage" */ './pages/Scheduler.mdx'));
 
 const TaskMonad = React.lazy(() => import(/* webpackChunkName: "TaskMonadPage" */ './pages/Task.mdx'));
 
@@ -34,19 +35,19 @@ const routes: Routes = {
     order: 2,
     title: 'Core modules',
     render: CoreModule,
-    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run,generic',
+    keywords: 'createEffect,func,program,custom,flow,resume,throw,end,handler,compose,concat,with,run,generic,multiple continuations',
   },
   lingo: {
     order: 3,
     title: 'Made up words',
     render: Lingo,
-    keywords: 'operation,signature,program,effect,handler,runner',
+    keywords: 'operation,signature,program,effect,handler,runner,multiple continuations',
   },
   operations: {
     order: 4,
     title: 'Generic effects',
     render: GenericEffects,
-    keywords: 'sleep,call,background,race,parallel,series,awaitPromise,createGenericEffect',
+    keywords: 'sleep,call,callMulti,background,race,parallel,series,awaitPromise,createGenericEffect',
   },
   task: {
     order: 10,
@@ -67,14 +68,21 @@ const routes: Routes = {
     order: 21,
     title: 'State Effect',
     render: State,
-    keywords: 'get,set,update',
+    keywords: 'get,set,update,cache',
+    group: EFFECTS,
+  },
+  scheduler: {
+    order: 23,
+    title: 'Scheduler Effect',
+    render: Scheduler,
+    keywords: 'requestAnimationFrame,requestIdleCallback,delay,sleep,timeout,skip,wait',
     group: EFFECTS,
   },
   random: {
     order: 22,
     title: 'Random Effect',
     render: Random,
-    keywords: 'seed,unseeded,crypto,fromArray,number,getInt',
+    keywords: 'seed,unseeded,crypto,fromArray,number,getInt,flipCoin,multi',
     group: EFFECTS,
   },
   logger: {

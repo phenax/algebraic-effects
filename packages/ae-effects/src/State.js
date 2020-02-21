@@ -12,9 +12,9 @@ State.of = (initState, CustomState = State) => {
   let current = initState;
 
   return CustomState.handler({
-    get: ({ resume }) => () => resume(current),
-    set: ({ resume }) => x => resume(current = x),
-    update: ({ resume }) => fn => resume(current = fn(current)),
+    get: o => () => o.resume(current),
+    set: o => x => o.resume(current = x),
+    update: o => fn => o.resume(current = fn(current)),
   });
 };
 

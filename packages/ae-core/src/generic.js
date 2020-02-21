@@ -6,26 +6,32 @@ import { Operation, func } from './utils';
 const handleTask = fn => o => (...args) => fn(o)(...args).fork(o.throwError, o.resume);
 
 const genericOpHandlers = {
-  sleep: ({ resume }) => duration => setTimeout(resume, duration),
-  awaitPromise: ({ promise }) => promise,
-  runTask: ({ resume, throwError }) => t => t.fork(throwError, resume),
-  call: handleTask(({ call }) => (p, ...a) => call(p, ...a)),
-  resolve: ({ end }) => v => end(v),
-  race: handleTask(({ call }) => programs => raceTasks(programs.map(p => call(p)))),
-  parallel: handleTask(({ call }) => programs => runInParallel(programs.map(p => call(p)))),
-  background: ({ call, resume }) => (p, ...a) => resume(call(p, ...a).fork(identity, identity)),
+  sleep: o => duration => setTimeout(o.resume, duration),
+  awaitPromise: o => o.promise,
+  runTask: o => t => t.fork(o.throwError, o.resume),
+  call: handleTask(o => o.call),
+  callMulti: handleTask(o => o.callMulti),
+  resolve: o => o.end,
+  cancel: o => o.cancel,
+  race: handleTask(o => programs => raceTasks(programs.map(p => o.call(p)))),
+  parallel: handleTask(o => programs => runInParallel(programs.map(p => o.call(p)))),
+  background: o => function() {
+    const args = arguments;
+    return o.resume(o.call.apply(null, args).fork(identity, identity));
+  },
 };
 
 // * :: Operation
 export const sleep = Operation('sleep', func(['duration']));
 export const resolve = Operation('resolve', func(['*']));
+export const cancel = Operation('cancel', func(['*']));
 export const awaitPromise = Operation('awaitPromise', func(['promise e a'], 'a'));
 export const runTask = Operation('runTask', func(['task e a'], 'a'));
-
 export const call = Operation('call', func(['generator ...a b', '...a'], 'b'));
-export const race = Operation('race', func(['...(generator ...a b)'], 'b'));
-export const parallel = Operation('parallel', func(['...(generator ...a b)'], '[b]'));
-export const background = Operation('background', func(['...(generator ...a b)'], '[b]'));
+export const callMulti = Operation('callMulti', func(['generator ...a b', '...a'], 'b', { isMulti: true }));
+export const race = Operation('race', func(['...(generator ...a b)'], 'b', { isMulti: true }));
+export const parallel = Operation('parallel', func(['...(generator ...a b)'], '[b]', { isMulti: true }));
+export const background = Operation('background', func(['...(generator ...a b)'], '[b]', { isMulti: true }));
 
 // createGenericEffect :: (String, OpSignature, OpBehavior) -> Operation
 export const createGenericEffect = (name, signature, handler) => {

@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.composeHandlers = composeHandlers;
 Object.defineProperty(exports, "Operation", {
   enumerable: true,
   get: function get() {
@@ -21,9 +22,11 @@ Object.defineProperty(exports, "createGenericEffect", {
     return _generic.createGenericEffect;
   }
 });
-exports.run = exports.composeHandlers = exports.createEffect = void 0;
+exports.run = exports.createEffect = void 0;
 
 var _task = _interopRequireDefault(require("@algebraic-effects/task"));
+
+var _fns = require("@algebraic-effects/task/fns");
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -47,24 +50,32 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var runProgram = function runProgram(program) {
-  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-
-  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(void 0, args) : program;
+function runProgram(program) {
+  var args = [].slice.call(arguments, 1);
+  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
-};
+}
 
 var operationName = function operationName(effect, op) {
   return effect ? "".concat(effect, "[").concat(op, "]") : op;
 };
 
-var createRunner = function createRunner() {
-  var _handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+var getNextValue = function getNextValue(program, nextVal) {
+  try {
+    return program.next(nextVal);
+  } catch (e) {
+    return {
+      done: true,
+      error: e
+    };
+  }
+};
 
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+var createHandler = function createHandler(_handlers, options) {
+  _handlers = _handlers || {};
+
+  var _ref = options || {},
       _ref$effect = _ref.effect,
       effect = _ref$effect === void 0 ? 'GenericEffect' : _ref$effect,
       _ref$isComposed = _ref.isComposed,
@@ -75,76 +86,123 @@ var createRunner = function createRunner() {
     return _objectSpread({}, acc, _defineProperty({}, operationName(effect, key), _handlers[key]));
   }, {});
 
-  var effectRunner = function effectRunner(p) {
-    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
+  var evaluateYieldedValue = function evaluateYieldedValue(_ref2, flowOperators) {
+    var value = _ref2.value,
+        done = _ref2.done,
+        error = _ref2.error;
+    if (error) return flowOperators.throwError(error);
+    if (done) return valueHandler(flowOperators)(value);
+
+    if ((0, _utils2.isOperation)(value)) {
+      var runOp = handlers[value.name] || _generic.default[value.name];
+
+      if (!runOp) {
+        flowOperators.throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
+        return;
+      }
+
+      runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
+    } else {
+      valueHandler(flowOperators)(value);
     }
+  };
 
-    var task = (0, _task.default)(function (reject, resolve) {
-      var program = runProgram.apply(void 0, [p].concat(args));
+  var getTerminationOps = function getTerminationOps(_ref3) {
+    var program = _ref3.program,
+        task = _ref3.task,
+        resolve = _ref3.resolve,
+        _ref3$mapResult = _ref3.mapResult,
+        mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult,
+        cancelTask = _ref3.cancelTask;
 
-      var throwError = function throwError(x) {
-        program.return(x);
-        !task.isCancelled && reject(x);
-      };
+    var throwError = function throwError(e) {
+      return program.throw(e);
+    };
 
-      var end = function end(x) {
-        program.return(x);
-        !task.isCancelled && resolve(x);
-      };
+    var end = function end() {
+      var value = mapResult.apply(void 0, arguments);
+      program.return(value);
+      !task.isCancelled && resolve(value);
+    };
 
-      var nextValue = function nextValue(program, returnVal) {
-        try {
-          return program.next(returnVal);
-        } catch (e) {
-          throwError(e);
-          return {
-            done: true
-          };
-        }
-      };
+    var cancel = function cancel(x) {
+      program.return(x);
+      cancelTask(x);
+    };
+
+    return {
+      throwError: throwError,
+      end: end,
+      cancel: cancel
+    };
+  };
+
+  var FlowOps = function FlowOps(o) {
+    var call = effectHandlerInstance.run;
+    var callMulti = effectHandlerInstance.runMulti;
+
+    var promise = function promise(_promise) {
+      return _promise.then(o.resume).catch(o.throwError);
+    };
+
+    return {
+      resume: o.resume,
+      end: o.end,
+      throwError: o.throwError,
+      cancel: o.cancel,
+      call: call,
+      callMulti: callMulti,
+      promise: promise
+    };
+  };
+
+  function effectHandlerInstance() {
+    var args = arguments;
+    var task = (0, _task.default)(function (reject, resolve, cancelTask) {
+      var program = runProgram.apply(null, args);
+      var termination = getTerminationOps({
+        program: program,
+        task: task,
+        reject: reject,
+        resolve: resolve,
+        cancelTask: cancelTask
+      });
 
       var resume = function resume(x) {
         if (task.isCancelled) return program.return(null);
+        var isResumed = false;
 
-        var call = function call(p) {
-          for (var _len3 = arguments.length, a = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            a[_key3 - 1] = arguments[_key3];
+        var resumeOperation = function resumeOperation(x) {
+          if (task.isCancelled) return program.return(null);
+          !isResumed && resume(x);
+          isResumed = true;
+        };
+
+        var onError = function onError(e) {
+          return tryNextValue(function () {
+            return termination.throwError(e);
+          });
+        };
+
+        var flowOperators = FlowOps({
+          resume: resumeOperation,
+          throwError: onError,
+          end: termination.end,
+          cancel: termination.cancel
+        });
+
+        var tryNextValue = function tryNextValue(getValue) {
+          try {
+            var value = getValue();
+            value && evaluateYieldedValue(value, flowOperators);
+          } catch (e) {
+            !task.isCancelled && reject(e);
           }
-
-          return effectRunner.apply(void 0, [p].concat(a));
         };
 
-        var promise = function promise(_promise) {
-          return _promise.then(resume).catch(throwError);
-        };
-
-        var flowOperators = {
-          resume: resume,
-          end: end,
-          throwError: throwError,
-          call: call,
-          promise: promise
-        };
-
-        var _nextValue = nextValue(program, x),
-            value = _nextValue.value,
-            done = _nextValue.done;
-
-        if (done) return valueHandler(flowOperators)(value);
-
-        if ((0, _utils2.isOperation)(value)) {
-          var runOp = handlers[value.name] || _generic.default[value.name];
-
-          if (!runOp) {
-            throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
-            return;
-          }
-
-          runOp(flowOperators).apply(void 0, _toConsumableArray(value.payload));
-        } else {
-          valueHandler(flowOperators)(value);
-        }
+        tryNextValue(function () {
+          return getNextValue(program, x);
+        });
       };
 
       setTimeout(resume, 0);
@@ -154,27 +212,136 @@ var createRunner = function createRunner() {
     });
     task.isCancelled = false;
     return task;
-  };
+  }
 
-  effectRunner.$$type = _utils2.HANDLER;
-  effectRunner.effectName = effect;
-  effectRunner.handlers = handlers;
+  effectHandlerInstance.$$type = _utils2.HANDLER;
+  effectHandlerInstance.effectName = effect;
+  effectHandlerInstance.handlers = handlers;
 
-  effectRunner.concat = function (run1) {
-    return createRunner(_objectSpread({}, handlers, run1.handlers), {
-      effect: "".concat(effectRunner.effectName, ".").concat(run1.effectName),
+  effectHandlerInstance.concat = function (run1) {
+    return createHandler(_objectSpread({}, handlers, run1.handlers), {
+      effect: "".concat(effectHandlerInstance.effectName, ".").concat(run1.effectName),
       isComposed: true
     });
   };
 
-  effectRunner.with = function (runner) {
-    return effectRunner.concat(runner.$$type === _utils2.HANDLER ? runner : createRunner(runner, {
+  effectHandlerInstance.with = function (runner) {
+    return effectHandlerInstance.concat(runner.$$type === _utils2.HANDLER ? runner : createHandler(runner, {
       effect: ''
     }));
   };
 
-  effectRunner.run = effectRunner;
-  return effectRunner;
+  effectHandlerInstance.run = effectHandlerInstance;
+
+  effectHandlerInstance.runMulti = function () {
+    var args = arguments;
+
+    var runInstance = function runInstance(value, stateCache) {
+      stateCache = stateCache || [];
+      var task = (0, _task.default)(function (reject, resolve) {
+        var program = runProgram.apply(null, args);
+
+        var cleanup = function cleanup() {};
+
+        var results = [];
+        stateCache.forEach(function (x) {
+          return program.next(x);
+        });
+
+        function mapResult() {
+          return [].concat(_toConsumableArray(results), Array.prototype.slice.call(arguments));
+        }
+
+        var _getTerminationOps = getTerminationOps({
+          program: program,
+          task: task,
+          reject: reject,
+          resolve: resolve,
+          mapResult: mapResult
+        }),
+            end = _getTerminationOps.end,
+            throwError = _getTerminationOps.throwError;
+
+        var resume = function resume(x) {
+          if (task.isCancelled) return program.return(null);
+          stateCache = [].concat(_toConsumableArray(stateCache), [x]);
+          var flowOperators = {};
+          var iterationValue = {};
+          var isResumed = false;
+          var pendingTasks = [];
+
+          var resumeOperation = function resumeOperation(v) {
+            if (task.isCancelled) return program.return(null);
+
+            if ((0, _utils2.isOperation)(iterationValue.value) && iterationValue.value.isMulti) {
+              if (isResumed) {
+                pendingTasks.push(v);
+              } else {
+                isResumed = true;
+                var cancelFn = runInstance(v, stateCache).fork(flowOperators.throwError, function (result) {
+                  results = [].concat(_toConsumableArray(results), _toConsumableArray(result));
+                  var tasks = pendingTasks.map(function (val) {
+                    return runInstance(val, stateCache);
+                  });
+                  var cancelFn = (0, _fns.series)(tasks).fork(flowOperators.throwError, function (r) {
+                    var _flowOperators;
+
+                    isResumed = false;
+
+                    (_flowOperators = flowOperators).end.apply(_flowOperators, _toConsumableArray((0, _utils.flatten)(r)));
+                  });
+                  cleanup = (0, _utils.compose)(cleanup, cancelFn);
+                });
+                cleanup = (0, _utils.compose)(cleanup, cancelFn);
+              }
+            } else if (!isResumed) {
+              isResumed = true;
+              resume(v);
+            }
+          };
+
+          function onError() {
+            var args = arguments;
+            tryNextValue(function () {
+              return throwError.apply(null, args);
+            });
+          }
+
+          flowOperators = FlowOps({
+            resume: resumeOperation,
+            end: end,
+            throwError: onError
+          });
+
+          var tryNextValue = function tryNextValue(getValue) {
+            try {
+              var _value = getValue();
+
+              _value && evaluateYieldedValue(_value, flowOperators);
+            } catch (e) {
+              !task.isCancelled && reject(e);
+            }
+          };
+
+          tryNextValue(function () {
+            return iterationValue = getNextValue(program, x);
+          });
+        };
+
+        setTimeout(resume, 0, value);
+        return function () {
+          task.isCancelled = true;
+          cleanup();
+        };
+      });
+      task.isCancelled = false;
+      return task;
+    };
+
+    return runInstance();
+  };
+
+  return effectHandlerInstance;
 };
 
 var createEffect = function createEffect(name, operations) {
@@ -182,7 +349,7 @@ var createEffect = function createEffect(name, operations) {
     name: name,
     operations: operations,
     handler: function handler(handlers) {
-      return createRunner(handlers, {
+      return createHandler(handlers, {
         effect: name
       });
     },
@@ -196,16 +363,11 @@ var createEffect = function createEffect(name, operations) {
 
 exports.createEffect = createEffect;
 
-var composeHandlers = function composeHandlers() {
-  for (var _len4 = arguments.length, runners = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-    runners[_key4] = arguments[_key4];
-  }
-
-  return runners.reduce(function (a, b) {
+function composeHandlers() {
+  return [].slice.call(arguments).reduce(function (a, b) {
     return a.concat(b);
   });
-};
+}
 
-exports.composeHandlers = composeHandlers;
-var run = createRunner();
+var run = createHandler();
 exports.run = run;

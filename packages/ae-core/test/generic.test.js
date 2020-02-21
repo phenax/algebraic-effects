@@ -1,6 +1,8 @@
 
+import Task from '@algebraic-effects/task';
+import { Random } from '@algebraic-effects/effects';
 import { run, func } from '../src';
-import { sleep, awaitPromise, resolve, call, race, parallel, background, createGenericEffect } from '../src/generic';
+import { sleep, awaitPromise, resolve, cancel, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -45,11 +47,11 @@ describe('Global operations', () => {
     }
 
     function* runFailPromise() {
-      const resp = yield awaitPromise(Promise.reject('rror'));
+      const resp = yield awaitPromise(Promise.reject(new Error('errorator')));
       return resp.data;
     }
 
-    it('should resolve normally for resolves promise', done => {
+    it('should resolve normally for resolved promise', done => {
       run(runSuccPromise)
         .fork(done, x => {
           expect(x).toBe('Some data');
@@ -57,10 +59,40 @@ describe('Global operations', () => {
         });
     });
 
-    it('should resolve normally for resolves promise', done => {
+    it('should reject for rejected promise', done => {
       run(runFailPromise)
         .fork(e => {
-          expect(e).toBe('rror');
+          expect(e.message).toBe('errorator');
+          done();
+        }, () => done('Shouldnt be here'));
+    });
+  });
+
+  describe('runTask', () => {
+    function* runSuccPromise() {
+      const resp = yield runTask(Task.of({
+        data: 'Some data',
+      }));
+      return resp.data;
+    }
+
+    function* runFailPromise() {
+      const resp = yield runTask(Task.Rejected('error'));
+      return resp.data;
+    }
+
+    it('should resolve normally for resolved task', done => {
+      run(runSuccPromise)
+        .fork(done, x => {
+          expect(x).toBe('Some data');
+          done();
+        });
+    });
+
+    it('should reject for rejected task', done => {
+      run(runFailPromise)
+        .fork(e => {
+          expect(e).toBe('error');
           done();
         }, done);
     });
@@ -76,6 +108,51 @@ describe('Global operations', () => {
         .fork(done, x => {
           expect(x).toBe(5);
           done();
+        });
+    });
+  });
+
+  describe('cancel', () => {
+    const logFn = jest.fn();
+    function* program(x) {
+      if(x === 5) {
+        yield cancel(x);
+      }
+      yield sleep(100);
+      return x;
+    }
+
+    const handler = run.with({ sleep: ({ resume }) => () => resume(logFn()) });
+
+    beforeEach(() => {
+      logFn.mockClear();
+    });
+
+    it('should not cancel the task if input is not 5', done => {
+      handler
+        .run(program, 2)
+        .fork({
+          Resolved: data => {
+            expect(logFn).toHaveBeenCalledTimes(1);
+            expect(data).toBe(2);
+            done();
+          },
+          Rejected: done,
+          Cancelled: () => done('shoujndt be herre'),
+        });
+    });
+
+    it('should cancel the task if input is 5', done => {
+      handler
+        .run(program, 5)
+        .fork({
+          Resolved: () => done('shoujndt be herre'),
+          Rejected: done,
+          Cancelled: data => {
+            expect(logFn).not.toHaveBeenCalled();
+            expect(data).toBe(5);
+            done();
+          },
         });
     });
   });
@@ -117,6 +194,33 @@ describe('Global operations', () => {
         .fork(done, () => {
           expect(logfn).toBeCalledTimes(2);
           expect(logfn.mock.calls.map(x => x[0])).toEqual([ 'A', 'B' ]);
+          done();
+        });
+    });
+  });
+
+  describe('callMulti', () => {
+    const logfn = jest.fn();
+
+    function *programB() {
+      yield Random.flipCoin(3);
+      logfn('B');
+    }
+
+    function *programA() {
+      yield callMulti(programB);
+      logfn('A');
+    }
+
+    afterEach(() => {
+      logfn.mockClear();
+    });
+
+    it('should call another program in multi mode', done => {
+      Random.seed(100)
+        .runMulti(programA).fork(done, () => {
+          expect(logfn).toBeCalledTimes(4);
+          expect(logfn.mock.calls).toEqual([ [ 'B' ], [ 'B' ], [ 'B' ], [ 'A' ] ]);
           done();
         });
     });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 import { Routes } from '../types/routes';
 
@@ -21,7 +21,7 @@ const Router = ({ routes, ...props }: RouterProps & any) => {
 
     // Scroll to top
     scrollTo(0, 0);
-  }, [page]);
+  }, [currentPage]);
 
   return <currentPage.render {...props} />;
 };
@@ -49,18 +49,19 @@ export const RouteProvider = ({ children }: RouterProviderProps) => {
   const [page, setPage] = useState(initPage);
   const [scrollTarget, setScrollTarget] = useState(initTarget);
 
-  const onHashChange = () => {
-    const [hash, target] = getHash();
-    target && setScrollTarget(target);
-    setPage(hash);
-  };
-
   useEffect(() => {
+    const onHashChange = (e: Event) => {
+      e.preventDefault();
+      const [hash, target] = getHash();
+      target && setScrollTarget(target);
+      setPage(hash);
+    };
+
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if(scrollTarget) {
       const $target = document.getElementById(scrollTarget);
       $target && setTimeout(() => scrollIntoView($target), 400);

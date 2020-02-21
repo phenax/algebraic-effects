@@ -1,0 +1,10 @@
+{
+  "name": "@algebraic-effect/test-utils",
+  "version": "0.0.5-alpha.1",
+  "private": true,
+  "description": "Algebraic effects test utils",
+  "main": "./index.js",
+  "repository": "https://github.com/phenax/algebraic-effects",
+  "author": "Akshay Nair <phenax5@gmail.com>",
+  "license": "MIT"
+}

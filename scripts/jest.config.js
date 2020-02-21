@@ -8,4 +8,7 @@ module.exports = {
   rootDir: process.cwd(),
   roots: ['<rootDir>/packages'],
   collectCoverageFrom: ['packages/**/src/**/*.js'],
+  setupFiles: [
+    '<rootDir>/scripts/testSetup.js',
+  ],
 };

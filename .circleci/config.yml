@@ -6,24 +6,20 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/node:10.12
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+
+    branches:
+      ignore:
+        - gh-pages
 
     working_directory: ~/repo
 
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
       - run: yarn install
@@ -33,7 +29,6 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # run tests!
       - run: yarn test:ci
 
       - run:
@@ -41,3 +36,4 @@ jobs:
           command: yarn coverage:ci
           environment:
             CODECOV_TOKEN: dc2e140e-eed5-47bd-9bc9-a6889eba4167
+

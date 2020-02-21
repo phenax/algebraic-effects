@@ -6,6 +6,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import FloatingHeaderLink from './components/FloatingHeaderLink';
 import Sidenav from './components/Sidenav';
 import Router, { RouteProvider } from './components/Router';
+import Footer from './components/Footer';
 
 import routes from './routes';
 
@@ -45,6 +46,7 @@ const App = () => (
       <Content>
         <React.Suspense fallback={<LoadingSpinner />} maxDuration={200}>
           <Router routes={routes} />
+          <Footer routes={routes} />
         </React.Suspense>
       </Content>
     </Main>

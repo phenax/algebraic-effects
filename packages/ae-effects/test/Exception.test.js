@@ -24,6 +24,33 @@ describe('Exception', () => {
       }, () => done('Shouldn have been called boey'));
   });
 
+  describe('with try/catch', () => {
+    const logErr = jest.fn();
+    const specialDivide = function *(a, b) {
+      try {
+        if (b === 0) {
+          yield Exception.throw(new Error('Invalid operation'));
+        }
+
+        return a / b;
+      } catch(e) {
+        logErr(e);
+        yield 1;
+      }
+    };
+
+    it('should ignore error if wrapped in try/catch', done => {
+      Exception.try(specialDivide, 8, 0)
+        .fork(done, result => {
+          expect(result).toBe(1);
+          expect(logErr.mock.calls).toHaveLength(1);
+          const [ [ { message } ] ] = logErr.mock.calls;
+          expect(message).toBe('Invalid operation');
+          done();
+        });
+    });
+  });
+
   it('should convert operation to Either', done => {
     const toEither = Exception.handler({
       _: ({ end }) => x => end({ right: x }),

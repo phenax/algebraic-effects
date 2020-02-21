@@ -47,11 +47,12 @@ const program = function*() {
 ```
 
 
-### call
-Call another program from within your program with the same effects
+### call and callMulti
+Call another program from within your program with the same effects. callMulti is similar to call except that it runs in multiple continuations mode enabled.
 
 ```haskell
 call :: Operation (Program ...a b,...a) b
+callMulti :: Operation (Program ...a b,...a) b
 ```
 
 ```js
@@ -165,9 +166,33 @@ import { awaitPromise } from '@algebraic-effects/core/generic';
 // Program that calls your api and logs it to console
 const program = function*() {
   const response = yield awaitPromise(fetch('/api'));
-  const json = awaitPromise(response.json());
+  const json = yield awaitPromise(response.json());
   yield ConsoleEffect.log(json);
   yield json;
 }
 ```
+
+
+### cancel
+Wait a promise to resolve from your program.
+NOTE: In most cases you should be able to avoid this as most promise returning functions can be classified as a type of effect.
+
+```haskell
+cancel :: Operation * ()
+```
+
+```js
+import { cancel } from '@algebraic-effects/core/generic';
+
+// Program that calls your api and logs it to console
+const program = function*() {
+  const response = yield awaitPromise(fetch('/api'));
+  if (isCancelled)
+    yield cancel();
+  const json = awaitPromise(response.json());
+  yield ConsoleEffect.log(json);
+  return json;
+}
+```
+
 

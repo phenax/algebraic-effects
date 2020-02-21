@@ -15,7 +15,7 @@ export const createSymbol = key => typeof Symbol === 'function'
   : createSymbolObject(key);
 
 // isGenerator :: Generator? -> Boolean
-export const isGenerator = p => p.constructor === (function*(){}()).constructor;
+export const isGenerator = p => p && p.constructor && (p.constructor.name + '').indexOf('GeneratorFunction') !== -1;
 
 // pointfree :: String -> (...a) -> Object(with methodName :: ...a -> b) -> b
 export const pointfree = methodName => function() {
@@ -24,8 +24,14 @@ export const pointfree = methodName => function() {
 
 // compose :: (...Function) -> Function
 export const compose = function() {
-  return [...arguments].reduce((a, b) => (...args) => a(b(...args)));
+  return [].slice.apply(arguments).reduce((a, b) => (...args) => a(b(...args)));
 };
+
+// isArray :: Array|any -> Boolean
+export const isArray = Array.isArray || (a => ({}).toString.call(a)=='[object Array]');
+
+// flatten :: ([[a]]) -> [a]
+export const flatten = arr => arr.reduce((list, item) => list.concat(isArray(item) ? item : [item]), []);
 
 // identity :: a -> a
 export const identity = x => x;
