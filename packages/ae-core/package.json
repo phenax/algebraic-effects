@@ -3,7 +3,6 @@
   "version": "0.0.5-alpha.1",
   "description": "Algebraic effects in react using generators",
   "main": "index.js",
-  "buildOptions": {},
   "repository": "https://github.com/phenax/algebraic-effects",
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",
