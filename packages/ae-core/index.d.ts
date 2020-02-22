@@ -3,7 +3,6 @@ import Task from '@algebraic-effects/task';
 import { SymbolObject } from '@algebraic-effects/utils';
 
 declare module AlgebraicEffects {
-
   export type Program = GeneratorFunction | Iterator<any>;
   export type Runner = (program: Program, ...args: any) => Task<any, any>;
   export type FuncDefinition = [string, string];

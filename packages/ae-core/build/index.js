@@ -1,5 +1,7 @@
 "use strict";
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -34,9 +36,11 @@ var _utils2 = require("./utils");
 
 var _generic = _interopRequireWildcard(require("./generic"));
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
@@ -46,20 +50,27 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+// type Program = GeneratorFunction
+// type Handler = (Program ...a b, ...a) -> Task e b
+// runProgram :: (Program, ...a) -> Iterator
 function runProgram(program) {
   var args = [].slice.call(arguments, 1);
   var p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
-}
+} // operationName :: (String, String) -> String
+
 
 var operationName = function operationName(effect, op) {
   return effect ? "".concat(effect, "[").concat(op, "]") : op;
-};
+}; // getNextValue :: (Program, *) -> { value :: *, done :: Boolean, error :: ?Error }
+
 
 var getNextValue = function getNextValue(program, nextVal) {
   try {
@@ -70,7 +81,8 @@ var getNextValue = function getNextValue(program, nextVal) {
       error: e
     };
   }
-};
+}; // createHandler :: (Object Function, { effect :: String }) -> Handler
+
 
 var createHandler = function createHandler(_handlers, options) {
   _handlers = _handlers || {};
@@ -94,7 +106,7 @@ var createHandler = function createHandler(_handlers, options) {
     if (done) return valueHandler(flowOperators)(value);
 
     if ((0, _utils2.isOperation)(value)) {
-      var runOp = handlers[value.name] || _generic.default[value.name];
+      var runOp = handlers[value.name] || _generic["default"][value.name];
 
       if (!runOp) {
         flowOperators.throwError(new Error("Invalid operation executed. The handler for operation \"".concat(value.name, "\", was not provided")));
@@ -115,18 +127,20 @@ var createHandler = function createHandler(_handlers, options) {
         mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult,
         cancelTask = _ref3.cancelTask;
 
+    // throwError :: * -> ()
     var throwError = function throwError(e) {
-      return program.throw(e);
-    };
+      return program["throw"](e);
+    }; // end  :: * -> ()
+
 
     var end = function end() {
       var value = mapResult.apply(void 0, arguments);
-      program.return(value);
+      program["return"](value);
       !task.isCancelled && resolve(value);
     };
 
     var cancel = function cancel(x) {
-      program.return(x);
+      program["return"](x);
       cancelTask(x);
     };
 
@@ -142,7 +156,7 @@ var createHandler = function createHandler(_handlers, options) {
     var callMulti = effectHandlerInstance.runMulti;
 
     var promise = function promise(_promise) {
-      return _promise.then(o.resume).catch(o.throwError);
+      return _promise.then(o.resume)["catch"](o.throwError);
     };
 
     return {
@@ -158,7 +172,7 @@ var createHandler = function createHandler(_handlers, options) {
 
   function effectHandlerInstance() {
     var args = arguments;
-    var task = (0, _task.default)(function (reject, resolve, cancelTask) {
+    var task = (0, _task["default"])(function (reject, resolve, cancelTask) {
       var program = runProgram.apply(null, args);
       var termination = getTerminationOps({
         program: program,
@@ -166,14 +180,14 @@ var createHandler = function createHandler(_handlers, options) {
         reject: reject,
         resolve: resolve,
         cancelTask: cancelTask
-      });
+      }); // resume :: * -> ()
 
       var resume = function resume(x) {
-        if (task.isCancelled) return program.return(null);
+        if (task.isCancelled) return program["return"](null);
         var isResumed = false;
 
         var resumeOperation = function resumeOperation(x) {
-          if (task.isCancelled) return program.return(null);
+          if (task.isCancelled) return program["return"](null);
           !isResumed && resume(x);
           isResumed = true;
         };
@@ -216,34 +230,37 @@ var createHandler = function createHandler(_handlers, options) {
 
   effectHandlerInstance.$$type = _utils2.HANDLER;
   effectHandlerInstance.effectName = effect;
-  effectHandlerInstance.handlers = handlers;
+  effectHandlerInstance.handlers = handlers; // concat :: Handler -> Handler
 
   effectHandlerInstance.concat = function (run1) {
-    return createHandler(_objectSpread({}, handlers, run1.handlers), {
+    return createHandler(_objectSpread({}, handlers, {}, run1.handlers), {
       effect: "".concat(effectHandlerInstance.effectName, ".").concat(run1.effectName),
       isComposed: true
     });
-  };
+  }; // with :: (Handler | Object OpBehavior) -> Handler
 
-  effectHandlerInstance.with = function (runner) {
+
+  effectHandlerInstance["with"] = function (runner) {
     return effectHandlerInstance.concat(runner.$$type === _utils2.HANDLER ? runner : createHandler(runner, {
       effect: ''
     }));
-  };
+  }; // run :: Handler
 
-  effectHandlerInstance.run = effectHandlerInstance;
+
+  effectHandlerInstance.run = effectHandlerInstance; // runMulti :: Handler
 
   effectHandlerInstance.runMulti = function () {
     var args = arguments;
 
     var runInstance = function runInstance(value, stateCache) {
       stateCache = stateCache || [];
-      var task = (0, _task.default)(function (reject, resolve) {
+      var task = (0, _task["default"])(function (reject, resolve) {
         var program = runProgram.apply(null, args);
 
         var cleanup = function cleanup() {};
 
-        var results = [];
+        var results = []; // Fast forward
+
         stateCache.forEach(function (x) {
           return program.next(x);
         });
@@ -260,18 +277,20 @@ var createHandler = function createHandler(_handlers, options) {
           mapResult: mapResult
         }),
             end = _getTerminationOps.end,
-            throwError = _getTerminationOps.throwError;
+            throwError = _getTerminationOps.throwError; // resume :: * -> ()
+
 
         var resume = function resume(x) {
-          if (task.isCancelled) return program.return(null);
+          if (task.isCancelled) return program["return"](null);
           stateCache = [].concat(_toConsumableArray(stateCache), [x]);
           var flowOperators = {};
           var iterationValue = {};
-          var isResumed = false;
+          var isResumed = false; // Identifier for multiple resume calls from one op
+
           var pendingTasks = [];
 
           var resumeOperation = function resumeOperation(v) {
-            if (task.isCancelled) return program.return(null);
+            if (task.isCancelled) return program["return"](null);
 
             if ((0, _utils2.isOperation)(iterationValue.value) && iterationValue.value.isMulti) {
               if (isResumed) {
@@ -342,7 +361,8 @@ var createHandler = function createHandler(_handlers, options) {
   };
 
   return effectHandlerInstance;
-};
+}; // createEffect :: (String, Object *) -> Effect
+
 
 var createEffect = function createEffect(name, operations) {
   return _objectSpread({
@@ -354,12 +374,13 @@ var createEffect = function createEffect(name, operations) {
       });
     },
     extendAs: function extendAs(newName, newOps) {
-      return createEffect(newName, _objectSpread({}, operations, newOps));
+      return createEffect(newName, _objectSpread({}, operations, {}, newOps));
     }
   }, Object.keys(operations).reduce(function (acc, opName) {
     return _objectSpread({}, acc, _defineProperty({}, opName, (0, _utils2.Operation)(operationName(name, opName), operations[opName])));
   }, {}));
-};
+}; // composeHandlers :: ...Handler -> Handler
+
 
 exports.createEffect = createEffect;
 
@@ -367,7 +388,8 @@ function composeHandlers() {
   return [].slice.call(arguments).reduce(function (a, b) {
     return a.concat(b);
   });
-}
+} // run :: Handler
+
 
 var run = createHandler();
 exports.run = run;

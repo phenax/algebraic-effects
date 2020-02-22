@@ -1,6 +1,7 @@
 const fsextra = require('fs-extra');
 const watch = require('node-watch');
 const path = require('path');
+const fs = require('fs');
 const babel = require('@babel/core');
 const { map, filter, flatten, compose, uniq, prop } = require('ramda');
 
@@ -8,7 +9,7 @@ const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages, errorH
 
 const babelConfig = require('../babel.config');
 
-const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.js$/, delay: 100 };
+const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.(js|ts)x?$/, delay: 100 };
 
 const isWatchEnabled = process.argv.includes('--watch');
 
@@ -19,20 +20,21 @@ const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
 
 const isBuildable = dir => {
   try {
-    return getPackageJson(dir).isBuildTarget || false;
+    return !!getPackageJson(dir).buildOptions || false;
   } catch(e) {
     return false;
   }
 };
 
 const saveCodeFile = ({ buildPath, code }) => fsextra.outputFile(buildPath, code);
-const compileFile = file => babel.transformFileAsync(file, { comments: false });
-const compileDirectory = dir => globber(`${dir}/**/*.js`).then(map(compileFile)).then(resolveAll);
+const compileFile = file => babel.transformFileAsync(file, { filename: file, comments: false, include: ['**/*.[tj]s'] });
+// const compileFile = file => babel.transformAsync(fs.readFileSync(file, 'utf-8').toString(), { filename: file, comments: false, include: ['**/*.[tj]s'] });
+const compileDirectory = dir => globber(`${dir}/**/*.[tj]s`).then(map(compileFile)).then(resolveAll);
 const compileSourceFiles = dir => {
   const srcPath = toSrcPath(dir);
   return compileDirectory(srcPath).then(map(file => ({
     ...file,
-    buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '')),
+    buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '').replace(/\.ts$/, '.js')),
     packageDir: dir,
   })));
 };
@@ -63,7 +65,6 @@ const build = packages =>
       errorHandler(e);
       return Promise.reject(e);
     });
-
 
 babel.loadOptions(babelConfig);
 

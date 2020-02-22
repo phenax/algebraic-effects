@@ -17,10 +17,11 @@
     "docs": "node ./scripts/docs.js"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@babel/preset-env": "^7.2.3",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
     "@mdx-js/loader": "^0.16.8",
     "@mdx-js/runtime": "^0.16.8",
     "@types/node": "^10.12.21",

@@ -3,15 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _core = require("@algebraic-effects/core");
 
+// State :: Effect
 var State = (0, _core.createEffect)('State', {
   get: (0, _core.func)([], 'a'),
   set: (0, _core.func)(['a']),
   update: (0, _core.func)(['a -> a'], 'a')
-});
+}); // State.of :: a -> Runner a
 
 State.of = function (initState) {
   var CustomState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : State;
@@ -36,4 +37,4 @@ State.of = function (initState) {
 };
 
 var _default = State;
-exports.default = _default;
+exports["default"] = _default;
