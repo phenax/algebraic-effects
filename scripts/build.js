@@ -37,6 +37,7 @@ const compileSourceFiles = async dir => {
     packageDir: dir,
   }));
 
+  // Type declarations generation
   console.log('');
   try {
     const relativePath = dir.replace(path.resolve(), '').replace(/^\/+/, '');

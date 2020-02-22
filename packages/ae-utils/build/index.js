@@ -7,8 +7,7 @@ exports.maybe = exports.constant = exports.identity = exports.flatten = exports.
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
-  if (symbolObjectPool[name]) return symbolObjectPool[name];
-  symbolObjectPool[name] = {
+  symbolObjectPool[name] = symbolObjectPool[name] || {
     name: name
   };
   return symbolObjectPool[name];

@@ -4,15 +4,16 @@ type SymbolObject = Symbol | { name: string };
 const symbolObjectPool: { [key: string]: SymbolObject } = {};
 
 export const createSymbolObject = (name: string): SymbolObject => {
-  if (symbolObjectPool[name]) return symbolObjectPool[name];
-  symbolObjectPool[name] = { name };
+  symbolObjectPool[name] = symbolObjectPool[name] || { name };
   return symbolObjectPool[name];
 };
 
 export const createSymbol = (key: string): SymbolObject => typeof Symbol === 'function'
+  // @ts-ignore
   ? Symbol.for(key)
   : createSymbolObject(key);
 
+// @ts-ignore
 export const isGenerator = (p: Function) => p && p.constructor && (p.constructor.name + '').indexOf('GeneratorFunction') !== -1;
 
 export const pointfree = <T>(methodName: keyof T) => function() {
