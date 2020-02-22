@@ -4,7 +4,6 @@
     "module": "esNext",
     "target": "es5",
     "jsx": "react",
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "baseUrl": ".",
@@ -20,9 +19,17 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "node",
+    "declaration": true,
     "lib": [
       "dom",
       "esnext"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ],
+  "include": [
+    "packages/**/*.ts"
+  ]
 }

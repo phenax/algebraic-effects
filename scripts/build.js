@@ -1,9 +1,9 @@
 const fsextra = require('fs-extra');
 const watch = require('node-watch');
 const path = require('path');
-const fs = require('fs');
 const babel = require('@babel/core');
-const { map, filter, flatten, compose, uniq, prop } = require('ramda');
+const { execSync } = require('child_process');
+const { map, filter, flatten, compose, uniq, prop, tap } = require('ramda');
 
 const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages, errorHandler } = require('./utils');
 
@@ -27,16 +27,27 @@ const isBuildable = dir => {
 };
 
 const saveCodeFile = ({ buildPath, code }) => fsextra.outputFile(buildPath, code);
-const compileFile = file => babel.transformFileAsync(file, { filename: file, comments: false, include: ['**/*.[tj]s'] });
-// const compileFile = file => babel.transformAsync(fs.readFileSync(file, 'utf-8').toString(), { filename: file, comments: false, include: ['**/*.[tj]s'] });
+const compileFile = file => babel.transformFileAsync(file, { comments: false });
 const compileDirectory = dir => globber(`${dir}/**/*.[tj]s`).then(map(compileFile)).then(resolveAll);
-const compileSourceFiles = dir => {
+const compileSourceFiles = async dir => {
   const srcPath = toSrcPath(dir);
-  return compileDirectory(srcPath).then(map(file => ({
+  const toOutputInfo = map(file => ({
     ...file,
     buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '').replace(/\.ts$/, '.js')),
     packageDir: dir,
-  })));
+  }));
+
+  console.log('');
+  try {
+    const relativePath = dir.replace(path.resolve(), '').replace(/^\/+/, '');
+    execSync(`npx tsc --emitDeclarationOnly ${relativePath}/**/*.ts --declaration --outDir ${dir}`);
+  } catch(e) {
+    // console.log(e.message);
+    console.warn('TYPINGS WARNING ::', e.output.toString());
+  }
+
+  const result = await compileDirectory(srcPath);
+  return toOutputInfo(result);
 };
 
 const getBuildablePackages = () =>

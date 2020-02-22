@@ -30,8 +30,7 @@ exports.isGenerator = isGenerator;
 
 var pointfree = function pointfree(methodName) {
   return function () {
-    var args = arguments; // @ts-ignore
-
+    var args = arguments;
     return function (x) {
       return x[methodName].apply(x, args);
     };
