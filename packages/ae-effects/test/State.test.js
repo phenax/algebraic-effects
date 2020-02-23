@@ -1,4 +1,5 @@
-import State, { state } from '../src/State';
+
+import State from '../src/State';
 import { sleep, call } from '@algebraic-effects/core/generic';
 
 describe('State', () => {
@@ -23,7 +24,7 @@ describe('State', () => {
       return count;
     };
 
-    state(10)
+    State.of(10)
       .run(countdown)
       .map(result => {
         expect(result).toBe(0);
@@ -48,7 +49,7 @@ describe('State', () => {
       return yield State.get();
     };
 
-    state({ count: 10, done: false })
+    State.of({ count: 10, done: false })
       .run(countdown)
       .map(result => {
         expect(result).toEqual({ count: 0, done: true });
@@ -75,8 +76,8 @@ describe('State', () => {
       return yield CountListState.get();
     };
 
-    state(10)
-      .with(state([], CountListState))
+    State.of(10)
+      .with(State.of([], CountListState))
       .run(countdown)
       .map(result => {
         const reversecount = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.callMulti = exports.call = exports.runTask = exports.awaitPromise = exports.cancel = exports.resolve = exports.sleep = void 0;
+exports.default = exports.createGenericEffect = exports.background = exports.parallel = exports.race = exports.callMulti = exports.call = exports.runTask = exports.awaitPromise = exports.cancel = exports.resolve = exports.sleep = void 0;
 
 var _fns = require("@algebraic-effects/task/fns");
 
@@ -66,40 +66,40 @@ var genericOpHandlers = {
     };
   }
 };
-var sleep = (0, _utils2.createOperation)('sleep', (0, _utils2.func)(['duration']));
+var sleep = (0, _utils2.Operation)('sleep', (0, _utils2.func)(['duration']));
 exports.sleep = sleep;
-var resolve = (0, _utils2.createOperation)('resolve', (0, _utils2.func)(['*']));
+var resolve = (0, _utils2.Operation)('resolve', (0, _utils2.func)(['*']));
 exports.resolve = resolve;
-var cancel = (0, _utils2.createOperation)('cancel', (0, _utils2.func)(['*']));
+var cancel = (0, _utils2.Operation)('cancel', (0, _utils2.func)(['*']));
 exports.cancel = cancel;
-var awaitPromise = (0, _utils2.createOperation)('awaitPromise', (0, _utils2.func)(['promise e a'], 'a'));
+var awaitPromise = (0, _utils2.Operation)('awaitPromise', (0, _utils2.func)(['promise e a'], 'a'));
 exports.awaitPromise = awaitPromise;
-var runTask = (0, _utils2.createOperation)('runTask', (0, _utils2.func)(['task e a'], 'a'));
+var runTask = (0, _utils2.Operation)('runTask', (0, _utils2.func)(['task e a'], 'a'));
 exports.runTask = runTask;
-var call = (0, _utils2.createOperation)('call', (0, _utils2.func)(['generator ...a b', '...a'], 'b'));
+var call = (0, _utils2.Operation)('call', (0, _utils2.func)(['generator ...a b', '...a'], 'b'));
 exports.call = call;
-var callMulti = (0, _utils2.createOperation)('callMulti', (0, _utils2.func)(['generator ...a b', '...a'], 'b', {
+var callMulti = (0, _utils2.Operation)('callMulti', (0, _utils2.func)(['generator ...a b', '...a'], 'b', {
   isMulti: true
 }));
 exports.callMulti = callMulti;
-var race = (0, _utils2.createOperation)('race', (0, _utils2.func)(['...(generator ...a b)'], 'b', {
+var race = (0, _utils2.Operation)('race', (0, _utils2.func)(['...(generator ...a b)'], 'b', {
   isMulti: true
 }));
 exports.race = race;
-var parallel = (0, _utils2.createOperation)('parallel', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
+var parallel = (0, _utils2.Operation)('parallel', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
   isMulti: true
 }));
 exports.parallel = parallel;
-var background = (0, _utils2.createOperation)('background', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
+var background = (0, _utils2.Operation)('background', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
   isMulti: true
 }));
 exports.background = background;
 
 var createGenericEffect = function createGenericEffect(name, signature, handler) {
   genericOpHandlers[name] = handler;
-  return (0, _utils2.createOperation)(name, signature);
+  return (0, _utils2.Operation)(name, signature);
 };
 
 exports.createGenericEffect = createGenericEffect;
 var _default = genericOpHandlers;
-exports["default"] = _default;
+exports.default = _default;

@@ -1,25 +1,26 @@
 import Task from '@algebraic-effects/task';
-// import { AlgebraicTask } from '@algebraic-effects/task';
 import { series } from '@algebraic-effects/task/fns';
 import { isGenerator, flatten, identity, compose } from '@algebraic-effects/utils';
-import { createOperation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
+import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
-import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, TaskWithCancel, HandlerInstance, OperationMap, Effect } from './types';
 
-export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
+// type Program = GeneratorFunction
+// type Handler = (Program ...a b, ...a) -> Task e b
 
-function runProgram(program: Program): ProgramIterator {
+// runProgram :: (Program, ...a) -> Iterator
+function runProgram(program) {
   const args = [].slice.call(arguments, 1);
-  // @ts-ignore
   const p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!isGenerator(p))
     throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
 }
 
-const operationName = (effect: string, op: string) => effect ? `${effect}[${op}]` : op;
+// operationName :: (String, String) -> String
+const operationName = (effect, op) => effect ? `${effect}[${op}]` : op;
 
-const getNextValue = (program: ProgramIterator, nextVal: any): ProgramIteratorResult => {
+// getNextValue :: (Program, *) -> { value :: *, done :: Boolean, error :: ?Error }
+const getNextValue = (program, nextVal) => {
   try {
     return program.next(nextVal);
   } catch(e) {
@@ -27,12 +28,8 @@ const getNextValue = (program: ProgramIterator, nextVal: any): ProgramIteratorRe
   }
 };
 
-interface HandlerOptions {
-  effect?: string;
-  isComposed?: boolean;
-}
-
-const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {}) => {
+// createHandler :: (Object Function, { effect :: String }) -> Handler
+const createHandler = (_handlers, options) => {
   _handlers = _handlers || {};
   const { effect = 'GenericEffect', isComposed = false } = options || {};
 
@@ -43,7 +40,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
     [operationName(effect, key)]: _handlers[key],
   }), {});
 
-  const evaluateYieldedValue = ({ value, done, error }: ProgramIteratorResult, flowOperators: FlowOperators) => {
+  const evaluateYieldedValue = ({ value, done, error }, flowOperators) => {
     if (error) return flowOperators.throwError(error);
     if (done) return valueHandler(flowOperators)(value);
 
@@ -61,27 +58,19 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
     }
   };
 
-  interface GetTermOpsOptions {
-    program: ProgramIterator;
-    task: TaskWithCancel;
-    resolve: (v: any) => any;
-    cancelTask: (x: any) => any;
-    mapResult?: (...args: any[]) => any;
-  }
-
-  const getTerminationOps = ({ program, task, resolve, mapResult = identity, cancelTask }: GetTermOpsOptions) => {
+  const getTerminationOps = ({ program, task, resolve, mapResult = identity, cancelTask }) => {
 
     // throwError :: * -> ()
-    const throwError = (e: any) => program.throw(e);
+    const throwError = e => program.throw(e);
 
     // end  :: * -> ()
-    const end = (...args: any[]) => {
-      const value = mapResult.apply(null, args);
+    const end = (...args) => {
+      const value = mapResult(...args);
       program.return(value);
       !task.isCancelled && resolve(value);
     };
 
-    const cancel = (x: any) => {
+    const cancel = x => {
       program.return(x);
       cancelTask(x);
     };
@@ -89,33 +78,33 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
     return { throwError, end, cancel };
   };
 
-  const FlowOps = (o: Pick<FlowOperators, 'resume' | 'throwError' | 'end' | 'cancel'>) => {
+  const FlowOps = o => {
     const call = effectHandlerInstance.run;
     const callMulti = effectHandlerInstance.runMulti;
-    const promise = (promise: Promise<any>) => promise.then(o.resume).catch(o.throwError);
+    const promise = promise => promise.then(o.resume).catch(o.throwError);
 
     return { resume: o.resume, end: o.end, throwError: o.throwError, cancel: o.cancel, call, callMulti, promise };
   };
 
-  const effectHandlerInstance: HandlerInstance = (...args) => {
-    const task: TaskWithCancel = Task((reject, resolve, cancelTask) => {
+  function effectHandlerInstance() {
+    const args = arguments;
+    const task = Task((reject, resolve, cancelTask) => {
       const program = runProgram.apply(null, args);
   
-      const termination = getTerminationOps({ program, task, resolve, cancelTask });
+      const termination = getTerminationOps({ program, task, reject, resolve, cancelTask });
   
       // resume :: * -> ()
-      const resume = (x: any) => {
+      const resume = x => {
         if(task.isCancelled) return program.return(null);
 
         let isResumed = false;
-        const resumeOperation = (x: any) => {
+        const resumeOperation = x => {
           if(task.isCancelled) return program.return(null);
           !isResumed && resume(x);
           isResumed = true;
         };
 
-        const onError = (e: any) => tryNextValue(() => termination.throwError(e));
-
+        const onError = e => tryNextValue(() => termination.throwError(e));
         const flowOperators = FlowOps({
           resume: resumeOperation,
           throwError: onError,
@@ -123,7 +112,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
           cancel: termination.cancel,
         });
 
-        const tryNextValue = (getValue: () => ProgramIteratorResult) => {
+        const tryNextValue = getValue => {
           try {
             const value = getValue();
             value && evaluateYieldedValue(value, flowOperators);
@@ -142,53 +131,58 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
 
     task.isCancelled = false;
     return task;
-  };
+  }
 
   effectHandlerInstance.$$type = HANDLER;
   effectHandlerInstance.effectName = effect;
   effectHandlerInstance.handlers = handlers;
 
+  // concat :: Handler -> Handler
   effectHandlerInstance.concat = run1 => createHandler(
     { ...handlers, ...run1.handlers },
     { effect: `${effectHandlerInstance.effectName}.${run1.effectName}`, isComposed: true },
   );
 
+  // with :: (Handler | Object OpBehavior) -> Handler
   effectHandlerInstance.with = runner => effectHandlerInstance.concat(
-    // @ts-ignore
-    runner.$$type === HANDLER ? runner : createHandler(runner, { effect: '' }),
+    runner.$$type === HANDLER
+      ? runner
+      : createHandler(runner, { effect: '' })
   );
 
+  // run :: Handler
   effectHandlerInstance.run = effectHandlerInstance;
 
+  // runMulti :: Handler
   effectHandlerInstance.runMulti = function() {
     const args = arguments;
-    const runInstance = (value: any = null, stateCache: any[] = []) => {
+    const runInstance = (value, stateCache) => {
       stateCache = stateCache || [];
-      const task: TaskWithCancel = Task((reject, resolve, cancelTask) => {
-        const program: ProgramIterator = runProgram.apply(null, args);
+      const task = Task((reject, resolve) => {
+        const program = runProgram.apply(null, args);
         let cleanup = () => {};
-        let results: any[] = [];
+        let results = [];
 
-        // Fast forward to multi call
+        // Fast forward
         stateCache.forEach(x => program.next(x));
     
-        const mapResult = (...args: any[]) => [...results, ...args];
+        function mapResult() { return [...results, ...arguments]; }
         const { end, throwError } =
-          getTerminationOps({ program, task, resolve, mapResult, cancelTask });
+          getTerminationOps({ program, task, reject, resolve, mapResult });
 
-        const resume = (x: any) => {
+        // resume :: * -> ()
+        const resume = x => {
           if(task.isCancelled) return program.return(null);
 
           stateCache = [...stateCache, x];
 
-          // @ts-ignore
-          let flowOperators: FlowOperators = {};
-          let iterationValue: ProgramIteratorResult = { done: false };
+          let flowOperators = {};
+          let iterationValue = {};
   
           let isResumed = false; // Identifier for multiple resume calls from one op
-          const pendingTasks: any[] = [];
+          const pendingTasks = [];
 
-          const resumeOperation = (v: any) => {
+          const resumeOperation = v => {
             if(task.isCancelled) return program.return(null);
 
             if(isOperation(iterationValue.value) && iterationValue.value.isMulti) {
@@ -206,7 +200,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
                       flowOperators.throwError,
                       r => {
                         isResumed = false;
-                        flowOperators.end.apply(null, flatten(r));
+                        flowOperators.end(...flatten(r));
                       },
                     );
 
@@ -220,18 +214,15 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
               isResumed = true;
               resume(v);
             }
-
-            return null;
           };
 
           function onError() {
             const args = arguments;
             tryNextValue(() => throwError.apply(null, args));
           }
+          flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError });
 
-          flowOperators = FlowOps({ resume: resumeOperation, end, throwError: onError, cancel: cancelTask });
-
-          const tryNextValue = (getValue: () => ProgramIteratorResult) => {
+          const tryNextValue = getValue => {
             try {
               const value = getValue();
               value && evaluateYieldedValue(value, flowOperators);
@@ -241,8 +232,6 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
           };
   
           tryNextValue(() => (iterationValue = getNextValue(program, x)));
-
-          return null;
         };
   
         setTimeout(resume, 0, value);
@@ -263,23 +252,25 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
   return effectHandlerInstance;
 };
 
-export const createEffect = (name: string, operations: OperationMap): Effect<keyof (typeof operations)> => ({
+// createEffect :: (String, Object *) -> Effect
+export const createEffect = (name, operations) => ({
   name,
   operations,
-  handler: (handlers: HandlerMap<keyof (typeof operations)>) => createHandler(handlers, { effect: name }),
-  extendAs: (newName: string, newOps: OperationMap = {}) =>
-    createEffect(newName, { ...operations, ...newOps }),
+  handler: handlers => createHandler(handlers, { effect: name }),
+  extendAs: (newName, newOps) => createEffect(newName, { ...operations, ...newOps }),
 
   ...Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
-    [opName]: createOperation(operationName(name, opName), operations[opName]),
+    [opName]: Operation(operationName(name, opName), operations[opName]),
   }), {}),
-} as Effect<keyof (typeof operations)>);
+});
 
+// composeHandlers :: ...Handler -> Handler
 export function composeHandlers() {
-  return [].slice.call(arguments).reduce((a: HandlerInstance, b: HandlerInstance) => a.concat(b));
+  return [].slice.call(arguments).reduce((a, b) => a.concat(b));
 }
 
+// run :: Handler
 export const run = createHandler();
 
-export { func, createGenericEffect, createOperation };
+export { func, createGenericEffect, Operation };
