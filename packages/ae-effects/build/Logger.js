@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _core = require("@algebraic-effects/core");
 
@@ -57,4 +57,4 @@ Logger.from = function (loggerInterface) {
 };
 
 var _default = Logger;
-exports.default = _default;
+exports["default"] = _default;

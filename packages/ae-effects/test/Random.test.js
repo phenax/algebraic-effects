@@ -1,5 +1,5 @@
 
-import Random from '../src/Random';
+import Random, { random, seeded } from '../src/Random';
 
 const SAMPLE_SET = 20;
 
@@ -15,7 +15,7 @@ describe('Random', () => {
     afterEach(() => { logFn.mockClear(); });
   
     it('should result in a random number b/w 0,1 every time', done => {
-      Random.random(randomizor, 0, 20)
+      random(randomizor, 0, 20)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
             expect(x).toBeGreaterThanOrEqual(0);
@@ -36,7 +36,7 @@ describe('Random', () => {
     afterEach(() => { logFn.mockClear(); });
   
     it('should result in a random integer every time', done => {
-      Random.random(randomizor, 0, 20)
+      random(randomizor, 0, 20)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
             expect(x).toBeGreaterThanOrEqual(0);
@@ -58,7 +58,7 @@ describe('Random', () => {
 
     it('should result in a random value from the given array', done => {
       const list = [2342, 112, 'afshkjsz', 'wpw', true, {}, []];
-      Random.random(randomizor, list)
+      random(randomizor, list)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
             expect(list).toContain(x);
@@ -78,7 +78,7 @@ describe('Random', () => {
     afterEach(() => { logFn.mockClear(); });
   
     it('should result in a random number b/w 0,1 every time', done => {
-      Random.seed(10)
+      seeded(10)
         .run(randomizor, 0, 20)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
@@ -100,7 +100,7 @@ describe('Random', () => {
     afterEach(() => { logFn.mockClear(); });
   
     it('should result in a random integer every time', done => {
-      Random.seed(10)
+      seeded(10)
         .run(randomizor, 0, 20)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
@@ -123,7 +123,7 @@ describe('Random', () => {
 
     it('should result in a random value from the given array', done => {
       const list = [2342, 112, 'afshkjsz', 'wpw', true, {}, []];
-      Random.seed(10)
+      seeded(10)
         .run(randomizor, list)
         .fork(done, () => {
           logFn.mock.calls.map(x => x[0]).forEach(x => {
@@ -143,9 +143,9 @@ describe('Random', () => {
     afterEach(() => { logFn.mockClear(); });
   
     it('should flip a coin', done => {
-      Random.seed(100)
+      seeded(100)
         .run(flipCoin)
-        .chain(res1 => Random.seed(10).run(flipCoin).map(res2 => [res1, res2]))
+        .chain(res1 => seeded(10).run(flipCoin).map(res2 => [res1, res2]))
         .fork(done, flipResult => {
           expect(flipResult).toEqual([ false, true ]);
           done();
@@ -160,7 +160,7 @@ describe('Random', () => {
       }
 
       it('should result in a random number b/w 0,1 every time', done => {
-        Random.seed(10)
+        seeded(10)
           .runMulti(randomizor, SAMPLE_SET)
           .fork(done, result => {
             expect(result).toHaveLength(SAMPLE_SET);
@@ -179,7 +179,7 @@ describe('Random', () => {
       }
     
       it('should result in a random integer every time', done => {
-        Random.seed(10)
+        seeded(10)
           .runMulti(randomizor, 0, 20, SAMPLE_SET)
           .fork(done, result => {
             expect(result).toHaveLength(SAMPLE_SET);
@@ -199,7 +199,7 @@ describe('Random', () => {
     
       it('should result in a random value from the given array', done => {
         const list = [2342, 112, 'afshkjsz', 'wpw', true, {}, []];
-        Random.seed(10)
+        seeded(10)
           .runMulti(randomizor, list, SAMPLE_SET)
           .fork(done, result => {
             expect(result).toHaveLength(SAMPLE_SET);
@@ -217,7 +217,7 @@ describe('Random', () => {
       };
 
       it('should flip a bunch of coins', done => {
-        Random.seed(100)
+        seeded(100)
           .runMulti(flipCoin, 5)
           .fork(done, result => {
             expect(result).toHaveLength(5);

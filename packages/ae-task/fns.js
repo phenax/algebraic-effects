@@ -1,2 +1,2 @@
 
-module.exports = require('./build/helpers');
+module.exports = require('./build/fns');

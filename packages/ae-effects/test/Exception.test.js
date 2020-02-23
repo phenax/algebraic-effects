@@ -1,5 +1,4 @@
-
-import Exception from '../src/Exception';
+import Exception, { tryCatch } from '../src/Exception';
 
 describe('Exception', () => {
   // Divide function with added delays
@@ -9,7 +8,7 @@ describe('Exception', () => {
   };
 
   it('should resolve with the correct value for valid operation', done => {
-    Exception.try(divide, 12, 3)
+    tryCatch(divide, 12, 3)
       .fork(done, result => {
         expect(result).toBe(4);
         done();
@@ -17,7 +16,7 @@ describe('Exception', () => {
   });
 
   it('should reject with invalid operation error if denominator is 0', done => {
-    Exception.try(divide, 8, 0)
+    tryCatch(divide, 8, 0)
       .fork(e => {
         expect(e.message).toBe('Invalid operation');
         done();
@@ -40,7 +39,7 @@ describe('Exception', () => {
     };
 
     it('should ignore error if wrapped in try/catch', done => {
-      Exception.try(specialDivide, 8, 0)
+      tryCatch(specialDivide, 8, 0)
         .fork(done, result => {
           expect(result).toBe(1);
           expect(logErr.mock.calls).toHaveLength(1);

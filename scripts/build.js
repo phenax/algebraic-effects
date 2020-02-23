@@ -2,13 +2,14 @@ const fsextra = require('fs-extra');
 const watch = require('node-watch');
 const path = require('path');
 const babel = require('@babel/core');
-const { map, filter, flatten, compose, uniq, prop } = require('ramda');
+const { execSync } = require('child_process');
+const { map, filter, flatten, compose, uniq, prop, tap } = require('ramda');
 
 const { getPackageJson, toPackagePaths, globber, resolveAll, getPackages, errorHandler } = require('./utils');
 
 const babelConfig = require('../babel.config');
 
-const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.js$/, delay: 100 };
+const WATCHER_OPTNS = { recursive: true, filter: /\/src\/.*\.(js|ts)x?$/, delay: 100 };
 
 const isWatchEnabled = process.argv.includes('--watch');
 
@@ -19,7 +20,7 @@ const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
 
 const isBuildable = dir => {
   try {
-    return getPackageJson(dir).isBuildTarget || false;
+    return !!getPackageJson(dir).buildOptions || false;
   } catch(e) {
     return false;
   }
@@ -27,14 +28,27 @@ const isBuildable = dir => {
 
 const saveCodeFile = ({ buildPath, code }) => fsextra.outputFile(buildPath, code);
 const compileFile = file => babel.transformFileAsync(file, { comments: false });
-const compileDirectory = dir => globber(`${dir}/**/*.js`).then(map(compileFile)).then(resolveAll);
-const compileSourceFiles = dir => {
+const compileDirectory = dir => globber(`${dir}/**/*.[tj]s`).then(map(compileFile)).then(resolveAll);
+const compileSourceFiles = async dir => {
   const srcPath = toSrcPath(dir);
-  return compileDirectory(srcPath).then(map(file => ({
+  const toOutputInfo = map(file => ({
     ...file,
-    buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '')),
+    buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '').replace(/\.ts$/, '.js')),
     packageDir: dir,
-  })));
+  }));
+
+  // Type declarations generation
+  console.log('');
+  try {
+    const relativePath = dir.replace(path.resolve(), '').replace(/^\/+/, '');
+    execSync(`npx tsc --emitDeclarationOnly ${relativePath}/**/*.ts --declaration --outDir ${dir}`);
+  } catch(e) {
+    // console.log(e.message);
+    console.warn('TYPINGS WARNING ::', e.output.toString());
+  }
+
+  const result = await compileDirectory(srcPath);
+  return toOutputInfo(result);
 };
 
 const getBuildablePackages = () =>
@@ -63,7 +77,6 @@ const build = packages =>
       errorHandler(e);
       return Promise.reject(e);
     });
-
 
 babel.loadOptions(babelConfig);
 
