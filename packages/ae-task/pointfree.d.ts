@@ -1,0 +1,10 @@
+import { compose } from '@algebraic-effects/utils';
+export declare const chain: any;
+export declare const map: any;
+export declare const mapRejected: any;
+export declare const fold: any;
+export declare const foldReject: any;
+export declare const bimap: any;
+export declare const fork: any;
+export declare const toPromise: any;
+export { compose };

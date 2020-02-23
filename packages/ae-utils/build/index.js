@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.maybe = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.maybe = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
@@ -47,6 +47,12 @@ var compose = function compose() {
 };
 
 exports.compose = compose;
+
+var compose2 = function compose2(a, b) {
+  return compose(a, b);
+};
+
+exports.compose2 = compose2;
 
 var isArray = Array.isArray || function (a) {
   return {}.toString.call(a) == '[object Array]';

@@ -4,8 +4,10 @@ declare type SymbolObject = Symbol | {
 export declare const createSymbolObject: (name: string) => SymbolObject;
 export declare const createSymbol: (key: string) => SymbolObject;
 export declare const isGenerator: (p: Function) => boolean;
-export declare const pointfree: <T>(methodName: keyof T) => () => (x: T) => any;
-export declare const compose: () => any;
+export declare const pointfree: <Type, Method extends keyof Type>(methodName: Method) => Type[Method];
+declare type ComposeFn = (...args: any[]) => any;
+export declare const compose: ComposeFn;
+export declare const compose2: <T = any, R = any>(a: (t: T) => any, b: (a: any) => R) => (t: T) => R;
 export declare const isArray: (a: any) => boolean;
 export declare const flatten: (arr: any[]) => any;
 export declare const identity: <T = any>(x: T) => T;

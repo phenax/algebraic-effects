@@ -29,7 +29,6 @@ Object.keys(_pointfree).forEach(function (key) {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-// rejectAfter :: (Number, e) -> Task.Rejected e
 var rejectAfter = function rejectAfter(duration, value) {
   return (0, _2["default"])(function (rej) {
     var timer = setTimeout(rej, duration, value);
@@ -37,8 +36,7 @@ var rejectAfter = function rejectAfter(duration, value) {
       return clearTimeout(timer);
     };
   });
-}; // resolveAfter :: (Number, a) -> Task.Resolved a
-
+};
 
 exports.rejectAfter = rejectAfter;
 
@@ -49,8 +47,7 @@ var resolveAfter = function resolveAfter(duration, value) {
       return clearTimeout(timer);
     };
   });
-}; // race :: [Task e a] -> Task e a
-
+};
 
 exports.resolveAfter = resolveAfter;
 
@@ -60,8 +57,7 @@ var race = function race(tasks) {
       return t.fork(rej, res);
     });
   });
-}; // series :: [Task e a] -> Task e a
-
+};
 
 exports.race = race;
 
@@ -73,8 +69,7 @@ var series = function series(tasks) {
       });
     });
   }, _2["default"].Resolved([]));
-}; // parallel :: [Task e a] -> Task e a
-
+};
 
 exports.series = series;
 
@@ -93,7 +88,6 @@ var parallel = function parallel(tasks) {
       return task.fork(reject, onResolve.bind(null, index));
     });
   });
-}; // Point-free methods
-
+};
 
 exports.parallel = parallel;

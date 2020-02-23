@@ -16,16 +16,20 @@ export const createSymbol = (key: string): SymbolObject => typeof Symbol === 'fu
 // @ts-ignore
 export const isGenerator = (p: Function) => p && p.constructor && (p.constructor.name + '').indexOf('GeneratorFunction') !== -1;
 
-export const pointfree = <T>(methodName: keyof T) => function() {
+export const pointfree = <Type, Method extends (keyof Type)>(methodName: Method): Type[Method] => function() {
   const args = arguments;
   // @ts-ignore
-  return (x: T) => x[methodName].apply(x, args);
-};
+  return (x: Type) => x[methodName].apply(x, args);
+} as unknown as Type[Method];
 
-export const compose = function() {
+type ComposeFn = (...args: any[]) => any;
+
+export const compose: ComposeFn = function() {
   return [].slice.apply(arguments)
     .reduce((a: Function, b: Function) => (...args: any[]) => a(b(...args)));
 };
+
+export const compose2 = <T = any, R = any>(a: (t: T) => any, b: (a: any) => R): ((t: T) => R) => compose(a, b);
 
 export const isArray = Array.isArray || (a => ({}).toString.call(a)=='[object Array]');
 
