@@ -1,5 +1,5 @@
 
-import Logger from '../src/Logger';
+import Logger, { fromConsole } from '../src/Logger';
 
 describe('Logger', () => {
   describe('Logger.from', () => {
@@ -25,7 +25,7 @@ describe('Logger', () => {
         info: logFn.bind(null, '>info'),
       };
 
-      Logger.from(loggerInterface)
+      fromConsole(loggerInterface)
         .run(program)
         .map(result => {
           expect(result).toBe(5);
@@ -40,7 +40,7 @@ describe('Logger', () => {
     });
 
     it('should not call shit if no interface', done => {
-      Logger.from(null)
+      fromConsole(null)
         .run(program)
         .map(result => {
           expect(result).toBe(5);

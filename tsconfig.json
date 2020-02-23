@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
     "noImplicitAny": true,
-    "module": "esNext",
+    "module": "CommonJS",
     "target": "es5",
     "jsx": "react",
-    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "baseUrl": ".",
@@ -20,9 +19,19 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "node",
+    "declaration": true,
     "lib": [
       "dom",
-      "esnext"
+      "esnext",
+      "es6",
+      "ES2015.Promise"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ],
+  "include": [
+    "packages/**/*.ts"
+  ]
 }
