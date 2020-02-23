@@ -1,5 +1,5 @@
 import Task from '../src';
-import { parallel, race, series, rejectAfter, resolveAfter, map, fork } from '../src/helpers';
+import { parallel, race, series, rejectAfter, resolveAfter, map, fork } from '../src/fns';
 
 describe('helpers', () => {
   const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {

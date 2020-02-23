@@ -1,0 +1,11 @@
+import { compose } from '@algebraic-effects/utils';
+import { AlgebraicTask } from '.';
+export declare const chain: <F = any, T = any>(fn: (v: any) => AlgebraicTask<F, T>) => AlgebraicTask<F, T>;
+export declare const map: <R = any>(fn: (a: any) => R) => AlgebraicTask<any, R>;
+export declare const mapRejected: <F = any>(fn: (e: any) => F) => AlgebraicTask<F, any>;
+export declare const fold: <TE = any, TV = TE>(mapErr: (e: any) => TE, mapVal: (v: any) => TV) => AlgebraicTask<void, TE | TV>;
+export declare const foldRejected: <TE = any, TV = TE>(mapErr: (e: any) => TE, mapVal: (v: any) => TV) => AlgebraicTask<TE | TV, void>;
+export declare const bimap: <TE = any, TV = TE>(mapErr: (e: any) => TE, mapVal: (v: any) => TV) => AlgebraicTask<TE, TV>;
+export declare const toPromise: Promise<any>;
+export declare const fork: import(".").ForkFunction<any, any>;
+export { compose };

@@ -3,12 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.maybe = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
-  if (symbolObjectPool[name]) return symbolObjectPool[name];
-  symbolObjectPool[name] = {
+  symbolObjectPool[name] = symbolObjectPool[name] || {
     name: name
   };
   return symbolObjectPool[name];
@@ -17,7 +16,7 @@ var createSymbolObject = function createSymbolObject(name) {
 exports.createSymbolObject = createSymbolObject;
 
 var createSymbol = function createSymbol(key) {
-  return typeof Symbol === 'function' ? Symbol.for(key) : createSymbolObject(key);
+  return typeof Symbol === 'function' ? Symbol["for"](key) : createSymbolObject(key);
 };
 
 exports.createSymbol = createSymbol;
@@ -30,9 +29,9 @@ exports.isGenerator = isGenerator;
 
 var pointfree = function pointfree(methodName) {
   return function () {
-    var _arguments = arguments;
+    var args = arguments;
     return function (x) {
-      return x[methodName].apply(x, _arguments);
+      return x[methodName].apply(x, args);
     };
   };
 };
@@ -48,6 +47,12 @@ var compose = function compose() {
 };
 
 exports.compose = compose;
+
+var compose2 = function compose2(a, b) {
+  return compose(a, b);
+};
+
+exports.compose2 = compose2;
 
 var isArray = Array.isArray || function (a) {
   return {}.toString.call(a) == '[object Array]';
@@ -76,3 +81,27 @@ var constant = function constant(x) {
 };
 
 exports.constant = constant;
+;
+var maybe = {
+  just: function just(x) {
+    return {
+      map: function map(fn) {
+        return maybe.just(fn(x));
+      },
+      fold: function fold(_, m) {
+        return m(x);
+      }
+    };
+  },
+  nothing: function nothing() {
+    return {
+      map: function map(_) {
+        return maybe.nothing();
+      },
+      fold: function fold(j, _) {
+        return j();
+      }
+    };
+  }
+};
+exports.maybe = maybe;
