@@ -1,6 +1,6 @@
 
 import Task from '../src';
-import { resolveAfter } from '../src/helpers';
+import { resolveAfter } from '../src/fns';
 
 const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
   const timerid = setTimeout(() => resolve(), duration);
