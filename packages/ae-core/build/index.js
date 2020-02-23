@@ -56,21 +56,16 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-// type Program = GeneratorFunction
-// type Handler = (Program ...a b, ...a) -> Task e b
-// runProgram :: (Program, ...a) -> Iterator
 function runProgram(program) {
   var args = [].slice.call(arguments, 1);
   var p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
-} // operationName :: (String, String) -> String
-
+}
 
 var operationName = function operationName(effect, op) {
   return effect ? "".concat(effect, "[").concat(op, "]") : op;
-}; // getNextValue :: (Program, *) -> { value :: *, done :: Boolean, error :: ?Error }
-
+};
 
 var getNextValue = function getNextValue(program, nextVal) {
   try {
@@ -81,8 +76,7 @@ var getNextValue = function getNextValue(program, nextVal) {
       error: e
     };
   }
-}; // createHandler :: (Object Function, { effect :: String }) -> Handler
-
+};
 
 var createHandler = function createHandler(_handlers, options) {
   _handlers = _handlers || {};
@@ -127,11 +121,9 @@ var createHandler = function createHandler(_handlers, options) {
         mapResult = _ref3$mapResult === void 0 ? _utils.identity : _ref3$mapResult,
         cancelTask = _ref3.cancelTask;
 
-    // throwError :: * -> ()
     var throwError = function throwError(e) {
       return program["throw"](e);
-    }; // end  :: * -> ()
-
+    };
 
     var end = function end() {
       var value = mapResult.apply(void 0, arguments);
@@ -180,7 +172,7 @@ var createHandler = function createHandler(_handlers, options) {
         reject: reject,
         resolve: resolve,
         cancelTask: cancelTask
-      }); // resume :: * -> ()
+      });
 
       var resume = function resume(x) {
         if (task.isCancelled) return program["return"](null);
@@ -230,24 +222,22 @@ var createHandler = function createHandler(_handlers, options) {
 
   effectHandlerInstance.$$type = _utils2.HANDLER;
   effectHandlerInstance.effectName = effect;
-  effectHandlerInstance.handlers = handlers; // concat :: Handler -> Handler
+  effectHandlerInstance.handlers = handlers;
 
   effectHandlerInstance.concat = function (run1) {
     return createHandler(_objectSpread({}, handlers, {}, run1.handlers), {
       effect: "".concat(effectHandlerInstance.effectName, ".").concat(run1.effectName),
       isComposed: true
     });
-  }; // with :: (Handler | Object OpBehavior) -> Handler
-
+  };
 
   effectHandlerInstance["with"] = function (runner) {
     return effectHandlerInstance.concat(runner.$$type === _utils2.HANDLER ? runner : createHandler(runner, {
       effect: ''
     }));
-  }; // run :: Handler
+  };
 
-
-  effectHandlerInstance.run = effectHandlerInstance; // runMulti :: Handler
+  effectHandlerInstance.run = effectHandlerInstance;
 
   effectHandlerInstance.runMulti = function () {
     var args = arguments;
@@ -259,8 +249,7 @@ var createHandler = function createHandler(_handlers, options) {
 
         var cleanup = function cleanup() {};
 
-        var results = []; // Fast forward
-
+        var results = [];
         stateCache.forEach(function (x) {
           return program.next(x);
         });
@@ -277,16 +266,14 @@ var createHandler = function createHandler(_handlers, options) {
           mapResult: mapResult
         }),
             end = _getTerminationOps.end,
-            throwError = _getTerminationOps.throwError; // resume :: * -> ()
-
+            throwError = _getTerminationOps.throwError;
 
         var resume = function resume(x) {
           if (task.isCancelled) return program["return"](null);
           stateCache = [].concat(_toConsumableArray(stateCache), [x]);
           var flowOperators = {};
           var iterationValue = {};
-          var isResumed = false; // Identifier for multiple resume calls from one op
-
+          var isResumed = false;
           var pendingTasks = [];
 
           var resumeOperation = function resumeOperation(v) {
@@ -361,8 +348,7 @@ var createHandler = function createHandler(_handlers, options) {
   };
 
   return effectHandlerInstance;
-}; // createEffect :: (String, Object *) -> Effect
-
+};
 
 var createEffect = function createEffect(name, operations) {
   return _objectSpread({
@@ -379,8 +365,7 @@ var createEffect = function createEffect(name, operations) {
   }, Object.keys(operations).reduce(function (acc, opName) {
     return _objectSpread({}, acc, _defineProperty({}, opName, (0, _utils2.Operation)(operationName(name, opName), operations[opName])));
   }, {}));
-}; // composeHandlers :: ...Handler -> Handler
-
+};
 
 exports.createEffect = createEffect;
 
@@ -388,8 +373,7 @@ function composeHandlers() {
   return [].slice.call(arguments).reduce(function (a, b) {
     return a.concat(b);
   });
-} // run :: Handler
-
+}
 
 var run = createHandler();
 exports.run = run;

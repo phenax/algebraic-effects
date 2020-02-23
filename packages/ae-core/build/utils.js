@@ -17,23 +17,20 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var OPERATION = (0, _utils.createSymbol)('algebraic-effects/operation');
 exports.OPERATION = OPERATION;
-var HANDLER = (0, _utils.createSymbol)('algebraic-effects/handler'); // VALUE_HANDLER :: Operation
-
+var HANDLER = (0, _utils.createSymbol)('algebraic-effects/handler');
 exports.HANDLER = HANDLER;
 
 var VALUE_HANDLER = function VALUE_HANDLER(o) {
   return function (x) {
     return o.end(x);
   };
-}; // isOperation :: Operation? -> Boolean
-
+};
 
 exports.VALUE_HANDLER = VALUE_HANDLER;
 
 var isOperation = function isOperation(x) {
   return x && x.$$type === OPERATION;
-}; // validateArguments :: ([String], [*]) -> Boolean
-
+};
 
 exports.isOperation = isOperation;
 
@@ -44,8 +41,7 @@ var validateArguments = function validateArguments(args, values) {
   });
   if (dynamicArgs.length) return args.length - dynamicArgs.length <= values.length;
   return args.length === values.length;
-}; // type Operation = ...a -> { name :: String, payload :: a }
-
+};
 
 var Operation = function Operation(name, _ref) {
   var _ref2 = _slicedToArray(_ref, 3),
@@ -59,7 +55,7 @@ var Operation = function Operation(name, _ref) {
 
   function op() {
     var payload = [].slice.call(arguments);
-    if (!validateArguments(args, payload)) throw new Error("ArgumentError. The operation ".concat(name, " expected ").concat(args.length, " arguments, but got ").concat(payload.length, " arguments"));
+    if (!validateArguments(args, payload)) throw new Error("ArgumentError. The operation ".concat(name, " expected ").concat(args ? args.length : 'any number', " arguments, but got ").concat(payload.length, " arguments"));
     return {
       name: name,
       payload: payload,
@@ -70,7 +66,7 @@ var Operation = function Operation(name, _ref) {
   }
 
   op.toString = function () {
-    return "func ".concat(name, "(").concat(args.join(', '), ") -> ").concat(returnType);
+    return "func ".concat(name, "(").concat(args ? args.join(', ') : '...*', ") -> ").concat(returnType);
   };
 
   return op;

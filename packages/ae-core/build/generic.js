@@ -11,7 +11,6 @@ var _utils = require("@algebraic-effects/utils");
 
 var _utils2 = require("./utils");
 
-// handleTask :: (...a -> Task e b) -> FlowOperators -> (...a) -> CancelFunction
 var handleTask = function handleTask(fn) {
   return function (o) {
     return function () {
@@ -66,8 +65,7 @@ var genericOpHandlers = {
       return o.resume(o.call.apply(null, args).fork(_utils.identity, _utils.identity));
     };
   }
-}; // * :: Operation
-
+};
 var sleep = (0, _utils2.Operation)('sleep', (0, _utils2.func)(['duration']));
 exports.sleep = sleep;
 var resolve = (0, _utils2.Operation)('resolve', (0, _utils2.func)(['*']));
@@ -94,8 +92,7 @@ var parallel = (0, _utils2.Operation)('parallel', (0, _utils2.func)(['...(genera
 exports.parallel = parallel;
 var background = (0, _utils2.Operation)('background', (0, _utils2.func)(['...(generator ...a b)'], '[b]', {
   isMulti: true
-})); // createGenericEffect :: (String, OpSignature, OpBehavior) -> Operation
-
+}));
 exports.background = background;
 
 var createGenericEffect = function createGenericEffect(name, signature, handler) {

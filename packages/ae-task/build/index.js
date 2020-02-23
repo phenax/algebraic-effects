@@ -9,6 +9,9 @@ var _utils = require("@algebraic-effects/utils");
 
 var _pointfree = require("./pointfree");
 
+;
+;
+
 var Task = function Task(taskFn) {
   var forkTask = function forkTask() {
     var isCancelled = false;
@@ -80,10 +83,16 @@ var Task = function Task(taskFn) {
 
   return {
     fork: forkTask,
+    chain: chain,
     bimap: bimap,
+    map: function map(fn) {
+      return bimap(_utils.identity, fn);
+    },
+    mapRejected: function mapRejected(fn) {
+      return bimap(fn, _utils.identity);
+    },
     fold: fold,
     foldRejected: foldRejected,
-    chain: chain,
     resolveWith: function resolveWith(value) {
       return fold((0, _utils.constant)(value), (0, _utils.constant)(value));
     },
@@ -91,12 +100,6 @@ var Task = function Task(taskFn) {
       return foldRejected((0, _utils.constant)(err), (0, _utils.constant)(err));
     },
     empty: Task.Empty,
-    map: function map(fn) {
-      return bimap(_utils.identity, fn);
-    },
-    mapRejected: function mapRejected(fn) {
-      return bimap(fn, _utils.identity);
-    },
     toPromise: function toPromise() {
       return new Promise(function (res, rej) {
         return forkTask(rej, res);

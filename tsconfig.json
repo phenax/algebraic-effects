@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "noImplicitAny": true,
-    "module": "esNext",
+    "module": "CommonJS",
     "target": "es5",
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
@@ -22,7 +22,8 @@
     "declaration": true,
     "lib": [
       "dom",
-      "esnext"
+      "esnext",
+      "es6"
     ]
   },
   "exclude": [

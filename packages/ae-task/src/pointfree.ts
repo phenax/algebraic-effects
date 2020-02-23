@@ -1,13 +1,13 @@
 import { pointfree, compose } from '@algebraic-effects/utils';
-import Task from 'packages/ae-task/src';
+import { AlgebraicTask } from '.';
 
-export const chain = pointfree<Task, 'chain'>('chain');
-export const map = pointfree<Task, 'map'>('map');
-export const mapRejected = pointfree<Task, 'mapRejected'>('mapRejected');
-export const fold = pointfree<Task, 'fold'>('fold');
-export const foldReject = pointfree<Task, 'foldReject'>('foldReject');
-export const bimap = pointfree<Task, 'bimap'>('bimap');
-export const fork = pointfree<Task, 'fork'>('fork');
-export const toPromise = pointfree<Task, 'toPromise'>('toPromise')();
+export const chain = pointfree<AlgebraicTask, 'chain'>('chain');
+export const map = pointfree<AlgebraicTask, 'map'>('map');
+export const mapRejected = pointfree<AlgebraicTask, 'mapRejected'>('mapRejected');
+export const fold = pointfree<AlgebraicTask, 'fold'>('fold');
+export const foldRejected = pointfree<AlgebraicTask, 'foldRejected'>('foldRejected');
+export const bimap = pointfree<AlgebraicTask, 'bimap'>('bimap');
+export const toPromise = pointfree<AlgebraicTask, 'toPromise'>('toPromise')();
+export const fork = pointfree<AlgebraicTask, 'fork'>('fork');
 
 export { compose };

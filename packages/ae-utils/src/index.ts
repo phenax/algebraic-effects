@@ -1,5 +1,5 @@
 
-type SymbolObject = Symbol | { name: string };
+export type SymbolObject = Symbol | { name: string };
 
 const symbolObjectPool: { [key: string]: SymbolObject } = {};
 
@@ -39,7 +39,7 @@ export const identity = <T = any>(x: T): T => x;
 
 export const constant = <T = any>(x: T) => (): T => x;
 
-interface Maybe<T = any> {
+export interface Maybe<T = any> {
   map: <R = any>(fn: (x: T) => R) => Maybe<R>;
   fold: <R = any>(n: () => R, j: (x: T) => R) => R;
 };
