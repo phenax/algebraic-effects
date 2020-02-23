@@ -23,7 +23,8 @@
     "lib": [
       "dom",
       "esnext",
-      "es6"
+      "es6",
+      "ES2015.Promise"
     ]
   },
   "exclude": [

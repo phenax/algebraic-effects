@@ -10,6 +10,7 @@ export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, Handler
 
 function runProgram(program: Program): ProgramIterator {
   const args = [].slice.call(arguments, 1);
+  // @ts-ignore
   const p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
   if (!isGenerator(p))
     throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
