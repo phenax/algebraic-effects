@@ -27,10 +27,10 @@ Object.keys(_pointfree).forEach(function (key) {
   });
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var rejectAfter = function rejectAfter(duration, value) {
-  return (0, _2["default"])(function (rej) {
+  return (0, _2.default)(function (rej) {
     var timer = setTimeout(rej, duration, value);
     return function () {
       return clearTimeout(timer);
@@ -41,7 +41,7 @@ var rejectAfter = function rejectAfter(duration, value) {
 exports.rejectAfter = rejectAfter;
 
 var resolveAfter = function resolveAfter(duration, value) {
-  return (0, _2["default"])(function (_, res) {
+  return (0, _2.default)(function (_, res) {
     var timer = setTimeout(res, duration, value);
     return function () {
       return clearTimeout(timer);
@@ -52,7 +52,7 @@ var resolveAfter = function resolveAfter(duration, value) {
 exports.resolveAfter = resolveAfter;
 
 var race = function race(tasks) {
-  return (0, _2["default"])(function (rej, res) {
+  return (0, _2.default)(function (rej, res) {
     return tasks.forEach(function (t) {
       return t.fork(rej, res);
     });
@@ -68,13 +68,13 @@ var series = function series(tasks) {
         return d.concat([x]);
       });
     });
-  }, _2["default"].Resolved([]));
+  }, _2.default.Resolved([]));
 };
 
 exports.series = series;
 
 var parallel = function parallel(tasks) {
-  return (0, _2["default"])(function (reject, resolve) {
+  return (0, _2.default)(function (reject, resolve) {
     var resolvedCount = 0;
     var resolvedData = [];
 

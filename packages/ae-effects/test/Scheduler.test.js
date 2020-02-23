@@ -1,5 +1,5 @@
 
-import Scheduler, { scheduler } from '../src/Scheduler';
+import Scheduler from '../src/Scheduler';
 
 describe('Scheduler', () => {
   describe('waitForNextFrame', () => {
@@ -10,7 +10,7 @@ describe('Scheduler', () => {
 
     it('should skip a frame', done => {
       const now = performance.now();
-      scheduler
+      Scheduler.scheduler
         .run(program)
         .map(result => {
           expect(result).toBe(1);
@@ -37,7 +37,7 @@ describe('Scheduler', () => {
     });
 
     it('should wait for the next idle time', done => {
-      scheduler
+      Scheduler.scheduler
         .run(program)
         .map(result => {
           expect(result).toBe(1);
@@ -55,7 +55,7 @@ describe('Scheduler', () => {
 
     it('should wait for timeout', done => {
       const now = performance.now();
-      scheduler
+      Scheduler.scheduler
         .run(program)
         .map(result => {
           expect(result).toBe(1);

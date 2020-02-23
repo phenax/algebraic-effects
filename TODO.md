@@ -18,8 +18,8 @@
 - [x] Clone/Extend effect interface with new name.
 - [x] "global" handlers to generic effects
 - [x] Support try-catch inside program
-- [x] Typescript types
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
+- [ ] Typescript types
 - [ ] ?Redux middleware
 
 **Multiple continuations**
@@ -31,9 +31,6 @@
   - [x] Fix resolveWith, rejectWith to reolve/reject after the previous operations
   - [x] Cancellation handler
   - [x] Allow cancellation from within
-
-**Observable**
-  - [ ] Implement observable monad to be used instead of Task monad
 
 **Add more effects ...**
   - [x] Exception
@@ -79,5 +76,5 @@
 ### Scripts and doc builder
 - [x] Version upgrade in publish script should upgrade matching dependencies as well
 - [x] Build and publish ae-docs as html github pages. (Maybe mdx?)
-- [ ] ?Mobile issues (not confirmed yet)
+- [ ] ?Mobile issues  (not confirmed yet)
 - [ ] Docs issue with scrolling to link hook. (Should attempt scrolling after page load)
