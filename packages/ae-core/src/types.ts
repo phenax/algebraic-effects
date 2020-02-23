@@ -1,14 +1,16 @@
 import { SymbolObject } from '@algebraic-effects/utils';
+import {AlgebraicTask} from '@algebraic-effects/task';
 
-export interface GenIteratorResult<T> {
-    done: boolean;
-    value: T;
+export interface ProgramIteratorResult<T = any, E = any> {
+  done: boolean;
+  value?: T;
+  error?: E;
 }
 
-export interface GenIterator<T> {
-    next(value?: any): GenIteratorResult<T>;
-    return(value?: any): GenIteratorResult<T>;
-    throw(e?: any): GenIteratorResult<T>;
+export interface ProgramIterator<T = any> {
+  next(value?: any): ProgramIteratorResult<T>;
+  return(value?: any): ProgramIteratorResult<T>;
+  throw(e?: any): ProgramIteratorResult<T>;
 }
 
 // @ts-ignore
@@ -24,7 +26,9 @@ export interface Operation<Args extends Array<any> = any[], Ret = any> {
   toString(): string;
 };
 
-export type Program<Args extends Array<any> = any[]> = (...args: Args) => GenIterator<OperationValue>;
+export interface Program<Args extends Array<any> = any[]> {
+  (...args: Args): ProgramIterator<OperationValue>;
+};
 
 export interface OperationOptions {
   isMulti?: boolean;
@@ -43,6 +47,30 @@ export interface FlowOperators {
 export type OperationSignature =
   [Array<string> | undefined, string | undefined, OperationOptions | undefined];
 
-export type OperationBehavior<Args extends Array<any> = any[]> =
-  (o: FlowOperators) => (...args: Args) => any;
+export interface OperationBehavior<Args extends Array<any> = any[]> {
+  (o: FlowOperators): (...args: Args) => any;
+}
+
+export type TaskWithCancel = AlgebraicTask & { isCancelled?: boolean };
+
+export interface HandlerInstance {
+  (...args: any[]): TaskWithCancel;
+  effectName: string;
+  handlers: Record<string, OperationBehavior>;
+  $$type: SymbolObject;
+  concat: (x: HandlerInstance) => HandlerInstance;
+  with: (x: HandlerInstance | Record<string, OperationBehavior>) => HandlerInstance;
+  run: HandlerInstance;
+  runMulti: (...args: any[]) => TaskWithCancel;
+}
+
+export type HandlerMap<T extends string = string> = Record<T, OperationBehavior>;
+export type OperationMap<T extends string = string> = Record<T, OperationSignature>;
+
+export type Effect<T extends string = string> = Record<keyof T, Operation> & {
+  name: string;
+  operations: OperationMap;
+  handler: (handlers: HandlerMap) => HandlerInstance,
+  extendAs: (newName: string, newOps?: OperationMap) => Effect,
+}
 

@@ -78,7 +78,10 @@ var getNextValue = function getNextValue(program, nextVal) {
   }
 };
 
-var createHandler = function createHandler(_handlers, options) {
+var createHandler = function createHandler() {
+  var _handlers = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   _handlers = _handlers || {};
 
   var _ref = options || {},
@@ -126,7 +129,11 @@ var createHandler = function createHandler(_handlers, options) {
     };
 
     var end = function end() {
-      var value = mapResult.apply(void 0, arguments);
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      var value = mapResult.apply(null, args);
       program["return"](value);
       !task.isCancelled && resolve(value);
     };
@@ -162,14 +169,16 @@ var createHandler = function createHandler(_handlers, options) {
     };
   };
 
-  function effectHandlerInstance() {
-    var args = arguments;
+  var effectHandlerInstance = function effectHandlerInstance() {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
     var task = (0, _task["default"])(function (reject, resolve, cancelTask) {
       var program = runProgram.apply(null, args);
       var termination = getTerminationOps({
         program: program,
         task: task,
-        reject: reject,
         resolve: resolve,
         cancelTask: cancelTask
       });
@@ -218,7 +227,7 @@ var createHandler = function createHandler(_handlers, options) {
     });
     task.isCancelled = false;
     return task;
-  }
+  };
 
   effectHandlerInstance.$$type = _utils2.HANDLER;
   effectHandlerInstance.effectName = effect;
@@ -242,9 +251,11 @@ var createHandler = function createHandler(_handlers, options) {
   effectHandlerInstance.runMulti = function () {
     var args = arguments;
 
-    var runInstance = function runInstance(value, stateCache) {
+    var runInstance = function runInstance() {
+      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var stateCache = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
       stateCache = stateCache || [];
-      var task = (0, _task["default"])(function (reject, resolve) {
+      var task = (0, _task["default"])(function (reject, resolve, cancelTask) {
         var program = runProgram.apply(null, args);
 
         var cleanup = function cleanup() {};
@@ -254,16 +265,20 @@ var createHandler = function createHandler(_handlers, options) {
           return program.next(x);
         });
 
-        function mapResult() {
-          return [].concat(_toConsumableArray(results), Array.prototype.slice.call(arguments));
-        }
+        var mapResult = function mapResult() {
+          for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+            args[_key3] = arguments[_key3];
+          }
+
+          return [].concat(_toConsumableArray(results), args);
+        };
 
         var _getTerminationOps = getTerminationOps({
           program: program,
           task: task,
-          reject: reject,
           resolve: resolve,
-          mapResult: mapResult
+          mapResult: mapResult,
+          cancelTask: cancelTask
         }),
             end = _getTerminationOps.end,
             throwError = _getTerminationOps.throwError;
@@ -272,7 +287,9 @@ var createHandler = function createHandler(_handlers, options) {
           if (task.isCancelled) return program["return"](null);
           stateCache = [].concat(_toConsumableArray(stateCache), [x]);
           var flowOperators = {};
-          var iterationValue = {};
+          var iterationValue = {
+            done: false
+          };
           var isResumed = false;
           var pendingTasks = [];
 
@@ -290,11 +307,8 @@ var createHandler = function createHandler(_handlers, options) {
                     return runInstance(val, stateCache);
                   });
                   var cancelFn = (0, _fns.series)(tasks).fork(flowOperators.throwError, function (r) {
-                    var _flowOperators;
-
                     isResumed = false;
-
-                    (_flowOperators = flowOperators).end.apply(_flowOperators, _toConsumableArray((0, _utils.flatten)(r)));
+                    flowOperators.end.apply(null, (0, _utils.flatten)(r));
                   });
                   cleanup = (0, _utils.compose)(cleanup, cancelFn);
                 });
@@ -304,6 +318,8 @@ var createHandler = function createHandler(_handlers, options) {
               isResumed = true;
               resume(v);
             }
+
+            return null;
           };
 
           function onError() {
@@ -316,7 +332,8 @@ var createHandler = function createHandler(_handlers, options) {
           flowOperators = FlowOps({
             resume: resumeOperation,
             end: end,
-            throwError: onError
+            throwError: onError,
+            cancel: cancelTask
           });
 
           var tryNextValue = function tryNextValue(getValue) {
@@ -332,6 +349,7 @@ var createHandler = function createHandler(_handlers, options) {
           tryNextValue(function () {
             return iterationValue = getNextValue(program, x);
           });
+          return null;
         };
 
         setTimeout(resume, 0, value);
@@ -359,7 +377,8 @@ var createEffect = function createEffect(name, operations) {
         effect: name
       });
     },
-    extendAs: function extendAs(newName, newOps) {
+    extendAs: function extendAs(newName) {
+      var newOps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       return createEffect(newName, _objectSpread({}, operations, {}, newOps));
     }
   }, Object.keys(operations).reduce(function (acc, opName) {
