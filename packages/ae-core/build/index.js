@@ -24,6 +24,48 @@ Object.defineProperty(exports, "createGenericEffect", {
     return _generic.createGenericEffect;
   }
 });
+Object.defineProperty(exports, "Program", {
+  enumerable: true,
+  get: function get() {
+    return _types.Program;
+  }
+});
+Object.defineProperty(exports, "ProgramIterator", {
+  enumerable: true,
+  get: function get() {
+    return _types.ProgramIterator;
+  }
+});
+Object.defineProperty(exports, "ProgramIteratorResult", {
+  enumerable: true,
+  get: function get() {
+    return _types.ProgramIteratorResult;
+  }
+});
+Object.defineProperty(exports, "FlowOperators", {
+  enumerable: true,
+  get: function get() {
+    return _types.FlowOperators;
+  }
+});
+Object.defineProperty(exports, "HandlerMap", {
+  enumerable: true,
+  get: function get() {
+    return _types.HandlerMap;
+  }
+});
+Object.defineProperty(exports, "OperationMap", {
+  enumerable: true,
+  get: function get() {
+    return _types.OperationMap;
+  }
+});
+Object.defineProperty(exports, "Effect", {
+  enumerable: true,
+  get: function get() {
+    return _types.Effect;
+  }
+});
 exports.run = exports.createEffect = void 0;
 
 var _task = _interopRequireDefault(require("@algebraic-effects/task"));
@@ -35,6 +77,8 @@ var _utils = require("@algebraic-effects/utils");
 var _utils2 = require("./utils");
 
 var _generic = _interopRequireWildcard(require("./generic"));
+
+var _types = require("./types");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 

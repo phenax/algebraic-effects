@@ -6,8 +6,7 @@ import { createOperation, isOperation, VALUE_HANDLER, HANDLER, func } from './ut
 import genericHandlers, { createGenericEffect } from './generic';
 import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, TaskWithCancel, HandlerInstance, OperationMap, Effect } from './types';
 
-// type Program = GeneratorFunction
-// type Handler = (Program ...a b, ...a) -> Task e b
+export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
 
 function runProgram(program: Program): ProgramIterator {
   const args = [].slice.call(arguments, 1);
