@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.composeHandlers = composeHandlers;
-Object.defineProperty(exports, "Operation", {
+Object.defineProperty(exports, "createOperation", {
   enumerable: true,
   get: function get() {
-    return _utils2.Operation;
+    return _utils2.createOperation;
   }
 });
 Object.defineProperty(exports, "func", {
@@ -363,7 +363,7 @@ var createEffect = function createEffect(name, operations) {
       return createEffect(newName, _objectSpread({}, operations, {}, newOps));
     }
   }, Object.keys(operations).reduce(function (acc, opName) {
-    return _objectSpread({}, acc, _defineProperty({}, opName, (0, _utils2.Operation)(operationName(name, opName), operations[opName])));
+    return _objectSpread({}, acc, _defineProperty({}, opName, (0, _utils2.createOperation)(operationName(name, opName), operations[opName])));
   }, {}));
 };
 

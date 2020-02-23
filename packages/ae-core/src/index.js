@@ -1,7 +1,7 @@
 import Task from '@algebraic-effects/task';
 import { series } from '@algebraic-effects/task/fns';
 import { isGenerator, flatten, identity, compose } from '@algebraic-effects/utils';
-import { Operation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
+import { createOperation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 
 // type Program = GeneratorFunction
@@ -261,7 +261,7 @@ export const createEffect = (name, operations) => ({
 
   ...Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
-    [opName]: Operation(operationName(name, opName), operations[opName]),
+    [opName]: createOperation(operationName(name, opName), operations[opName]),
   }), {}),
 });
 
@@ -273,4 +273,4 @@ export function composeHandlers() {
 // run :: Handler
 export const run = createHandler();
 
-export { func, createGenericEffect, Operation };
+export { func, createGenericEffect, createOperation };

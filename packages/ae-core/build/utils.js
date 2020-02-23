@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.func = exports.Operation = exports.isOperation = exports.VALUE_HANDLER = exports.HANDLER = exports.OPERATION = void 0;
+exports.func = exports.createOperation = exports.isOperation = exports.VALUE_HANDLER = exports.HANDLER = exports.OPERATION = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -43,7 +43,7 @@ var validateArguments = function validateArguments(args, values) {
   return args.length === values.length;
 };
 
-var Operation = function Operation(name, _ref) {
+var createOperation = function createOperation(name, _ref) {
   var _ref2 = _slicedToArray(_ref, 3),
       args = _ref2[0],
       returnType = _ref2[1],
@@ -72,7 +72,7 @@ var Operation = function Operation(name, _ref) {
   return op;
 };
 
-exports.Operation = Operation;
+exports.createOperation = createOperation;
 
 var func = function func(args, ret, options) {
   return [args, ret, options];

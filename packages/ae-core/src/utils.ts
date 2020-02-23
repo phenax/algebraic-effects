@@ -1,5 +1,5 @@
 import { createSymbol } from '@algebraic-effects/utils';
-import { OperationOptions, OperationSignature } from './types';
+import { OperationOptions, OperationSignature, Operation } from './types';
 
 export const OPERATION = createSymbol('algebraic-effects/operation');
 export const HANDLER = createSymbol('algebraic-effects/handler');
@@ -22,7 +22,10 @@ const validateArguments = (args: Array<string> | undefined, values: Array<any>) 
   return args.length === values.length;
 };
 
-export const Operation = (name: string, [ args, returnType, { isMulti = false } = {} ]: OperationSignature) => {
+export const createOperation = <Args extends Array<any> = Array<any>, Ret = any>(
+  name: string,
+  [ args, returnType, { isMulti = false } = {} ]: OperationSignature,
+): Operation<Args, Ret> => {
   function op() {
     const payload = [].slice.call(arguments);
     if (!validateArguments(args, payload))

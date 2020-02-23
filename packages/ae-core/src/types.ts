@@ -1,27 +1,30 @@
 import { SymbolObject } from '@algebraic-effects/utils';
 
-export interface IteratorResult<T> {
+export interface GenIteratorResult<T> {
     done: boolean;
     value: T;
 }
 
-export interface Iterator<T> {
-    next(value?: any): IteratorResult<T>;
-    return(value?: any): IteratorResult<T>;
-    throw(e?: any): IteratorResult<T>;
+export interface GenIterator<T> {
+    next(value?: any): GenIteratorResult<T>;
+    return(value?: any): GenIteratorResult<T>;
+    throw(e?: any): GenIteratorResult<T>;
 }
 
-export interface OperationValue<Args = Array<any>> {
+// @ts-ignore
+export interface OperationValue<Args extends Array<any> = Array<any>, Ret = any> {
   name: string;
   payload: Args;
   isMulti?: boolean;
   $$type: SymbolObject;
-  toString(): string;
 }
 
-export type Operation<Args extends Array<any> = any[]> = (...args: Args) => OperationValue<Args>;
+export interface Operation<Args extends Array<any> = any[], Ret = any> {
+  (...args: Args): OperationValue<Args, Ret>;
+  toString(): string;
+};
 
-export type Program<Args extends Array<any> = any[]> = (...args: Args) => Iterator<OperationValue>;
+export type Program<Args extends Array<any> = any[]> = (...args: Args) => GenIterator<OperationValue>;
 
 export interface OperationOptions {
   isMulti?: boolean;
