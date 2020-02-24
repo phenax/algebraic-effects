@@ -16,11 +16,14 @@ export const createSymbol = (key: string): SymbolObject => typeof Symbol === 'fu
 // @ts-ignore
 export const isGenerator = (p: Function) => p && p.constructor && (p.constructor.name + '').indexOf('GeneratorFunction') !== -1;
 
-export const pointfree = <Type, Method extends (keyof Type)>(methodName: Method): Type[Method] => function() {
-  const args = arguments;
+type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? K : never };
+
+// TODO: Fix type issues with this
+export const pointfree = <Type, Method extends (keyof FunctionPropertyNames<Type>)>(methodName: Method) =>
   // @ts-ignore
-  return (x: Type) => x[methodName].apply(x, args);
-} as unknown as Type[Method];
+  (...args: Parameters<Type[Method]>) =>
+    // @ts-ignore
+    (x: Type): ReturnType<Type[Method]> => x[methodName].apply(x, args);
 
 export const compose = <T = any, R = any>(...args: ((x: any) => any)[]): ((x: T) => R) =>
   args.reduce((a: (x: T) => any, b: (y: any) => any) => (x: any) => a(b(x)));

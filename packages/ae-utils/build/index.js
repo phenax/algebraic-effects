@@ -29,7 +29,10 @@ exports.isGenerator = isGenerator;
 
 var pointfree = function pointfree(methodName) {
   return function () {
-    var args = arguments;
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
     return function (x) {
       return x[methodName].apply(x, args);
     };
@@ -39,9 +42,13 @@ var pointfree = function pointfree(methodName) {
 exports.pointfree = pointfree;
 
 var compose = function compose() {
-  return [].slice.apply(arguments).reduce(function (a, b) {
-    return function () {
-      return a(b.apply(void 0, arguments));
+  for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    args[_key2] = arguments[_key2];
+  }
+
+  return args.reduce(function (a, b) {
+    return function (x) {
+      return a(b(x));
     };
   });
 };

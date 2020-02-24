@@ -1,9 +1,9 @@
-import Task from '../src';
+import Task, {AlgebraicTask} from '../src';
 import { parallel, race, series, rejectAfter, resolveAfter, map, fork } from '../src/fns';
 
 describe('helpers', () => {
-  const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
-    const timerid = setTimeout(() => resolve(), duration);
+  const delay = (duration: number, cancel = clearTimeout): AlgebraicTask<void, number> => Task((_, resolve) => {
+    const timerid = setTimeout(() => resolve(1), duration);
     return () => cancel && cancel(timerid);
   });
 

@@ -6,9 +6,10 @@ describe('pointfree', () => {
     b: string;
   }
 
+  const pointfreeC = pointfree<ObjType, 'c'>('c');
+
   it('should return a point-free version of a given method name', () => {
     const obj: ObjType = { b: 'hello', c() { return this.b + ' world!'; }, };
-    const pointfreeC = pointfree<ObjType, 'c'>('c');
 
     expect(pointfreeC()(obj)).toBe('hello world!');
   });
@@ -17,7 +18,6 @@ describe('pointfree', () => {
     const obj = { b: 'hello' };
     // Typescript wont allow you to do it. JS will give you a warning
     // @ts-ignore
-    const pointfreeC = pointfree<typeof obj, 'c'>('c');
     expect(() => pointfreeC()(obj)).toThrowError();
   });
 });
