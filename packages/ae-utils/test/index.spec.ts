@@ -1,31 +1,45 @@
-import { pointfree, compose, identity, createSymbolObject } from '../src';
+import { pointfree, compose, compose2, identity, createSymbolObject } from '../src';
 
 describe('pointfree', () => {
+  interface ObjType {
+    c(): any;
+    b: string;
+  }
 
   it('should return a point-free version of a given method name', () => {
-    const pointfreeC = pointfree('c');
+    const obj: ObjType = { b: 'hello', c() { return this.b + ' world!'; }, };
+    const pointfreeC = pointfree<ObjType, 'c'>('c');
 
-    const obj = { b: 'hello', c() { return this.b + ' world!'; }, };
     expect(pointfreeC()(obj)).toBe('hello world!');
   });
 
   it('should throw error is object doesnt have method', () => {
-    const pointfreeC = pointfree('c');
     const obj = { b: 'hello' };
+    // Typescript wont allow you to do it. JS will give you a warning
+    // @ts-ignore
+    const pointfreeC = pointfree<typeof obj, 'c'>('c');
     expect(() => pointfreeC()(obj)).toThrowError();
   });
 });
 
 describe('compose', () => {
   it('should compose multiple fns', () => {
-    const fn1 = a => a + 1;
-    const fn2 = b => b * 2;
-    const fn3 = c => `n=${c}`;
+    const fn1 = (a: number) => a + 1;
+    const fn2 = (b: number) => b * 2;
+    const fn3 = (c: number) => `n=${c}`;
 
     expect(compose(fn3, fn2, fn1)(5)).toBe('n=12');
   });
 });
 
+describe('compose2', () => {
+  it('should compose 2 fns', () => {
+    const fn1 = (a: number) => [a + 2, 5];
+    const fn2 = ([b, c]: number[]) => `n=${c + b}`;
+
+    expect(compose2(fn2, fn1)(5)).toBe('n=12');
+  });
+});
 
 describe('identity', () => {
   it('should return passed value', () => {

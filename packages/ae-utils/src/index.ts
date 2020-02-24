@@ -29,7 +29,8 @@ export const compose: ComposeFn = function() {
     .reduce((a: Function, b: Function) => (...args: any[]) => a(b(...args)));
 };
 
-export const compose2 = <T = any, R = any>(a: (t: T) => any, b: (a: any) => R): ((t: T) => R) => compose(a, b);
+export const compose2 = <T = any, X = any, R = any>(a: (t: X) => R, b: (a: T) => X): ((t: T) => R) =>
+  compose(a, b);
 
 export const isArray = Array.isArray || (a => ({}).toString.call(a)=='[object Array]');
 
