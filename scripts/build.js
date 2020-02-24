@@ -16,7 +16,7 @@ const isWatchEnabled = process.argv.includes('--watch');
 process.env.NODE_ENV = isWatchEnabled ? 'development' : 'production';
 
 const toSrcPath = p => path.join(p, 'src');
-const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
+// const toBuildPath = (p, ...files) => path.join(p, 'build', ...files);
 
 const isBuildable = dir => {
   try {
@@ -31,9 +31,17 @@ const compileFile = file => babel.transformFileAsync(file, { comments: false });
 const compileDirectory = dir => globber(`${dir}/**/*.[tj]s`).then(map(compileFile)).then(resolveAll);
 const compileSourceFiles = async dir => {
   const srcPath = toSrcPath(dir);
+  const { buildOptions } = getPackageJson(dir) || {};
+  const { outPath = 'build' } = buildOptions || {};
   const toOutputInfo = map(file => ({
     ...file,
-    buildPath: toBuildPath(dir, `${file.options.filename}`.replace(srcPath, '').replace(/\.ts$/, '.js')),
+    buildPath: path.join(
+      dir,
+      outPath,
+      `${file.options.filename}`
+        .replace(srcPath, '')
+        .replace(/\.ts$/, '.js'),
+    ),
     packageDir: dir,
   }));
 
@@ -62,15 +70,15 @@ const build = packages =>
     .then(map(compileSourceFiles))
     .then(resolveAll)
     .then(flatten)
-    .then(files =>
-      compose(
-        r => r.then(() => files),
-        resolveAll,
-        map(compose(fsextra.remove, toBuildPath)),
-        uniq,
-        map(prop('packageDir')),
-      )(files),
-    )
+    // .then(files =>
+      // compose(
+        // r => r.then(() => files),
+        // resolveAll,
+        // map(compose(fsextra.remove, toBuildPath)),
+        // uniq,
+        // map(prop('packageDir')),
+      // )(files),
+    // )
     .then(map(saveCodeFile))
     .then(resolveAll)
     .catch(e => {

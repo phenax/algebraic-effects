@@ -4,5 +4,5 @@ import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, Handler
 export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
 export declare const createEffect: (name: string, operations: Record<string, import("./types").OperationSignature>) => Effect<string>;
 export declare function composeHandlers(): any;
-export declare const run: HandlerInstance;
+export declare const run: HandlerInstance<any[]>;
 export { func, createGenericEffect, createOperation };

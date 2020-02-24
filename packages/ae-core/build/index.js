@@ -101,8 +101,11 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function runProgram(program) {
-  var args = [].slice.call(arguments, 1);
-  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(void 0, args) : program;
   if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
 }
@@ -173,8 +176,8 @@ var createHandler = function createHandler() {
     };
 
     var end = function end() {
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
+      for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        args[_key2] = arguments[_key2];
       }
 
       var value = mapResult.apply(null, args);
@@ -213,13 +216,13 @@ var createHandler = function createHandler() {
     };
   };
 
-  var effectHandlerInstance = function effectHandlerInstance() {
-    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
+  var effectHandlerInstance = function effectHandlerInstance(programFn) {
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
     }
 
     var task = (0, _task["default"])(function (reject, resolve, cancelTask) {
-      var program = runProgram.apply(null, args);
+      var program = runProgram.apply(void 0, [programFn].concat(args));
       var termination = getTerminationOps({
         program: program,
         task: task,
@@ -235,6 +238,7 @@ var createHandler = function createHandler() {
           if (task.isCancelled) return program["return"](null);
           !isResumed && resume(x);
           isResumed = true;
+          return;
         };
 
         var onError = function onError(e) {
@@ -262,6 +266,7 @@ var createHandler = function createHandler() {
         tryNextValue(function () {
           return getNextValue(program, x);
         });
+        return;
       };
 
       setTimeout(resume, 0);
@@ -310,8 +315,8 @@ var createHandler = function createHandler() {
         });
 
         var mapResult = function mapResult() {
-          for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-            args[_key3] = arguments[_key3];
+          for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+            args[_key4] = arguments[_key4];
           }
 
           return [].concat(_toConsumableArray(results), args);
