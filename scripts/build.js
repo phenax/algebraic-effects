@@ -40,8 +40,8 @@ const compileSourceFiles = async dir => {
   // Type declarations generation
   console.log('');
   try {
-    const relativePath = dir.replace(path.resolve(), '').replace(/^\/+/, '');
-    execSync(`npx tsc --emitDeclarationOnly ${relativePath}/**/*.ts --declaration --outDir ${dir}`);
+    const relativePath = srcPath.replace(path.resolve(), '').replace(/^\/+/, '');
+    execSync(`npx tsc --emitDeclarationOnly ./${relativePath}/*.ts --declaration --outDir ${dir}`);
   } catch(e) {
     // console.log(e.message);
     console.warn('TYPINGS WARNING ::', e.output.toString());
