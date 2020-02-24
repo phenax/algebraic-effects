@@ -8,10 +8,12 @@ import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, Handler
 
 export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
 
-function runProgram(program: Program): ProgramIterator {
-  const args = [].slice.call(arguments, 1);
+function runProgram<Args extends Array<any> = any[]>(
+  program: Program<Args> | ProgramIterator,
+  ...args: Args
+): ProgramIterator {
   // @ts-ignore
-  const p = program.constructor.name === 'GeneratorFunction' ? program.apply(null, args) : program;
+  const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
   if (!isGenerator(p))
     throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
   return p;
@@ -97,9 +99,12 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
     return { resume: o.resume, end: o.end, throwError: o.throwError, cancel: o.cancel, call, callMulti, promise };
   };
 
-  const effectHandlerInstance: HandlerInstance = (...args) => {
+  const effectHandlerInstance: HandlerInstance = <Args extends any[] = any[]>(
+    programFn: Program<Args> | ProgramIterator,
+    ...args: Args
+  ) => {
     const task: TaskWithCancel = Task((reject, resolve, cancelTask) => {
-      const program = runProgram.apply(null, args);
+      const program = runProgram<Args>(programFn, ...args);
   
       const termination = getTerminationOps({ program, task, resolve, cancelTask });
   
@@ -112,6 +117,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
           if(task.isCancelled) return program.return(null);
           !isResumed && resume(x);
           isResumed = true;
+          return;
         };
 
         const onError = (e: any) => tryNextValue(() => termination.throwError(e));
@@ -133,6 +139,8 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
         };
 
         tryNextValue(() => getNextValue(program, x));
+
+        return;
       };
 
       setTimeout(resume, 0);
@@ -166,7 +174,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
       stateCache = stateCache || [];
       const task: TaskWithCancel = Task((reject, resolve, cancelTask) => {
         const program: ProgramIterator = runProgram.apply(null, args);
-        let cleanup = () => {};
+        let cleanup = (..._: any[]) => {};
         let results: any[] = [];
 
         // Fast forward to multi call

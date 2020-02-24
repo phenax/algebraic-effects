@@ -1,8 +1,10 @@
-
 import Task from '@algebraic-effects/task';
 import { Random } from '@algebraic-effects/effects';
 import { run, func } from '../src';
 import { sleep, awaitPromise, resolve, cancel, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
+
+// @ts-ignore
+const Promise = window.Promise;
 
 describe('Global operations', () => {
   describe('sleep', () => {
@@ -159,7 +161,7 @@ describe('Global operations', () => {
 
   describe('call', () => {
     const logfn = jest.fn();
-    function* finalCountdown(x) {
+    function* finalCountdown(x: number) {
       if(x <= 0) return x;
       yield sleep(500);
       logfn(x);

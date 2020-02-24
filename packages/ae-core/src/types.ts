@@ -53,15 +53,15 @@ export interface OperationBehavior<Args extends Array<any> = any[]> {
 
 export type TaskWithCancel = AlgebraicTask & { isCancelled?: boolean };
 
-export interface HandlerInstance {
-  (...args: any[]): TaskWithCancel;
+export interface HandlerInstance<Args extends any[] = any[]> {
+  (...args: Args): TaskWithCancel;
   effectName: string;
   handlers: Record<string, OperationBehavior>;
   $$type: SymbolObject;
   concat: (x: HandlerInstance) => HandlerInstance;
   with: (x: HandlerInstance | Record<string, OperationBehavior>) => HandlerInstance;
-  run: HandlerInstance;
-  runMulti: (...args: any[]) => TaskWithCancel;
+  run: HandlerInstance<Args>;
+  runMulti: (...args: Args) => TaskWithCancel;
 }
 
 export type HandlerMap<T extends string = string> = Record<T, OperationBehavior>;
