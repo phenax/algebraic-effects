@@ -1,11 +1,11 @@
 import { compose } from '@algebraic-effects/utils';
 import { AlgebraicTask } from '.';
-export declare const chain: (fn: (v: any) => AlgebraicTask<unknown, unknown>) => (x: AlgebraicTask<any, any>) => AlgebraicTask<unknown, unknown>;
+export declare const chain: (fn: (v: any) => AlgebraicTask<unknown, unknown>) => (x: AlgebraicTask<any, any>) => AlgebraicTask<any, unknown>;
 export declare const map: (fn: (a: any) => unknown) => (x: AlgebraicTask<any, any>) => AlgebraicTask<any, unknown>;
 export declare const mapRejected: (fn: (e: any) => unknown) => (x: AlgebraicTask<any, any>) => AlgebraicTask<unknown, any>;
 export declare const fold: (mapErr: (e: any) => unknown, mapVal: (v: any) => unknown) => (x: AlgebraicTask<any, any>) => AlgebraicTask<void, unknown>;
 export declare const foldRejected: (mapErr: (e: any) => unknown, mapVal: (v: any) => unknown) => (x: AlgebraicTask<any, any>) => AlgebraicTask<unknown, void>;
 export declare const bimap: (mapErr: (e: any) => unknown, mapVal: (v: any) => unknown) => (x: AlgebraicTask<any, any>) => AlgebraicTask<unknown, unknown>;
 export declare const toPromise: (x: AlgebraicTask<any, any>) => Promise<any>;
-export declare const fork: (...args: [import(".").RejectFn<any>, import(".").ResolveFn<any>, import(".").CancelFn?] | [import(".").ForkOptions<any, any>]) => (x: AlgebraicTask<any, any>) => import(".").CancelFn;
+export declare const fork: (...args: [import(".").RejectFn<any>?, import(".").ResolveFn<any>?, import(".").CancelFn?] | [import(".").ForkOptions<any, any>]) => (x: AlgebraicTask<any, any>) => import(".").CancelFn;
 export { compose };

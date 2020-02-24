@@ -127,9 +127,12 @@ Task.Rejected = function (err) {
 Task.of = Task.Resolved;
 
 Task.fromPromise = function (factory) {
-  var args = arguments;
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
   return Task(function (rej, res) {
-    return factory.apply(null, [].slice.call(args, 1)).then(res)["catch"](rej);
+    return factory.apply(null, args).then(res)["catch"](rej);
   });
 };
 
