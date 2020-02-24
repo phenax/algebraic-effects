@@ -4,7 +4,7 @@ module.exports = {
   transform: {
     '.*': 'babel-jest',
   },
-  testRegex: 'packages/.*\\.spec\\.(j|t)sx?$',
+  testRegex: 'packages/.*\\.(spec|test)\\.(j|t)sx?$',
   moduleFileExtensions: ['js', 'json', 'node', 'coffee', 'ts'],
   rootDir: process.cwd(),
   roots: ['<rootDir>/packages'],

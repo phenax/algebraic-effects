@@ -22,12 +22,8 @@ export const pointfree = <Type, Method extends (keyof Type)>(methodName: Method)
   return (x: Type) => x[methodName].apply(x, args);
 } as unknown as Type[Method];
 
-type ComposeFn = (...args: any[]) => any;
-
-export const compose: ComposeFn = function() {
-  return [].slice.apply(arguments)
-    .reduce((a: Function, b: Function) => (...args: any[]) => a(b(...args)));
-};
+export const compose = <T = any, R = any>(...args: ((x: any) => any)[]): ((x: T) => R) =>
+  args.reduce((a: (x: T) => any, b: (y: any) => any) => (x: any) => a(b(x)));
 
 export const compose2 = <T = any, X = any, R = any>(a: (t: X) => R, b: (a: T) => X): ((t: T) => R) =>
   compose(a, b);
