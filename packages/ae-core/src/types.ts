@@ -26,13 +26,15 @@ export interface Operation<Args extends Array<any> = any[], Ret = any> {
   toString(): string;
 };
 
-export interface Program<Args extends Array<any> = any[]> {
-  (...args: Args): ProgramIterator<OperationValue>;
-};
+export type Program<Args extends Array<any> = any[]> =
+  | ((...args: Args) => ProgramIterator<OperationValue>)
+  | Generator<OperationValue<any, any>, any, any>;
 
 export interface OperationOptions {
   isMulti?: boolean;
 }
+
+export type ProgramParams<P> = P extends Function ? Parameters<P> : any[];
 
 export interface FlowOperators {
   resume(v: any): any;
@@ -40,8 +42,8 @@ export interface FlowOperators {
   end(v: any): any;
   cancel(...args: any[]): any;
   promise(p: Promise<any>): any;
-  call(program: Program): any;
-  callMulti(program: Program): any;
+  call(program: Program, ...args: ProgramParams<Program>): any;
+  callMulti(program: Program, ...args: ProgramParams<Program>): any;
 }
 
 export type OperationSignature =

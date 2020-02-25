@@ -1,5 +1,5 @@
 import Task from '@algebraic-effects/task';
-import { Random } from '@algebraic-effects/effects';
+import Random, { seeded } from '@algebraic-effects/effects/Random';
 import { run, func } from '../src';
 import { sleep, awaitPromise, resolve, cancel, call, callMulti, race, parallel, background, createGenericEffect, runTask } from '../src/generic';
 
@@ -219,7 +219,7 @@ describe('Global operations', () => {
     });
 
     it('should call another program in multi mode', done => {
-      Random.seed(100)
+      seeded(100)
         .runMulti(programA).fork(done, () => {
           expect(logfn).toBeCalledTimes(4);
           expect(logfn.mock.calls).toEqual([ [ 'B' ], [ 'B' ], [ 'B' ], [ 'A' ] ]);
