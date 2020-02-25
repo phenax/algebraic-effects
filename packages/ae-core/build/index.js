@@ -426,8 +426,7 @@ var createEffect = function createEffect(name, operations) {
         effect: name
       });
     },
-    extendAs: function extendAs(newName) {
-      var newOps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    extendAs: function extendAs(newName, newOps) {
       return createEffect(newName, _objectSpread({}, operations, {}, newOps));
     }
   };

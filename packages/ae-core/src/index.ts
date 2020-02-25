@@ -279,7 +279,10 @@ export const createEffect = <OpMap = OperationMap>(
     name,
     operations,
     handler: (handlers: HandlerMap<keyof OpMap>) => createHandler(handlers, { effect: name }),
-    extendAs: (newName: string, newOps: OperationMap = {}) => createEffect(newName, { ...operations, ...newOps }),
+    extendAs: <NewOpMap = OperationMap>(
+      newName: string,
+      newOps?: OperationMap<keyof NewOpMap>
+    ): Effect<OpMap & NewOpMap> => createEffect(newName, { ...operations, ...newOps }),
   };
 
   const ops: OpMap = Object.keys(operations).reduce((acc, opName) => ({

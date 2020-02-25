@@ -30,8 +30,7 @@ function state(initState) {
     },
     update: function update(o) {
       return function (updateFn) {
-        current = updateFn(current);
-        o.resume(current);
+        return o.resume(current = updateFn(current));
       };
     }
   });

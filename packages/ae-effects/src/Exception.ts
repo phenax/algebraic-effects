@@ -2,11 +2,7 @@
 import { createEffect, func } from '@algebraic-effects/core';
 import { FlowOperators } from '@algebraic-effects/core';
 
-interface ExceptionEffect {
-  throw: (e: any) => any;
-}
-
-const Exception = createEffect<ExceptionEffect>('Exception', {
+const Exception = createEffect('Exception', {
   throw: func(['error']),
 });
 
