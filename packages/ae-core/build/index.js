@@ -418,7 +418,7 @@ var createHandler = function createHandler() {
 };
 
 var createEffect = function createEffect(name, operations) {
-  return _objectSpread({
+  var effect = {
     name: name,
     operations: operations,
     handler: function handler(handlers) {
@@ -430,9 +430,11 @@ var createEffect = function createEffect(name, operations) {
       var newOps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       return createEffect(newName, _objectSpread({}, operations, {}, newOps));
     }
-  }, Object.keys(operations).reduce(function (acc, opName) {
+  };
+  var ops = Object.keys(operations).reduce(function (acc, opName) {
     return _objectSpread({}, acc, _defineProperty({}, opName, (0, _utils2.createOperation)(operationName(name, opName), operations[opName])));
-  }, {}));
+  }, {});
+  return _objectSpread({}, effect, {}, ops);
 };
 
 exports.createEffect = createEffect;

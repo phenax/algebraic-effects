@@ -271,18 +271,24 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
   return effectHandlerInstance;
 };
 
-export const createEffect = (name: string, operations: OperationMap): Effect<keyof (typeof operations)> => ({
-  name,
-  operations,
-  handler: (handlers: HandlerMap<keyof (typeof operations)>) => createHandler(handlers, { effect: name }),
-  extendAs: (newName: string, newOps: OperationMap = {}) =>
-    createEffect(newName, { ...operations, ...newOps }),
+export const createEffect = <OpMap = OperationMap>(
+  name: string,
+  operations: OperationMap<keyof OpMap>
+): Effect<OpMap> & OpMap => {
+  const effect: Effect<OpMap> = {
+    name,
+    operations,
+    handler: (handlers: HandlerMap<keyof OpMap>) => createHandler(handlers, { effect: name }),
+    extendAs: (newName: string, newOps: OperationMap = {}) => createEffect(newName, { ...operations, ...newOps }),
+  };
 
-  ...Object.keys(operations).reduce((acc, opName) => ({
+  const ops: OpMap = Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
-    [opName]: createOperation(operationName(name, opName), operations[opName]),
-  }), {}),
-} as Effect<keyof (typeof operations)>);
+    [opName]: createOperation(operationName(name, opName), operations[opName as keyof (typeof operations)]),
+  }), {}) as OpMap;
+
+  return { ...effect, ...ops };
+};
 
 export function composeHandlers() {
   return [].slice.call(arguments).reduce((a: HandlerInstance, b: HandlerInstance) => a.concat(b));
