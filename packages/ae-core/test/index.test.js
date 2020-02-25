@@ -1,4 +1,4 @@
-import { Logger } from '@algebraic-effects/effects';
+import Logger, { fromConsole } from '@algebraic-effects/effects/Logger';
 import { createEffect, func, composeHandlers } from '../src';
 import { sleep } from '../src/generic';
 
@@ -91,7 +91,7 @@ describe('createEffect', () => {
         return yield sleep('Hello world');
       };
 
-      Logger.from(null)
+      fromConsole(null)
         .with(DummyEff.handler({ myFn: ({ resume }) => () => resume() }))
         .with({ sleep: ({ resume }) => d => resume(d) })
         .run(action)

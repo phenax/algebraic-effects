@@ -1,4 +1,5 @@
-import { State, Exception } from '@algebraic-effects/effects';
+import State, { state } from '@algebraic-effects/effects/State';
+import Exception, { tryCatch } from '@algebraic-effects/effects/Exception';
 import { createEffect, func } from '../src';
 
 describe('Multiple continuations', () => {
@@ -45,7 +46,7 @@ describe('Multiple continuations', () => {
     }
 
     runner
-      .with(Exception.try)
+      .with(tryCatch)
       .runMulti(program)
       .fork(
         e => {
@@ -74,7 +75,7 @@ describe('Multiple continuations', () => {
     }
 
     runner
-      .with(State.of(0))
+      .with(state(0))
       .runMulti(program)
       .fork(
         done,
@@ -110,7 +111,7 @@ describe('Multiple continuations', () => {
     }
 
     runner
-      .with(State.of([]))
+      .with(state([]))
       .runMulti(program)
       .fork(
         done,
@@ -136,7 +137,7 @@ describe('Multiple continuations', () => {
     }
 
     runner
-      .with(State.of([]))
+      .with(state([]))
       .with({
         _: ({ end }) => v => {
           if (v.length === 4) {
@@ -160,7 +161,7 @@ describe('Multiple continuations', () => {
       return yield State.get();
     }
 
-    State.of(0)
+    state(0)
       .runMulti(program)
       .fork(
         done,
