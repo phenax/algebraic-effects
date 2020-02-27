@@ -41,6 +41,36 @@ describe('Observable', () => {
     });
   });
 
+  it('should go to stream error on throw error', done => {
+    const onError = jest.fn();
+    const onNext = jest.fn();
+
+    const obs = createObservable<number>((subscription: Subscription) => {
+      subscription.next(1);
+      subscription.throwError(5);
+      subscription.next(2);
+      subscription.throwError(6);
+      subscription.complete();
+    });
+
+    obs
+      .map(x => x + 10)
+      .subscribe({
+        onError,
+        onNext,
+        onComplete: () => {
+          expect(onNext).toBeCalledTimes(2);
+          expect(onNext).toHaveBeenCalledWith(11);
+          expect(onNext).toHaveBeenCalledWith(12);
+
+          expect(onError).toBeCalledTimes(2);
+          expect(onError).toHaveBeenCalledWith(5);
+          expect(onError).toHaveBeenCalledWith(6);
+          done();
+        },
+      });
+  });
+
   describe('Observable#map', () => {
     
     it('should map over the items in the stream (increment)', done => {
@@ -60,6 +90,30 @@ describe('Observable', () => {
           onComplete: () => {
             expect(onNext).toBeCalledTimes(3);
             expect(onNext.mock.calls).toEqual([[11], [13], [20]]);
+            done();
+          },
+        });
+    });
+
+    it('should not map over the error in the stream (increment)', done => {
+      const onError = jest.fn();
+      const onNext = jest.fn();
+
+      const error = new Error('Fuck');
+      const obs = createObservable<number>((subscription: Subscription) => {
+        subscription.throwError(error);
+        subscription.complete();
+      });
+
+      obs
+        .map(x => x + 10)
+        .subscribe({
+          onError,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(0);
+            expect(onError).toBeCalledTimes(1);
+            expect(onError).toHaveBeenCalledWith(error);
             done();
           },
         });

@@ -33,7 +33,7 @@
   - [x] Allow cancellation from within
 
 **Observable**
-  - [ ] Implement observable monad to be used instead of Task monad
+  - [x] Implement observable monad to be used instead of Task monad
   - [ ] Should end stream on error? (Probably not)
   - [ ] Implement Task methods (+tap)
 
