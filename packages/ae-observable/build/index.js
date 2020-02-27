@@ -1,0 +1,92 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var _utils = require("@algebraic-effects/utils");
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+;
+;
+;
+;
+
+var Observable = function Observable(taskFn) {
+  var subscribe = function subscribe(options) {
+    var isCancelled = false;
+    var isComplete = false;
+    var parseOptions = _utils.identity;
+
+    function guardOptns(o) {
+      function guard(cb) {
+        return function () {
+          return isCancelled || isComplete || !cb ? null : cb.apply(void 0, arguments);
+        };
+      }
+
+      return {
+        onError: guard(o.onError),
+        onNext: guard(o.onNext),
+        onComplete: guard(o.onComplete)
+      };
+    }
+
+    var optns = guardOptns(parseOptions(options));
+    var subscription = {
+      get isCancelled() {
+        return isCancelled;
+      },
+
+      unsubscribe: function unsubscribe() {},
+      next: optns.onNext,
+      throwError: optns.onError,
+      complete: function complete(value) {
+        optns.onComplete(subscription, value);
+        isComplete = true;
+      }
+    };
+    var cleanup = taskFn(subscription);
+
+    function cancelTask() {
+      cleanup && cleanup.apply(null, arguments);
+      optns.onComplete.apply(null, arguments);
+      isCancelled = true;
+    }
+
+    subscription.unsubscribe = cancelTask;
+    return subscription;
+  };
+
+  var copy = function copy(fn) {
+    return Observable(function (sub) {
+      return subscribe(fn({
+        onNext: sub.next,
+        onError: sub.throwError,
+        onComplete: function onComplete(_, x) {
+          return sub.complete(x);
+        }
+      })).unsubscribe;
+    });
+  };
+
+  return {
+    subscribe: subscribe,
+    map: function map(fn) {
+      return copy(function (options) {
+        return _objectSpread({}, options, {
+          onNext: (0, _utils.compose2)(options.onNext, fn)
+        });
+      });
+    }
+  };
+};
+
+var _default = Observable;
+exports["default"] = _default;
