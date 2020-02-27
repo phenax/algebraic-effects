@@ -65,5 +65,31 @@ describe('Observable', () => {
         });
     });
   });
+
+  describe('Observable#fold', () => {
+    
+    it('should fold the items in the stream (increment both error and value)', done => {
+      const onNext = jest.fn();
+      const obs = createObservable<number>((subscription: Subscription) => {
+        subscription.next(1);
+        subscription.next(3);
+        subscription.throwError(10);
+        subscription.throwError(5);
+        subscription.complete();
+      });
+
+      obs
+        .fold(e => e + 10, x => x + 3)
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(4);
+            expect(onNext.mock.calls).toEqual([[4], [6], [20], [15]]);
+            done();
+          },
+        });
+    });
+  });
 });
 

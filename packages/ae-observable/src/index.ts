@@ -25,13 +25,8 @@ export interface ObservableInstance<E = any, V = any> {
   // chain: <F = any, T = any>(fn: (v: V) => AlgebraicTask<F, T>) => AlgebraicTask<E | F, T>;
 
   map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
-  // bimap: <TE = any, TV = TE>(
-    // mapErr: (e: E) => TE,
-    // mapVal: (v: V) => TV,
-  // ) => AlgebraicTask<TE, TV>,
 
-  // fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => AlgebraicTask<void, TE | TV>;
-  // foldRejected: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => AlgebraicTask<TE | TV, void>;
+  fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => ObservableInstance<void, TE | TV>;
 
   subscribe: SubscribeFunction<E, V>;
 
@@ -85,9 +80,6 @@ const Observable = <E = any, V = any>(
     return subscription;
   };
 
-  // const fold: AlgebraicTask<E, V>['fold'] = (mapErr, mapVal) =>
-    // Observable((_, res) => forkTask(compose2(res, mapErr), compose2(res, mapVal)));
-
   // const foldRejected: AlgebraicTask<E, V>['foldRejected'] = (mapErr, mapVal) =>
     // Observable(rej => forkTask(compose2(rej, mapErr), compose2(rej, mapVal)));
 
@@ -107,8 +99,11 @@ const Observable = <E = any, V = any>(
     // chain,
     // bimap,
     map: fn => copy(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
-    // mapRejected: fn => bimap(fn, identity),
-    // fold,
+    fold: (errFn, nextFn) => copy(options => ({
+      ...options,
+      onError: compose2(options.onNext, errFn),
+      onNext: compose2(options.onNext, nextFn),
+    })),
     // foldRejected,
 
     // resolveWith: value => fold(constant(value), constant(value)),
