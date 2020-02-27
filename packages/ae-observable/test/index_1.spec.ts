@@ -67,10 +67,9 @@ describe('Observable', () => {
   });
 
   describe('Observable#fold', () => {
-    
     it('should fold the items in the stream (increment both error and value)', done => {
       const onNext = jest.fn();
-      const obs = createObservable<number>((subscription: Subscription) => {
+      const obs = createObservable<number, number>((subscription: Subscription) => {
         subscription.next(1);
         subscription.next(3);
         subscription.throwError(10);
@@ -86,6 +85,32 @@ describe('Observable', () => {
           onComplete: () => {
             expect(onNext).toBeCalledTimes(4);
             expect(onNext.mock.calls).toEqual([[4], [6], [20], [15]]);
+            done();
+          },
+        });
+    });
+
+    it('should fold the items in the stream (group both error and value)', done => {
+      const onNext = jest.fn();
+      const obs = createObservable<Error, string>((subscription: Subscription) => {
+        subscription.next('Hello');
+        subscription.throwError(new Error('Break'));
+        subscription.next('world');
+        subscription.complete();
+      });
+
+      obs
+        .fold(e => ({ error: e.message }), x => ({ str: x }))
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(3);
+            expect(onNext.mock.calls).toEqual([
+              [{ str: 'Hello' }],
+              [{ error: 'Break' }],
+              [{ str: 'world' }],
+            ]);
             done();
           },
         });
