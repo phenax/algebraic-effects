@@ -3,6 +3,7 @@ import { compose2, identity, noop } from '@algebraic-effects/utils';
 export interface Subscription<E = any, V = any> {
   readonly isCancelled: boolean;
   next: (v: V) => any;
+  resolve: (v: V) => any;
   throwError: (e: E) => any;
   complete: (d?: any) => any;
   unsubscribe: UnsubscribeFn;
@@ -56,6 +57,7 @@ const Observable = <E = any, V = any>(
     const subscription: Subscription<E, V> = {
       get isCancelled() { return isCancelled; },
       unsubscribe: () => {}, // This gets overwritten after fn returns
+      resolve: x => compose2(subscription.complete, subscription.next)(x),
       next: optns.onNext,
       throwError: optns.onError,
       complete: (value: any) => {
@@ -113,4 +115,12 @@ const Observable = <E = any, V = any>(
 
 // Observable.of = Observable.Resolved;
 
+export const of = <T = any>(...items: T[]) => Observable(sub => {
+  items.forEach(x => sub.next(x));
+  sub.complete();
+});
+
+Observable.of = of;
+
 export default Observable;
+
