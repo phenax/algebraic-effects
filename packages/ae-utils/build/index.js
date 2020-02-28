@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.maybe = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.maybe = exports.noop = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
@@ -88,6 +88,8 @@ var constant = function constant(x) {
 };
 
 exports.constant = constant;
+var noop = constant(undefined);
+exports.noop = noop;
 ;
 var maybe = {
   just: function just(x) {

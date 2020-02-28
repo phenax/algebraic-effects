@@ -64,7 +64,7 @@ var Observable = function Observable(taskFn) {
     return subscription;
   };
 
-  var copy = function copy(fn) {
+  var extend = function extend(fn) {
     return Observable(function (sub) {
       return subscribe(fn({
         onNext: sub.next,
@@ -79,9 +79,29 @@ var Observable = function Observable(taskFn) {
   return {
     subscribe: subscribe,
     map: function map(fn) {
-      return copy(function (options) {
+      return extend(function (options) {
         return _objectSpread({}, options, {
           onNext: (0, _utils.compose2)(options.onNext, fn)
+        });
+      });
+    },
+    chain: function chain(fn) {
+      return extend(function (options) {
+        return _objectSpread({}, options, {
+          onNext: (0, _utils.compose2)(function (o) {
+            return o.subscribe(_objectSpread({}, options, {
+              onNext: options.onNext,
+              onComplete: _utils.noop
+            }));
+          }, fn)
+        });
+      });
+    },
+    fold: function fold(errFn, nextFn) {
+      return extend(function (options) {
+        return _objectSpread({}, options, {
+          onError: (0, _utils.compose2)(options.onNext, errFn),
+          onNext: (0, _utils.compose2)(options.onNext, nextFn)
         });
       });
     }

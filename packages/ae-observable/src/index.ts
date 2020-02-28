@@ -1,5 +1,4 @@
-import { compose2, identity, constant } from '@algebraic-effects/utils';
-// import { fork } from './pointfree';
+import { compose2, identity, noop } from '@algebraic-effects/utils';
 
 export interface Subscription<E = any, V = any> {
   readonly isCancelled: boolean;
@@ -22,10 +21,8 @@ export interface SubscribeOptions<E, V> {
 export type SubscribeFunction<E, V> = (optns: Partial<SubscribeOptions<E, V>>) => UnsubscribeFn|any;
 
 export interface ObservableInstance<E = any, V = any> {
-  // chain: <F = any, T = any>(fn: (v: V) => AlgebraicTask<F, T>) => AlgebraicTask<E | F, T>;
-
+  chain: <F = any, T = any>(fn: (v: V) => ObservableInstance<F, T>) => ObservableInstance<E | F, T>;
   map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
-
   fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => ObservableInstance<void, TE | TV>;
 
   subscribe: SubscribeFunction<E, V>;
@@ -80,13 +77,10 @@ const Observable = <E = any, V = any>(
     return subscription;
   };
 
-  // const foldRejected: AlgebraicTask<E, V>['foldRejected'] = (mapErr, mapVal) =>
-    // Observable(rej => forkTask(compose2(rej, mapErr), compose2(rej, mapVal)));
-
   // const chain: AlgebraicTask<E, V>['chain'] = fn =>
     // Observable((rej, res) => forkTask(rej, compose2(fork(rej, res), fn)));
 
-  const copy = <E = any, V = any>(fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>>) =>
+  const extend = <E = any, V = any>(fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>>) =>
     Observable(sub => subscribe(fn({
       onNext: sub.next,
       onError: sub.throwError,
@@ -96,21 +90,16 @@ const Observable = <E = any, V = any>(
   return {
     subscribe,
 
-    // chain,
-    // bimap,
-    map: fn => copy(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
-    fold: (errFn, nextFn) => copy(options => ({
+    map: fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
+    chain: fn => extend(options => ({
+      ...options,
+      onNext: compose2(o => o.subscribe({ ...options, onNext: options.onNext, onComplete: noop }), fn),
+    })),
+    fold: (errFn, nextFn) => extend(options => ({
       ...options,
       onError: compose2(options.onNext, errFn),
       onNext: compose2(options.onNext, nextFn),
     })),
-    // foldRejected,
-
-    // resolveWith: value => fold(constant(value), constant(value)),
-    // rejectWith: err => foldRejected(constant(err), constant(err)),
-    // empty: Observable.Empty,
-
-    // toPromise: () => new Promise((res, rej) => forkTask(rej, res)),
   };
 };
 
@@ -123,15 +112,5 @@ const Observable = <E = any, V = any>(
 // Observable.Rejected = <E = any>(err: E) => Observable<E, any>(reject => reject(err));
 
 // Observable.of = Observable.Resolved;
-
-// Observable.fromPromise = function<E, T, Args extends any[] = any[]>(
-  // factory: (...a: Args) => Promise<T>,
-  // ...args: Args
-// ): AlgebraicTask<E, T> {
-  // return Observable((rej, res) =>
-    // factory.apply(null, args)
-      // .then(res)
-      // .catch(rej));
-// };
 
 export default Observable;

@@ -39,6 +39,8 @@ export const identity = <T = any>(x: T): T => x;
 
 export const constant = <T = any>(x: T) => (): T => x;
 
+export const noop = constant(undefined);
+
 export interface Maybe<T = any> {
   map: <R = any>(fn: (x: T) => R) => Maybe<R>;
   fold: <R = any>(n: () => R, j: (x: T) => R) => R;

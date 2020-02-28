@@ -24,7 +24,9 @@ export interface SubscribeOptions<E, V> {
 }
 export declare type SubscribeFunction<E, V> = (optns: Partial<SubscribeOptions<E, V>>) => UnsubscribeFn | any;
 export interface ObservableInstance<E = any, V = any> {
+    chain: <F = any, T = any>(fn: (v: V) => ObservableInstance<F, T>) => ObservableInstance<E | F, T>;
     map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
+    fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => ObservableInstance<void, TE | TV>;
     subscribe: SubscribeFunction<E, V>;
 }
 declare const Observable: <E = any, V = any>(taskFn: (subscription: Subscription<any, any>) => any) => ObservableInstance<E, V>;

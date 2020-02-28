@@ -170,5 +170,64 @@ describe('Observable', () => {
         });
     });
   });
+
+  describe('Observable#chain', () => {
+    
+    it('should chain the two in the stream (increment)', done => {
+      const onNext = jest.fn();
+      const obs = createObservable<number>((subscription: Subscription) => {
+        subscription.next(1);
+        subscription.next(3);
+        subscription.next(10);
+        subscription.complete();
+      });
+
+      const add10Stream = (x: number) => createObservable(sub => {
+        sub.next(x + 10);
+        sub.complete();
+      });
+
+      obs
+        .chain(add10Stream)
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(3);
+            expect(onNext.mock.calls).toEqual([[11], [13], [20]]);
+            done();
+          },
+        });
+    });
+
+    it('should not chain the error in the stream (increment)', done => {
+      const onError = jest.fn();
+      const onNext = jest.fn();
+
+      const error = new Error('Fuck');
+      const obs = createObservable<number>((subscription: Subscription) => {
+        subscription.throwError(error);
+        subscription.complete();
+      });
+
+      const throwErrorStream = () => createObservable(sub => {
+        sub.throwError('Err');
+        sub.complete();
+      });
+
+      obs
+        .chain(throwErrorStream)
+        .subscribe({
+          onError,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(0);
+            expect(onError).toBeCalledTimes(1);
+            expect(onError).toHaveBeenCalledWith(error);
+            done();
+          },
+        });
+    });
+  });
 });
 

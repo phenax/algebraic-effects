@@ -34,8 +34,23 @@
 
 **Observable**
   - [x] Implement observable monad to be used instead of Task monad
-  - [ ] Should end stream on error? (Probably not)
-  - [ ] Implement Task methods (+tap)
+  - [ ] Static methods
+    - [ ] of
+    - [ ] from
+    - [ ] range
+  - [ ] Implement Observable methods
+    - [x] Mapping - map, chain, catch
+    - [ ] Filter - filter, replace, ifElse
+    - [ ] Utils
+      - [ ] Delay
+      - [ ] Tap
+      - [ ] Repeat
+    - [ ] Combine
+      - [ ] merge
+      - [ ] race
+      - [ ] zip
+      - [ ] concat
+      - [ ] 
 
 **Add more effects ...**
   - [x] Exception
