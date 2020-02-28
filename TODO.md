@@ -35,9 +35,9 @@
 **Observable**
   - [x] Implement observable monad to be used instead of Task monad
   - [ ] Static methods
-    - [ ] of
-    - [ ] from
+    - [x] of
     - [ ] range
+    - [ ] from
   - [ ] Implement Observable methods
     - [x] Mapping - map, chain, catch
     - [ ] Filter - filter, replace, ifElse
@@ -50,7 +50,6 @@
       - [ ] race
       - [ ] zip
       - [ ] concat
-      - [ ] 
 
 **Add more effects ...**
   - [x] Exception

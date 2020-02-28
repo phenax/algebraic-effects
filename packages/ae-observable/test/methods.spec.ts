@@ -55,7 +55,7 @@ describe('Observable methods', () => {
       });
 
       obs
-        .fold(e => e + 10, x => x + 3)
+        .propagateTo(e => e + 10, x => x + 3)
         .subscribe({
           onError: done,
           onNext,
@@ -77,7 +77,10 @@ describe('Observable methods', () => {
       });
 
       obs
-        .fold(e => ({ error: e.message }), x => ({ str: x }))
+        .propagateTo(
+          e => ({ error: e.message }),
+          x => ({ str: x }),
+        )
         .subscribe({
           onError: done,
           onNext,

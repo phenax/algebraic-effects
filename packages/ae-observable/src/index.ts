@@ -22,17 +22,16 @@ export interface SubscribeOptions<E, V> {
 export type SubscribeFunction<E, V> = (optns: Partial<SubscribeOptions<E, V>>) => UnsubscribeFn|any;
 
 export interface ObservableInstance<E = any, V = any> {
-  chain: <F = any, T = any>(fn: (v: V) => ObservableInstance<F, T>) => ObservableInstance<E | F, T>;
+  chain: <F = any, T = any>(
+    fn: (v: V) => ObservableInstance<F, T>,
+  ) => ObservableInstance<E | F, T>;
   map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
-  fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => ObservableInstance<void, TE | TV>;
+  propagateTo: <TE = any, TV = TE>(
+    mapErr: (e: E) => TE,
+      mapVal: (v: V) => TV,
+  ) => ObservableInstance<void, TE | TV>;
 
   subscribe: SubscribeFunction<E, V>;
-
-  // resolveWith: <R = any>(value: R) => AlgebraicTask<void, R>,
-  // rejectWith: <F = any>(err: F) => AlgebraicTask<F, void>;
-  // empty: typeof Observable.Empty,
-
-  // toPromise: () => Promise<V>;
 };
 
 const Observable = <E = any, V = any>(
@@ -79,9 +78,6 @@ const Observable = <E = any, V = any>(
     return subscription;
   };
 
-  // const chain: AlgebraicTask<E, V>['chain'] = fn =>
-    // Observable((rej, res) => forkTask(rej, compose2(fork(rej, res), fn)));
-
   const extend = <E = any, V = any>(fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>>) =>
     Observable(sub => subscribe(fn({
       onNext: sub.next,
@@ -91,29 +87,18 @@ const Observable = <E = any, V = any>(
 
   return {
     subscribe,
-
     map: fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
     chain: fn => extend(options => ({
       ...options,
       onNext: compose2(o => o.subscribe({ ...options, onNext: options.onNext, onComplete: noop }), fn),
     })),
-    fold: (errFn, nextFn) => extend(options => ({
+    propagateTo: (errFn, nextFn) => extend(options => ({
       ...options,
       onError: compose2(options.onNext, errFn),
       onNext: compose2(options.onNext, nextFn),
     })),
   };
 };
-
-// Observable.;
-
-// Observable.Empty :: () -> Task
-// Observable.Empty = () => Observable(constant(null));
-
-// Observable.Resolved = <T = any>(data: T) => Observable<any, T>((_, resolve) => resolve(data));
-// Observable.Rejected = <E = any>(err: E) => Observable<E, any>(reject => reject(err));
-
-// Observable.of = Observable.Resolved;
 
 export const of = <T = any>(...items: T[]) => Observable(sub => {
   items.forEach(x => sub.next(x));
