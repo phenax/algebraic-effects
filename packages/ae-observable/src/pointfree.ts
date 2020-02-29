@@ -1,13 +1,10 @@
 import { pointfree, compose } from '@algebraic-effects/utils';
-import { AlgebraicTask } from '.';
+import { ObservableInstance } from '.';
 
-export const chain = pointfree<AlgebraicTask, 'chain'>('chain');
-export const map = pointfree<AlgebraicTask, 'map'>('map');
-export const mapRejected = pointfree<AlgebraicTask, 'mapRejected'>('mapRejected');
-export const fold = pointfree<AlgebraicTask, 'fold'>('fold');
-export const foldRejected = pointfree<AlgebraicTask, 'foldRejected'>('foldRejected');
-export const bimap = pointfree<AlgebraicTask, 'bimap'>('bimap');
-export const toPromise = pointfree<AlgebraicTask, 'toPromise'>('toPromise')();
-export const fork = pointfree<AlgebraicTask, 'fork'>('fork');
+export const chain = pointfree<ObservableInstance, 'chain'>('chain');
+export const map = pointfree<ObservableInstance, 'map'>('map');
+export const filter = pointfree<ObservableInstance, 'filter'>('filter');
+export const subscribe = pointfree<ObservableInstance, 'subscribe'>('subscribe');
+export const propagateTo = pointfree<ObservableInstance, 'propagateTo'>('propagateTo');
 
 export { compose };

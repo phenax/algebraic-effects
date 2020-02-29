@@ -50,9 +50,9 @@
       - [ ] Repeat
     - [ ] Combine
       - [ ] merge
-      - [ ] race
       - [ ] zip
       - [ ] concat
+      - [ ] race
 
 **Add more effects ...**
   - [x] Exception
