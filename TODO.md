@@ -46,6 +46,7 @@
       - [ ] ifElse
     - [ ] Utils
       - [ ] Delay
+      - [ ] Interval
       - [ ] Tap
       - [ ] Repeat
     - [ ] Combine

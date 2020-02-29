@@ -1,4 +1,4 @@
-import createObservable, { of, Subscription, range } from '../src';
+import createObservable, { of, Subscription, range, interval } from '../src';
 
 describe('Observable', () => {
   it('should subscribe to observable correctly', done => {
@@ -85,7 +85,7 @@ describe('Observable', () => {
     });
   });
 
-  describe('Observable.of', () => {
+  describe('of', () => {
     it('should create a stream of the set of arguments passed to of', done => {
       const onNext = jest.fn();
       const obs = of(1, 3, 5);
@@ -102,7 +102,7 @@ describe('Observable', () => {
     });
   });
 
-  describe('Observable.range', () => {
+  describe('range', () => {
     it('should create a stream with a range of numbers', done => {
       const onNext = jest.fn();
       const obs = range(7, 12);
@@ -113,6 +113,32 @@ describe('Observable', () => {
         onComplete: () => {
           expect(onNext).toBeCalledTimes(5);
           expect(onNext.mock.calls).toEqual([[7], [8], [9], [10], [11]]);
+          done();
+        },
+      });
+    });
+  });
+
+  describe('interval', () => {
+    it('should ping once every 100ms', done => {
+      const timers = [];
+      const obs = interval(100);
+
+      const onNext = jest.fn(() => {
+        if (timers.length >= 4) return sub.complete();
+        timers.push(Date.now());
+      });
+
+      const sub = obs.subscribe({
+        onError: done,
+        onNext,
+        onComplete: () => {
+          expect(onNext).toBeCalledTimes(5);
+
+          const [t1, t2, t3, t4] = timers;
+          expect(t2 - t1).toBeGreaterThanOrEqual(100);
+          expect(t3 - t2).toBeGreaterThanOrEqual(100);
+          expect(t4 - t3).toBeGreaterThanOrEqual(100);
           done();
         },
       });

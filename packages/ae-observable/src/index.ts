@@ -1,5 +1,6 @@
 import { compose2, identity, noop } from '@algebraic-effects/utils';
 import {ifElse} from '@algebraic-effects/utils/src';
+import {setTimeout} from 'timers';
 
 export interface Subscription<E = any, V = any> {
   readonly isCancelled: boolean;
@@ -113,6 +114,11 @@ export const range = (a: number, b: number) => Observable(sub => {
     sub.next(a + index);
   });
   sub.complete();
+});
+
+export const interval = (delay: number) => Observable(sub => {
+  const timer = setInterval(sub.next, delay, null);
+  return () => clearInterval(timer);
 });
 
 Observable.of = of;
