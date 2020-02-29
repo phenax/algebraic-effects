@@ -1,6 +1,4 @@
-import { compose2, identity, noop } from '@algebraic-effects/utils';
-import {ifElse, constant} from '@algebraic-effects/utils/src';
-import {setTimeout} from 'timers';
+import { compose2, identity, noop, ifElse } from '@algebraic-effects/utils';
 
 export interface Subscription<E = any, V = any> {
   readonly isCancelled: boolean;
@@ -28,6 +26,7 @@ export interface ObservableInstance<E = any, V = any> {
     fn: (v: V) => ObservableInstance<F, T>,
   ) => ObservableInstance<E | F, T>;
   map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
+  merge: <V1 = any>(obs: ObservableInstance<V1>) => ObservableInstance<E, V | V1>;
   filter: (fn: (a: V) => boolean) => ObservableInstance<E, R>;
   propagateTo: <TE = any, TV = TE>(
     mapErr: (e: E) => TE,
@@ -82,7 +81,9 @@ const createObservable = <E = any, V = any>(
     return subscription;
   };
 
-  const extend = <E = any, V = any>(fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>>) =>
+  const extend = <E = any, V = any>(
+    fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>> = identity
+  ) =>
     createObservable(sub => subscribe(fn({
       onNext: sub.next,
       onError: sub.throwError,
@@ -92,9 +93,36 @@ const createObservable = <E = any, V = any>(
   const map: ObservableInstance['map'] =
     fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) }));
 
+  const merge: ObservableInstance['merge'] = obs => createObservable(sub => {
+    let completionCount = 0;
+    const onComplete = () => {
+      completionCount++;
+      if (completionCount >= 2) {
+        sub.complete();
+      }
+    };
+
+    const unsub1 = subscribe({
+      onNext: sub.next,
+      onError: sub.throwError,
+      onComplete,
+    });
+    const unsub2 = obs.subscribe({
+      onNext: sub.next,
+      onError: sub.throwError,
+      onComplete,
+    });
+
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  });
+
   return {
     subscribe,
     map,
+    merge,
     tap: fn => map<V>((x: V) => {
       fn(x);
       return x;

@@ -222,5 +222,117 @@ describe('Observable methods', () => {
         });
     });
   });
+
+  describe('Observable#merge', () => {
+    const sort = (list: any[]) => list.map(x => `${x}`).sort().join(',');
+    
+    it('should merge the two in the stream', done => {
+      const onNext = jest.fn();
+
+      const stream1$ = of(1, 3, 5);
+      const stream2$ = of(4, 6);
+
+      stream1$
+        .merge(stream2$)
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(5);
+            expect(sort(onNext.mock.calls)).toBe('1,3,4,5,6');
+            done();
+          },
+        });
+    });
+
+    it('should merge the errors in the stream', done => {
+      const onError = jest.fn();
+      const onNext = jest.fn();
+
+      const obs = createObservable<number>((sub: Subscription) => {
+        sub.throwError(new Error('Whoa'));
+        sub.resolve('ok1');
+      });
+
+      const throwErrorStream = createObservable(sub => {
+        sub.throwError(new Error('Fuck'));
+        sub.throwError(new Error('Off'));
+        sub.resolve('ok2');
+      });
+
+      obs
+        .merge(throwErrorStream)
+        .subscribe({
+          onError,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(2);
+            expect(onError).toBeCalledTimes(3);
+            expect(sort(onError.mock.calls)).toBe('Error: Fuck,Error: Off,Error: Whoa');
+            expect(sort(onNext.mock.calls)).toBe('ok1,ok2');
+            done();
+          },
+        });
+    });
+
+    it('should complete only when both streams complete', done => {
+      const onError = jest.fn();
+      const onNext = jest.fn();
+
+      const stream$ = createObservable<number>((sub: Subscription) => {
+        sub.resolve('ok1');
+      });
+
+      const altStream$ = createObservable(sub => {
+        setTimeout(() => {
+          sub.resolve('ok2');
+        }, 105);
+      });
+
+      const startTime = Date.now();
+
+      stream$
+        .merge(altStream$)
+        .subscribe({
+          onError,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(2);
+            expect(onError).toBeCalledTimes(0);
+            expect(sort(onNext.mock.calls)).toBe('ok1,ok2');
+            expect(Date.now() - startTime).toBeGreaterThanOrEqual(100);
+            done();
+          },
+        });
+    });
+
+    it('should stop events from a stream after completion of that stream', done => {
+      const onNext = jest.fn();
+
+      const obs = createObservable<number>((sub: Subscription) => {
+        sub.resolve('ok1');
+        sub.next('not ok1');
+        sub.throwError('Fuck');
+      });
+
+      const throwErrorStream = createObservable(sub => {
+        sub.resolve('ok2');
+        sub.next('not ok2');
+        sub.throwError('Fuck');
+      });
+
+      obs
+        .merge(throwErrorStream)
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(2);
+            expect(sort(onNext.mock.calls)).toBe('ok1,ok2');
+            done();
+          },
+        });
+    });
+  });
 });
 

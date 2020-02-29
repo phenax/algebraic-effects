@@ -43,14 +43,15 @@
     - [ ] Filter
       - [x] filter
       - [ ] replace
-      - [ ] ifElse
+      - [ ] ifElse bi chain
     - [ ] Utils
       - [ ] Delay
+      - [ ] Take
       - [x] Interval
       - [x] Tap
       - [ ] Repeat
     - [ ] Combine
-      - [ ] merge
+      - [x] merge
       - [ ] zip
       - [ ] concat
       - [ ] race
