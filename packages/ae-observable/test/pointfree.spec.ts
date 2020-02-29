@@ -1,5 +1,5 @@
 import createObservable, { of, range, Subscription } from '../src';
-import { map, filter, chain, propagateTo, subscribe, compose } from '../src/pointfree';
+import { map, filter, chain, propagateTo, subscribe, compose, tap } from '../src/pointfree';
 
 describe('Observable pointfree functions', () => {
   describe('map', () => {
@@ -92,6 +92,39 @@ describe('Observable pointfree functions', () => {
           },
         }),
         chain(add10Stream),
+      )(stream$);
+    });
+  });
+
+  describe('tap', () => {
+    it('should allow executing a function for every event in the stream', done => {
+      const tapHandler = jest.fn();
+      const onNext = jest.fn();
+      const onError = jest.fn();
+
+      const error = new Error('Fuck');
+      const thrower = (n: number) => createObservable<number>((subscription: Subscription) => {
+        subscription.throwError(error);
+        subscription.next(n);
+        subscription.complete();
+      });
+
+      const stream$ = of(1, 2, 3, 4, 5);
+
+      compose(
+        subscribe({
+          onNext,
+          onError,
+          onComplete: () => {
+            expect(tapHandler).toBeCalledTimes(5);
+            expect(tapHandler.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
+            expect(onNext.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
+            expect(onError.mock.calls).toEqual(Array(5).fill([error]));
+            done();
+          },
+        }),
+        tap(tapHandler),
+        chain(thrower),
       )(stream$);
     });
   });

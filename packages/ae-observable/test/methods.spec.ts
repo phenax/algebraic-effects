@@ -194,7 +194,7 @@ describe('Observable methods', () => {
   });
 
   describe('Observable#tap', () => {
-    it('should allow executing a function for every event in the stream', () => {
+    it('should allow executing a function for every event in the stream', done => {
       const tapHandler = jest.fn();
       const onNext = jest.fn();
       const onError = jest.fn();
@@ -217,6 +217,7 @@ describe('Observable methods', () => {
             expect(tapHandler.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
             expect(onNext.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
             expect(onError.mock.calls).toEqual(Array(5).fill([error]));
+            done();
           },
         });
     });
