@@ -11,6 +11,7 @@ export declare const isArray: (a: any) => boolean;
 export declare const flatten: (arr: any[]) => any;
 export declare const identity: <T = any>(x: T) => T;
 export declare const constant: <T = any>(x: T) => () => T;
+export declare const ifElse: <T = any, R = any>(predicate: (x: T) => boolean, onTrue: (x: T) => R, onFalse: (x: T) => R) => (x: T) => R;
 export declare const noop: () => any;
 export interface Maybe<T = any> {
     map: <R = any>(fn: (x: T) => R) => Maybe<R>;

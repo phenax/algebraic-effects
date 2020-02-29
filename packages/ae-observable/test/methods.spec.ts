@@ -1,4 +1,5 @@
-import createObservable, { of, Subscription } from '../src';
+import createObservable, { of, range, Subscription } from '../src';
+import Observable from '../src';
 
 describe('Observable methods', () => {
   describe('Observable#map', () => {
@@ -36,6 +37,49 @@ describe('Observable methods', () => {
           onComplete: () => {
             expect(onNext).toBeCalledTimes(0);
             expect(onError).toBeCalledTimes(1);
+            expect(onError).toHaveBeenCalledWith(error);
+            done();
+          },
+        });
+    });
+  });
+
+  describe('Observable#filter', () => {
+    it('should filter all even numbers in the stream', done => {
+      const onNext = jest.fn();
+
+      range(0, 10)
+        .filter(x => x % 2 === 0)
+        .subscribe({
+          onError: done,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(5);
+            expect(onNext.mock.calls).toEqual([[0], [2], [4], [6], [8]]);
+            done();
+          },
+        });
+    });
+
+    it('should not map over the error in the stream (increment)', done => {
+      const onError = jest.fn();
+      const onNext = jest.fn();
+
+      const error = new Error('Fuck');
+      const appendThrow = x => Observable(sub => {
+        sub.throwError(error);
+        sub.resolve(x);
+      });
+
+      range(0, 10)
+        .chain(appendThrow)
+        .filter(x => x % 2 === 0)
+        .subscribe({
+          onError,
+          onNext,
+          onComplete: () => {
+            expect(onNext).toBeCalledTimes(5);
+            expect(onError).toBeCalledTimes(10);
             expect(onError).toHaveBeenCalledWith(error);
             done();
           },

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = exports.range = exports.of = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -45,6 +45,9 @@ var Observable = function Observable(taskFn) {
       },
 
       unsubscribe: function unsubscribe() {},
+      resolve: function resolve(x) {
+        return (0, _utils.compose2)(subscription.complete, subscription.next)(x);
+      },
       next: optns.onNext,
       throwError: optns.onError,
       complete: function complete(value) {
@@ -85,6 +88,13 @@ var Observable = function Observable(taskFn) {
         });
       });
     },
+    filter: function filter(fn) {
+      return extend(function (options) {
+        return _objectSpread({}, options, {
+          onNext: (0, _utils.compose2)(options.onNext, fn)
+        });
+      });
+    },
     chain: function chain(fn) {
       return extend(function (options) {
         return _objectSpread({}, options, {
@@ -97,7 +107,7 @@ var Observable = function Observable(taskFn) {
         });
       });
     },
-    fold: function fold(errFn, nextFn) {
+    propagateTo: function propagateTo(errFn, nextFn) {
       return extend(function (options) {
         return _objectSpread({}, options, {
           onError: (0, _utils.compose2)(options.onNext, errFn),
@@ -108,5 +118,31 @@ var Observable = function Observable(taskFn) {
   };
 };
 
+var of = function of() {
+  for (var _len = arguments.length, items = new Array(_len), _key = 0; _key < _len; _key++) {
+    items[_key] = arguments[_key];
+  }
+
+  return Observable(function (sub) {
+    items.forEach(function (x) {
+      return sub.next(x);
+    });
+    sub.complete();
+  });
+};
+
+exports.of = of;
+
+var range = function range(a, b) {
+  return Observable(function (sub) {
+    Array(b - a).fill(null).forEach(function (_, index) {
+      sub.next(a + index);
+    });
+    sub.complete();
+  });
+};
+
+exports.range = range;
+Observable.of = of;
 var _default = Observable;
 exports["default"] = _default;

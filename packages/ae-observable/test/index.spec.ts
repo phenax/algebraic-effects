@@ -1,4 +1,4 @@
-import createObservable, { of, Subscription } from '../src';
+import createObservable, { of, Subscription, range } from '../src';
 
 describe('Observable', () => {
   it('should subscribe to observable correctly', done => {
@@ -96,6 +96,23 @@ describe('Observable', () => {
         onComplete: () => {
           expect(onNext).toBeCalledTimes(3);
           expect(onNext.mock.calls).toEqual([[1], [3], [5]]);
+          done();
+        },
+      });
+    });
+  });
+
+  describe('Observable.range', () => {
+    it('should create a stream with a range of numbers', done => {
+      const onNext = jest.fn();
+      const obs = range(7, 12);
+
+      obs.subscribe({
+        onError: done,
+        onNext,
+        onComplete: () => {
+          expect(onNext).toBeCalledTimes(5);
+          expect(onNext.mock.calls).toEqual([[7], [8], [9], [10], [11]]);
           done();
         },
       });

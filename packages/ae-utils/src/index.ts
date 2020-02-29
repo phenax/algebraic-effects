@@ -39,6 +39,13 @@ export const identity = <T = any>(x: T): T => x;
 
 export const constant = <T = any>(x: T) => (): T => x;
 
+export const ifElse = <T = any, R = any>(
+  predicate: (x: T) => boolean,
+  onTrue: (x: T) => R,
+  onFalse: (x: T) => R,
+) => (x: T) =>
+  predicate(x) ? onTrue(x) : onFalse(x);
+
 export const noop = constant(undefined);
 
 export interface Maybe<T = any> {

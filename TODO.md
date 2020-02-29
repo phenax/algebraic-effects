@@ -36,11 +36,14 @@
   - [x] Implement observable monad to be used instead of Task monad
   - [ ] Static methods
     - [x] of
-    - [ ] range
+    - [x] range
     - [ ] from
   - [ ] Implement Observable methods
     - [x] Mapping - map, chain, catch
-    - [ ] Filter - filter, replace, ifElse
+    - [ ] Filter
+      - [x] filter
+      - [ ] replace
+      - [ ] ifElse
     - [ ] Utils
       - [ ] Delay
       - [ ] Tap

@@ -1,4 +1,5 @@
 import { compose2, identity, noop } from '@algebraic-effects/utils';
+import {ifElse} from '@algebraic-effects/utils/src';
 
 export interface Subscription<E = any, V = any> {
   readonly isCancelled: boolean;
@@ -26,6 +27,7 @@ export interface ObservableInstance<E = any, V = any> {
     fn: (v: V) => ObservableInstance<F, T>,
   ) => ObservableInstance<E | F, T>;
   map: <R = any>(fn: (a: V) => R) => ObservableInstance<E, R>;
+  filter: (fn: (a: V) => boolean) => ObservableInstance<E, R>;
   propagateTo: <TE = any, TV = TE>(
     mapErr: (e: E) => TE,
       mapVal: (v: V) => TV,
@@ -88,6 +90,7 @@ const Observable = <E = any, V = any>(
   return {
     subscribe,
     map: fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
+    filter: fn => extend(options => ({ ...options, onNext: ifElse(fn, options.onNext, noop) })),
     chain: fn => extend(options => ({
       ...options,
       onNext: compose2(o => o.subscribe({ ...options, onNext: options.onNext, onComplete: noop }), fn),
@@ -102,6 +105,13 @@ const Observable = <E = any, V = any>(
 
 export const of = <T = any>(...items: T[]) => Observable(sub => {
   items.forEach(x => sub.next(x));
+  sub.complete();
+});
+
+export const range = (a: number, b: number) => Observable(sub => {
+  Array(b - a).fill(null).forEach((_, index) => {
+    sub.next(a + index);
+  });
   sub.complete();
 });
 
