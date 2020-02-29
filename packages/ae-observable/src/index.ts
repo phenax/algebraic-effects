@@ -1,5 +1,5 @@
 import { compose2, identity, noop } from '@algebraic-effects/utils';
-import {ifElse} from '@algebraic-effects/utils/src';
+import {ifElse, constant} from '@algebraic-effects/utils/src';
 import {setTimeout} from 'timers';
 
 export interface Subscription<E = any, V = any> {
@@ -33,11 +33,12 @@ export interface ObservableInstance<E = any, V = any> {
     mapErr: (e: E) => TE,
       mapVal: (v: V) => TV,
   ) => ObservableInstance<void, TE | TV>;
+  tap: (fn: (a: V) => any) => ObservableInstance<E, V>;
 
   subscribe: SubscribeFunction<E, V>;
 };
 
-const Observable = <E = any, V = any>(
+const createObservable = <E = any, V = any>(
   taskFn: (subscription: Subscription) => any
 ): ObservableInstance<E, V> => {
   const subscribe: ObservableInstance<E, V>['subscribe'] = function(options) {
@@ -82,16 +83,26 @@ const Observable = <E = any, V = any>(
   };
 
   const extend = <E = any, V = any>(fn: (o: SubscribeOptions<E, V>) => Partial<SubscribeOptions<any, any>>) =>
-    Observable(sub => subscribe(fn({
+    createObservable(sub => subscribe(fn({
       onNext: sub.next,
       onError: sub.throwError,
       onComplete: (_: any, x: any) => sub.complete(x),
     })).unsubscribe);
 
+  const map: ObservableInstance['map'] =
+    fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) }));
+
   return {
     subscribe,
-    map: fn => extend(options => ({ ...options, onNext: compose2(options.onNext, fn) })),
-    filter: fn => extend(options => ({ ...options, onNext: ifElse(fn, options.onNext, noop) })),
+    map,
+    tap: fn => map<V>((x: V) => {
+      fn(x);
+      return x;
+    }),
+    filter: fn => extend(options => ({
+      ...options,
+      onNext: ifElse(fn, options.onNext, noop),
+    })),
     chain: fn => extend(options => ({
       ...options,
       onNext: compose2(o => o.subscribe({ ...options, onNext: options.onNext, onComplete: noop }), fn),
@@ -104,24 +115,22 @@ const Observable = <E = any, V = any>(
   };
 };
 
-export const of = <T = any>(...items: T[]) => Observable(sub => {
+export const of = <T = any>(...items: T[]) => createObservable(sub => {
   items.forEach(x => sub.next(x));
   sub.complete();
 });
 
-export const range = (a: number, b: number) => Observable(sub => {
+export const range = (a: number, b: number) => createObservable(sub => {
   Array(b - a).fill(null).forEach((_, index) => {
     sub.next(a + index);
   });
   sub.complete();
 });
 
-export const interval = (delay: number) => Observable(sub => {
+export const interval = (delay: number) => createObservable(sub => {
   const timer = setInterval(sub.next, delay, null);
   return () => clearInterval(timer);
 });
 
-Observable.of = of;
-
-export default Observable;
+export default createObservable;
 

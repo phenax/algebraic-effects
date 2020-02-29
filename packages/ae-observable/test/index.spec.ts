@@ -122,7 +122,7 @@ describe('Observable', () => {
   describe('interval', () => {
     it('should ping once every 100ms', done => {
       const timers = [];
-      const obs = interval(100);
+      const obs = interval(105); // 5ms more to prevent +-5 threshold errors
 
       const onNext = jest.fn(() => {
         if (timers.length >= 4) return sub.complete();

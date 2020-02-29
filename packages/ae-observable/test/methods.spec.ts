@@ -1,5 +1,4 @@
 import createObservable, { of, range, Subscription } from '../src';
-import Observable from '../src';
 
 describe('Observable methods', () => {
   describe('Observable#map', () => {
@@ -66,7 +65,7 @@ describe('Observable methods', () => {
       const onNext = jest.fn();
 
       const error = new Error('Fuck');
-      const appendThrow = x => Observable(sub => {
+      const appendThrow = x => createObservable(sub => {
         sub.throwError(error);
         sub.resolve(x);
       });
@@ -189,6 +188,35 @@ describe('Observable methods', () => {
             expect(onError).toBeCalledTimes(1);
             expect(onError).toHaveBeenCalledWith(error);
             done();
+          },
+        });
+    });
+  });
+
+  describe('Observable#tap', () => {
+    it('should allow executing a function for every event in the stream', () => {
+      const tapHandler = jest.fn();
+      const onNext = jest.fn();
+      const onError = jest.fn();
+
+      const error = new Error('Fuck');
+      const thrower = (n: number) => createObservable<number>((subscription: Subscription) => {
+        subscription.throwError(error);
+        subscription.next(n);
+        subscription.complete();
+      });
+
+      of(1, 2, 3, 4, 5)
+        .chain(thrower)
+        .tap(tapHandler)
+        .subscribe({
+          onNext,
+          onError,
+          onComplete: () => {
+            expect(tapHandler).toBeCalledTimes(5);
+            expect(tapHandler.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
+            expect(onNext.mock.calls).toEqual([[1], [2], [3], [4], [5]]);
+            expect(onError.mock.calls).toEqual(Array(5).fill([error]));
           },
         });
     });
