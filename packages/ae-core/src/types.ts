@@ -26,13 +26,15 @@ export interface Operation<Args extends Array<any> = any[], Ret = any> {
   toString(): string;
 };
 
-export interface Program<Args extends Array<any> = any[]> {
-  (...args: Args): ProgramIterator<OperationValue>;
-};
+export type Program<Args extends Array<any> = any[]> =
+  | ((...args: Args) => ProgramIterator<OperationValue>)
+  | Generator<OperationValue<any, any>, any, any>;
 
 export interface OperationOptions {
   isMulti?: boolean;
 }
+
+export type ProgramParams<P> = P extends Function ? Parameters<P> : any[];
 
 export interface FlowOperators {
   resume(v: any): any;
@@ -40,8 +42,8 @@ export interface FlowOperators {
   end(v: any): any;
   cancel(...args: any[]): any;
   promise(p: Promise<any>): any;
-  call(program: Program): any;
-  callMulti(program: Program): any;
+  call(program: Program, ...args: ProgramParams<Program>): any;
+  callMulti(program: Program, ...args: ProgramParams<Program>): any;
 }
 
 export type OperationSignature =
@@ -53,24 +55,24 @@ export interface OperationBehavior<Args extends Array<any> = any[]> {
 
 export type TaskWithCancel = AlgebraicTask & { isCancelled?: boolean };
 
-export interface HandlerInstance {
-  (...args: any[]): TaskWithCancel;
+export interface HandlerInstance<Args extends any[] = any[]> {
+  (...args: Args): TaskWithCancel;
   effectName: string;
   handlers: Record<string, OperationBehavior>;
   $$type: SymbolObject;
   concat: (x: HandlerInstance) => HandlerInstance;
   with: (x: HandlerInstance | Record<string, OperationBehavior>) => HandlerInstance;
-  run: HandlerInstance;
-  runMulti: (...args: any[]) => TaskWithCancel;
+  run: HandlerInstance<Args>;
+  runMulti: (...args: Args) => TaskWithCancel;
 }
 
-export type HandlerMap<T extends string = string> = Record<T, OperationBehavior>;
-export type OperationMap<T extends string = string> = Record<T, OperationSignature>;
+export type HandlerMap<T extends string|symbol|number = string> = Record<T, OperationBehavior>;
+export type OperationMap<T extends string|symbol|number = string> = Record<T, OperationSignature>;
 
-export type Effect<T extends string = string> = Record<keyof T, Operation> & {
+export interface Effect<T = {}> {
   name: string;
-  operations: OperationMap;
-  handler: (handlers: HandlerMap) => HandlerInstance,
+  operations: OperationMap<keyof T>;
+  handler: (handlers: HandlerMap<keyof T>) => HandlerInstance,
   extendAs: (newName: string, newOps?: OperationMap) => Effect,
-}
+};
 

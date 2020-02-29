@@ -1,0 +1,18 @@
+import State, { state } from '@algebraic-effects/effects/State';
+
+function *readChunked(filename) {
+  const chunk = yield FileIO.readChunk(filename);
+  yield State.update(s => [...s, chunk.toString() + 'wowo']);
+  return yield State.get();
+}
+
+state([])
+  .with(FileIO.handle({
+    readChunk: ({ promise }) => file => promise(getChunk(file)),
+  }))
+  .runMulti(readChunk, 'filslkds.json')
+  .fork({
+    Resolved: () => {},
+    Rejected: () => {},
+  });
+

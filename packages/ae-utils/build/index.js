@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.maybe = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
+exports.maybe = exports.noop = exports.ifElse = exports.constant = exports.identity = exports.flatten = exports.isArray = exports.compose2 = exports.compose = exports.pointfree = exports.isGenerator = exports.createSymbol = exports.createSymbolObject = void 0;
 var symbolObjectPool = {};
 
 var createSymbolObject = function createSymbolObject(name) {
@@ -29,7 +29,10 @@ exports.isGenerator = isGenerator;
 
 var pointfree = function pointfree(methodName) {
   return function () {
-    var args = arguments;
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
     return function (x) {
       return x[methodName].apply(x, args);
     };
@@ -39,9 +42,13 @@ var pointfree = function pointfree(methodName) {
 exports.pointfree = pointfree;
 
 var compose = function compose() {
-  return [].slice.apply(arguments).reduce(function (a, b) {
-    return function () {
-      return a(b.apply(void 0, arguments));
+  for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    args[_key2] = arguments[_key2];
+  }
+
+  return args.reduce(function (a, b) {
+    return function (x) {
+      return a(b(x));
     };
   });
 };
@@ -81,6 +88,16 @@ var constant = function constant(x) {
 };
 
 exports.constant = constant;
+
+var ifElse = function ifElse(predicate, onTrue, onFalse) {
+  return function (x) {
+    return predicate(x) ? onTrue(x) : onFalse(x);
+  };
+};
+
+exports.ifElse = ifElse;
+var noop = constant(undefined);
+exports.noop = noop;
 ;
 var maybe = {
   just: function just(x) {

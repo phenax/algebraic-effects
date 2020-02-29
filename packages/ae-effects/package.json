@@ -3,6 +3,9 @@
   "version": "0.0.5-alpha.1",
   "description": "Common effects for working with algebraic effects",
   "main": "index.js",
+  "buildOptions": {
+    "outPath": "."
+  },
   "repository": "https://github.com/phenax/algebraic-effects",
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",

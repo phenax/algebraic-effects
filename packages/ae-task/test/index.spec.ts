@@ -1,16 +1,19 @@
 
-import Task from '../src';
+import Task, { AlgebraicTask } from '../src';
 import { resolveAfter } from '../src/fns';
 
-const delay = (duration, cancel = clearTimeout) => Task((reject, resolve) => {
-  const timerid = setTimeout(() => resolve(), duration);
+// @ts-ignore
+const Promise = window.Promise;
+
+const delay = (duration: number, cancel = clearTimeout) => Task((_, resolve) => {
+  const timerid = setTimeout(() => resolve(1), duration);
   return () => cancel && cancel(timerid);
 });
 
 describe('Task', () => {
   describe('Task.fromPromise', () => {
     it('should convert a rejected promise factory into a task (with args)', done => {
-      Task.fromPromise(n => Promise.resolve(5 + n), 5)
+      Task.fromPromise((n: number) => Promise.resolve(5 + n), 5)
         .fork(done, (n) => {
           expect(n).toBe(10);
           done();
@@ -36,7 +39,8 @@ describe('Task', () => {
     });
 
     it('should ignore previous operations and reject with value', done => {
-      const t = Task.Rejected(5).map(x => x * 2).mapRejected(x => x * 5).rejectWith(4);
+      const randomTask = Task.Rejected(5);
+      const t = randomTask.map(_ => 10).mapRejected(x => x * 5).rejectWith(4);
       t.fork(n => {
         expect(n).toBe(4);
         done();
@@ -63,7 +67,8 @@ describe('Task', () => {
   });
 
   describe('#fold', () => {
-    const foldToObj = t => t.fold(error => ({ error }), value => ({ value }));
+    const foldToObj = (t: AlgebraicTask<Error, any>) =>
+      t.fold((error: Error) => ({ error, value: undefined }), (value: number) => ({ error: undefined, value }));
 
     it('should group both rejected and resolved response to one', done => {
       foldToObj(Task.of(5)).fork(done, ({ error, value }) => {
@@ -155,6 +160,8 @@ describe('Task', () => {
     });
 
     it('should throw error if result is not a task', () => {
+      // Typescript will break here. Ignoring ts for runtime behavior
+      // @ts-ignore
       const t = Task.of(5).chain(x => 2 * x);
       expect(() => t.fork(() => {}, () => {})).toThrowError();
     });
@@ -207,12 +214,15 @@ describe('Task', () => {
   describe('Timeout example (integrated test)', () => {
     it('should delay (combination test of map, chain and fork)', done => {
       const start = Date.now();
+      // TODO: Fix fork options error
       delay(100)
         .map(() => 100)
         .map(n => n + 50)
         .chain(delay)
         .map(() => 10)
         .fork({
+          Cancelled: () => null,
+          Rejected: () => null,
           Resolved: x => {
             expect(x).toBe(10);
             expect(Date.now() - start).toBeGreaterThanOrEqual(200);
@@ -248,16 +258,16 @@ describe('Task', () => {
 
   describe('Cancellation', () => {
     it('should cancel task', done => {
-      const cancel = resolveAfter(50).fork(done, () => done('shouldnt have reached here'));
+      const cancel = resolveAfter(50, {}).fork(done, () => done('shouldnt have reached here'));
       cancel();
       setTimeout(() => done(), 150);
     });
 
     it('should cancel task and allow handling cancellation', done => {
-      const cancel = resolveAfter(50).fork({
+      const cancel = resolveAfter(50, {}).fork({
         Rejected: done,
+        Cancelled: done,
         Resolved: () => done('shouldnt have reached here'),
-        Cancelled: () => done(),
       });
 
       cancel();
@@ -268,8 +278,8 @@ describe('Task', () => {
 
       task.fork({
         Rejected: done,
+        Cancelled: done,
         Resolved: () => done('shouldnt have reached here'),
-        Cancelled: () => done(),
       });
     });
   });

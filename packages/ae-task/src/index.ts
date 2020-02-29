@@ -11,11 +11,11 @@ export interface ForkOptions<E, V> {
   Cancelled?: CancelFn;
 };
 export type ForkFunction<E, V> =
-  | ((rej: RejectFn<E>, res: ResolveFn<V>, c?: CancelFn) => CancelFn)
+  | ((rej?: RejectFn<E>, res?: ResolveFn<V>, c?: CancelFn) => CancelFn)
   | ((optns: ForkOptions<E, V>) => CancelFn);
 
 export interface AlgebraicTask<E = any, V = any> {
-  chain: <F = any, T = any>(fn: (v: V) => AlgebraicTask<F, T>) => AlgebraicTask<F, T>;
+  chain: <F = any, T = any>(fn: (v: V) => AlgebraicTask<F, T>) => AlgebraicTask<E | F, T>;
 
   map: <R = any>(fn: (a: V) => R) => AlgebraicTask<E, R>;
   mapRejected: <F = any>(fn: (e: E) => F) => AlgebraicTask<F, V>;
@@ -27,7 +27,7 @@ export interface AlgebraicTask<E = any, V = any> {
   fold: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => AlgebraicTask<void, TE | TV>;
   foldRejected: <TE = any, TV = TE>(mapErr: (e: E) => TE, mapVal: (v: V) => TV) => AlgebraicTask<TE | TV, void>;
 
-  fork: ForkFunction<any, any>;
+  fork: ForkFunction<E, V>;
 
   resolveWith: <R = any>(value: R) => AlgebraicTask<void, R>,
   rejectWith: <F = any>(err: F) => AlgebraicTask<F, void>;
@@ -115,16 +115,17 @@ const Task = <E = any, V = any>(
 // Task.Empty :: () -> Task
 Task.Empty = () => Task(constant(null));
 
-Task.Resolved = <T = any>(data: T) => Task<void, T>((_, resolve) => resolve(data));
-Task.Rejected = <E = any>(err: E) => Task<E, void>(reject => reject(err));
+Task.Resolved = <T = any>(data: T) => Task<any, T>((_, resolve) => resolve(data));
+Task.Rejected = <E = any>(err: E) => Task<E, any>(reject => reject(err));
 
 Task.of = Task.Resolved;
 
-Task.fromPromise = function<E, T>(factory: (...a: any[]) => Promise<T>): AlgebraicTask<E, T> {
-  const args = arguments;
-
+Task.fromPromise = function<E, T, Args extends any[] = any[]>(
+  factory: (...a: Args) => Promise<T>,
+  ...args: Args
+): AlgebraicTask<E, T> {
   return Task((rej, res) =>
-    factory.apply(null, [].slice.call(args, 1))
+    factory.apply(null, args)
       .then(res)
       .catch(rej));
 };

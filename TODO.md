@@ -33,7 +33,28 @@
   - [x] Allow cancellation from within
 
 **Observable**
-  - [ ] Implement observable monad to be used instead of Task monad
+  - [x] Implement observable monad to be used instead of Task monad
+  - [ ] Static methods
+    - [x] of
+    - [x] range
+    - [ ] from
+  - [ ] Implement Observable methods
+    - [x] Mapping - map, chain, catch
+    - [ ] Filter
+      - [x] filter
+      - [ ] replace
+      - [ ] ifElse bi chain
+    - [ ] Utils
+      - [ ] Delay
+      - [ ] Take
+      - [x] Interval
+      - [x] Tap
+      - [ ] Repeat
+    - [ ] Combine
+      - [x] merge
+      - [ ] zip
+      - [ ] concat
+      - [ ] race
 
 **Add more effects ...**
   - [x] Exception

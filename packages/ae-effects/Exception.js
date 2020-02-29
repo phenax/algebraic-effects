@@ -3,19 +3,18 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = exports.tryCatch = void 0;
 
 var _core = require("@algebraic-effects/core");
 
-// Exception :: Effect
 var Exception = (0, _core.createEffect)('Exception', {
   "throw": (0, _core.func)(['error'])
-}); // Exception.try :: Runner
-
-Exception["try"] = Exception.handler({
+});
+var tryCatch = Exception.handler({
   "throw": function _throw(o) {
     return o.throwError;
   }
 });
+exports.tryCatch = tryCatch;
 var _default = Exception;
 exports["default"] = _default;

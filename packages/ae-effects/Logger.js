@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = exports.fromConsole = void 0;
 
 var _core = require("@algebraic-effects/core");
 
@@ -15,10 +15,10 @@ var Logger = (0, _core.createEffect)('Logger', {
   warn: (0, _core.func)(['e'])
 });
 
-Logger.from = function (loggerInterface) {
+var fromConsole = function fromConsole(consoleInterface) {
   var noop = function noop() {};
 
-  var logger = loggerInterface || {
+  var logger = consoleInterface || {
     log: function log(_, d) {
       return d;
     },
@@ -56,5 +56,6 @@ Logger.from = function (loggerInterface) {
   });
 };
 
+exports.fromConsole = fromConsole;
 var _default = Logger;
 exports["default"] = _default;
