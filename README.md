@@ -7,6 +7,8 @@ Manage your effects in a pure and composible way using algebraic effects with mu
 [![Codecov](https://img.shields.io/codecov/c/github/phenax/algebraic-effects.svg?style=for-the-badge)](https://codecov.io/gh/phenax/algebraic-effects)
 
 
+<a href="https://liberapay.com/phenax/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+
 [Documentation](https://phenax.github.io/algebraic-effects)
 
 
