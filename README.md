@@ -8,6 +8,7 @@ Manage your effects in a pure and composible way using algebraic effects with mu
 
 
 <a href="https://liberapay.com/phenax/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+<a href="https://www.buymeacoffee.com/phenax"><img src="https://img.shields.io/badge/buy%20me%20a%20coffee-yellow.svg?style=for-the-badge" alt="Buy Me A Coffee donate button" /></a>
 
 [Documentation](https://phenax.github.io/algebraic-effects)
 
