@@ -1,15 +1,10 @@
-declare const Logger: Record<"error" | "message" | "log" | "info" | "warn", import("@algebraic-effects/core/types").Operation<any[], any>> & {
-    name: string;
-    operations: Record<string, import("@algebraic-effects/core/types").OperationSignature>;
-    handler: (handlers: Record<string, import("@algebraic-effects/core/types").OperationBehavior<any[]>>) => import("@algebraic-effects/core/types").HandlerInstance<any[]>;
-    extendAs: (newName: string, newOps?: Record<string, import("@algebraic-effects/core/types").OperationSignature>) => import("@algebraic-effects/core").Effect<string>;
-} & {
+declare const Logger: import("@algebraic-effects/core").Effect<{
     log: unknown;
     message: unknown;
     info: unknown;
     error: unknown;
     warn: unknown;
-};
+}> & Record<"error" | "message" | "log" | "info" | "warn", import("@algebraic-effects/core/types").OperationBehavior<any[]>>;
 export interface ConsoleInterface {
     log: (...x: any[]) => any;
     error: (e: any) => any;

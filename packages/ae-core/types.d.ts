@@ -20,20 +20,19 @@ export interface Operation<Args extends Array<any> = any[], Ret = any> {
     (...args: Args): OperationValue<Args, Ret>;
     toString(): string;
 }
-export interface Program<Args extends Array<any> = any[]> {
-    (...args: Args): ProgramIterator<OperationValue>;
-}
+export declare type Program<Args extends Array<any> = any[]> = ((...args: Args) => ProgramIterator<OperationValue>) | Generator<OperationValue<any, any>, any, any>;
 export interface OperationOptions {
     isMulti?: boolean;
 }
+export declare type ProgramParams<P> = P extends Function ? Parameters<P> : any[];
 export interface FlowOperators {
     resume(v: any): any;
     throwError(e: any): any;
     end(v: any): any;
     cancel(...args: any[]): any;
     promise(p: Promise<any>): any;
-    call(program: Program): any;
-    callMulti(program: Program): any;
+    call(program: Program, ...args: ProgramParams<Program>): any;
+    callMulti(program: Program, ...args: ProgramParams<Program>): any;
 }
 export declare type OperationSignature = [Array<string> | undefined, string | undefined, OperationOptions | undefined];
 export interface OperationBehavior<Args extends Array<any> = any[]> {
@@ -52,11 +51,11 @@ export interface HandlerInstance<Args extends any[] = any[]> {
     run: HandlerInstance<Args>;
     runMulti: (...args: Args) => TaskWithCancel;
 }
-export declare type HandlerMap<T extends string = string> = Record<T, OperationBehavior>;
-export declare type OperationMap<T extends string = string> = Record<T, OperationSignature>;
-export declare type Effect<T extends string = string> = Record<keyof T, Operation> & {
+export declare type HandlerMap<T extends string | symbol | number = string> = Record<T, OperationBehavior>;
+export declare type OperationMap<T extends string | symbol | number = string> = Record<T, OperationSignature>;
+export interface Effect<T = {}> {
     name: string;
-    operations: OperationMap;
-    handler: (handlers: HandlerMap) => HandlerInstance;
+    operations: OperationMap<keyof T>;
+    handler: (handlers: HandlerMap<keyof T>) => HandlerInstance;
     extendAs: (newName: string, newOps?: OperationMap) => Effect;
-};
+}

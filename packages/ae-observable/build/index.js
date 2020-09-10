@@ -82,7 +82,7 @@ var createObservable = function createObservable(taskFn) {
 
   var map = function map(fn) {
     return extend(function (options) {
-      return _objectSpread({}, options, {
+      return _objectSpread(_objectSpread({}, options), {}, {
         onNext: (0, _utils.compose2)(options.onNext, fn)
       });
     });
@@ -129,16 +129,16 @@ var createObservable = function createObservable(taskFn) {
     },
     filter: function filter(fn) {
       return extend(function (options) {
-        return _objectSpread({}, options, {
+        return _objectSpread(_objectSpread({}, options), {}, {
           onNext: (0, _utils.ifElse)(fn, options.onNext, _utils.noop)
         });
       });
     },
     chain: function chain(fn) {
       return extend(function (options) {
-        return _objectSpread({}, options, {
+        return _objectSpread(_objectSpread({}, options), {}, {
           onNext: (0, _utils.compose2)(function (o) {
-            return o.subscribe(_objectSpread({}, options, {
+            return o.subscribe(_objectSpread(_objectSpread({}, options), {}, {
               onNext: options.onNext,
               onComplete: _utils.noop
             }));
@@ -148,7 +148,7 @@ var createObservable = function createObservable(taskFn) {
     },
     propagateTo: function propagateTo(errFn, nextFn) {
       return extend(function (options) {
-        return _objectSpread({}, options, {
+        return _objectSpread(_objectSpread({}, options), {}, {
           onError: (0, _utils.compose2)(options.onNext, errFn),
           onNext: (0, _utils.compose2)(options.onNext, nextFn)
         });

@@ -19,5 +19,5 @@ export interface Maybe<T = any> {
 }
 export declare const maybe: {
     just: <T>(x: T) => Maybe<T>;
-    nothing: () => Maybe<any>;
+    nothing: () => Maybe;
 };
