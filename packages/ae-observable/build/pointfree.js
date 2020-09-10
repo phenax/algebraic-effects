@@ -9,7 +9,7 @@ Object.defineProperty(exports, "compose", {
     return _utils.compose;
   }
 });
-exports.fork = exports.toPromise = exports.bimap = exports.foldRejected = exports.fold = exports.mapRejected = exports.map = exports.chain = void 0;
+exports.propagateTo = exports.subscribe = exports.filter = exports.tap = exports.map = exports.chain = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -17,15 +17,11 @@ var chain = (0, _utils.pointfree)('chain');
 exports.chain = chain;
 var map = (0, _utils.pointfree)('map');
 exports.map = map;
-var mapRejected = (0, _utils.pointfree)('mapRejected');
-exports.mapRejected = mapRejected;
-var fold = (0, _utils.pointfree)('fold');
-exports.fold = fold;
-var foldRejected = (0, _utils.pointfree)('foldRejected');
-exports.foldRejected = foldRejected;
-var bimap = (0, _utils.pointfree)('bimap');
-exports.bimap = bimap;
-var toPromise = (0, _utils.pointfree)('toPromise')();
-exports.toPromise = toPromise;
-var fork = (0, _utils.pointfree)('fork');
-exports.fork = fork;
+var tap = (0, _utils.pointfree)('tap');
+exports.tap = tap;
+var filter = (0, _utils.pointfree)('filter');
+exports.filter = filter;
+var subscribe = (0, _utils.pointfree)('subscribe');
+exports.subscribe = subscribe;
+var propagateTo = (0, _utils.pointfree)('propagateTo');
+exports.propagateTo = propagateTo;

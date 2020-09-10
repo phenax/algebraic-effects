@@ -43,18 +43,6 @@ describe('createEffect', () => {
           done();
         }, () => done('Shoundt have ben called'));
     });
-
-    it('should reject task for invalid program', done => {
-      const notAGenerator = () => {};
-
-      const callProgram = jest.fn(() =>
-        ApiEffect.handler({ fetch: () => () => {} })
-          .run(notAGenerator)
-          .fork(() => {}, () => {}));
-
-      expect(callProgram).toThrowError();
-      done();
-    });
   });
 
   describe('createRunner#with & createRunner#concat', () => {

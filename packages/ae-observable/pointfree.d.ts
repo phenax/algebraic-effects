@@ -1,10 +1,9 @@
 import { compose } from '@algebraic-effects/utils';
-export declare const chain: (...args: unknown[]) => (x: any) => any;
-export declare const map: (...args: unknown[]) => (x: any) => any;
-export declare const mapRejected: (...args: unknown[]) => (x: any) => any;
-export declare const fold: (...args: unknown[]) => (x: any) => any;
-export declare const foldRejected: (...args: unknown[]) => (x: any) => any;
-export declare const bimap: (...args: unknown[]) => (x: any) => any;
-export declare const toPromise: (x: any) => any;
-export declare const fork: (...args: unknown[]) => (x: any) => any;
+import { ObservableInstance } from '.';
+export declare const chain: (fn: (v: any) => ObservableInstance<unknown, unknown>) => (x: ObservableInstance<any, any>) => ObservableInstance<any, unknown>;
+export declare const map: (fn: (a: any) => unknown) => (x: ObservableInstance<any, any>) => ObservableInstance<any, unknown>;
+export declare const tap: (fn: (a: any) => any) => (x: ObservableInstance<any, any>) => ObservableInstance<any, any>;
+export declare const filter: (fn: (a: any) => boolean) => (x: ObservableInstance<any, any>) => ObservableInstance<any, any>;
+export declare const subscribe: (optns: Partial<import(".").SubscribeOptions<any, any>>) => (x: ObservableInstance<any, any>) => any;
+export declare const propagateTo: (mapErr: (e: any) => unknown, mapVal: (v: any) => unknown) => (x: ObservableInstance<any, any>) => ObservableInstance<void, unknown>;
 export { compose };

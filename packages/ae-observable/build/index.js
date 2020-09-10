@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.range = exports.of = void 0;
+exports["default"] = exports.interval = exports.range = exports.of = void 0;
 
 var _utils = require("@algebraic-effects/utils");
 
@@ -18,7 +18,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 ;
 ;
 
-var Observable = function Observable(taskFn) {
+var createObservable = function createObservable(taskFn) {
   var subscribe = function subscribe(options) {
     var isCancelled = false;
     var isComplete = false;
@@ -67,8 +67,9 @@ var Observable = function Observable(taskFn) {
     return subscription;
   };
 
-  var extend = function extend(fn) {
-    return Observable(function (sub) {
+  var extend = function extend() {
+    var fn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _utils.identity;
+    return createObservable(function (sub) {
       return subscribe(fn({
         onNext: sub.next,
         onError: sub.throwError,
@@ -79,19 +80,57 @@ var Observable = function Observable(taskFn) {
     });
   };
 
+  var map = function map(fn) {
+    return extend(function (options) {
+      return _objectSpread({}, options, {
+        onNext: (0, _utils.compose2)(options.onNext, fn)
+      });
+    });
+  };
+
+  var merge = function merge(obs) {
+    return createObservable(function (sub) {
+      var completionCount = 0;
+
+      var onComplete = function onComplete() {
+        completionCount++;
+
+        if (completionCount >= 2) {
+          sub.complete();
+        }
+      };
+
+      var unsub1 = subscribe({
+        onNext: sub.next,
+        onError: sub.throwError,
+        onComplete: onComplete
+      });
+      var unsub2 = obs.subscribe({
+        onNext: sub.next,
+        onError: sub.throwError,
+        onComplete: onComplete
+      });
+      return function () {
+        unsub1();
+        unsub2();
+      };
+    });
+  };
+
   return {
     subscribe: subscribe,
-    map: function map(fn) {
-      return extend(function (options) {
-        return _objectSpread({}, options, {
-          onNext: (0, _utils.compose2)(options.onNext, fn)
-        });
+    map: map,
+    merge: merge,
+    tap: function tap(fn) {
+      return map(function (x) {
+        fn(x);
+        return x;
       });
     },
     filter: function filter(fn) {
       return extend(function (options) {
         return _objectSpread({}, options, {
-          onNext: (0, _utils.compose2)(options.onNext, fn)
+          onNext: (0, _utils.ifElse)(fn, options.onNext, _utils.noop)
         });
       });
     },
@@ -123,7 +162,7 @@ var of = function of() {
     items[_key] = arguments[_key];
   }
 
-  return Observable(function (sub) {
+  return createObservable(function (sub) {
     items.forEach(function (x) {
       return sub.next(x);
     });
@@ -134,7 +173,7 @@ var of = function of() {
 exports.of = of;
 
 var range = function range(a, b) {
-  return Observable(function (sub) {
+  return createObservable(function (sub) {
     Array(b - a).fill(null).forEach(function (_, index) {
       sub.next(a + index);
     });
@@ -143,6 +182,16 @@ var range = function range(a, b) {
 };
 
 exports.range = range;
-Observable.of = of;
-var _default = Observable;
+
+var interval = function interval(delay) {
+  return createObservable(function (sub) {
+    var timer = setInterval(sub.next, delay, null);
+    return function () {
+      return clearInterval(timer);
+    };
+  });
+};
+
+exports.interval = interval;
+var _default = createObservable;
 exports["default"] = _default;
