@@ -105,9 +105,7 @@ function runProgram(program) {
     args[_key - 1] = arguments[_key];
   }
 
-  var p = program.constructor.name === 'GeneratorFunction' ? program.apply(void 0, args) : program;
-  if (!(0, _utils.isGenerator)(p)) throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
-  return p;
+  return typeof program === 'function' ? program.apply(void 0, args) : program;
 }
 
 var operationName = function operationName(effect, op) {

@@ -1,7 +1,7 @@
 import Task from '@algebraic-effects/task';
 // import { AlgebraicTask } from '@algebraic-effects/task';
 import { series } from '@algebraic-effects/task/fns';
-import { isGenerator, flatten, identity, compose } from '@algebraic-effects/utils';
+import { flatten, identity, compose } from '@algebraic-effects/utils';
 import { createOperation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
 import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, TaskWithCancel, HandlerInstance, OperationMap, Effect } from './types';
@@ -13,10 +13,7 @@ function runProgram<Args extends Array<any> = any[]>(
   ...args: Args
 ): ProgramIterator {
   // @ts-ignore
-  const p = program.constructor.name === 'GeneratorFunction' ? program(...args) : program;
-  if (!isGenerator(p))
-    throw new Error('Not a valid program. You need to pass either a generator function or a generator instance');
-  return p;
+  return typeof program === 'function' ? program(...args) : program;
 }
 
 const operationName = (effect: string, op: string) => effect ? `${effect}[${op}]` : op;
