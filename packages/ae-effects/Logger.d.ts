@@ -4,7 +4,7 @@ declare const Logger: import("@algebraic-effects/core").Effect<{
     info: unknown;
     error: unknown;
     warn: unknown;
-}> & Record<"error" | "message" | "log" | "info" | "warn", import("@algebraic-effects/core/types").OperationBehavior<any[]>>;
+}> & Record<"error" | "message" | "log" | "info" | "warn", (...a: any[]) => any>;
 export interface ConsoleInterface {
     log: (...x: any[]) => any;
     error: (e: any) => any;

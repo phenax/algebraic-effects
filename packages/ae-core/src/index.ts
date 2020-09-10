@@ -271,7 +271,7 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
 export const createEffect = <OpMap = OperationMap>(
   name: string,
   operations: OperationMap<keyof OpMap>
-): Effect<OpMap> & Record<keyof OpMap, OperationBehavior> => {
+): Effect<OpMap> & Record<keyof OpMap, (...a: any[]) => any> => {
   const effect: Effect<OpMap> = {
     name,
     operations,
