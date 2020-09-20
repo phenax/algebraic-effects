@@ -4,7 +4,7 @@ import { series } from '@algebraic-effects/task/fns';
 import { flatten, identity, compose } from '@algebraic-effects/utils';
 import { createOperation, isOperation, VALUE_HANDLER, HANDLER, func } from './utils';
 import genericHandlers, { createGenericEffect } from './generic';
-import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, TaskWithCancel, HandlerInstance, OperationMap, Effect, OperationBehavior } from './types';
+import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, TaskWithCancel, HandlerInstance, OperationMap, Effect, OperationBehavior, EffectOpsType, Operation } from './types';
 
 export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
 
@@ -268,10 +268,10 @@ const createHandler = (_handlers: HandlerMap = {}, options: HandlerOptions = {})
   return effectHandlerInstance;
 };
 
-export const createEffect = <OpMap = OperationMap>(
+export const createEffect = <OpMap = EffectOpsType>(
   name: string,
   operations: OperationMap<keyof OpMap>
-): Effect<OpMap> & Record<keyof OpMap, (...a: any[]) => any> => {
+): Effect<OpMap> & Record<keyof OpMap, Operation> => {
   const effect: Effect<OpMap> = {
     name,
     operations,
@@ -285,7 +285,7 @@ export const createEffect = <OpMap = OperationMap>(
   const ops = Object.keys(operations).reduce((acc, opName) => ({
     ...acc,
     [opName]: createOperation(operationName(name, opName), operations[opName as keyof (typeof operations)]),
-  }), {}) as Record<keyof OpMap, OperationBehavior>;
+  }), {}) as Record<keyof OpMap, Operation>;
 
   return { ...effect, ...ops };
 };

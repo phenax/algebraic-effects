@@ -1,6 +1,10 @@
 import { FlowOperators, createEffect, func } from '@algebraic-effects/core';
 
-const State = createEffect('State', {
+const State = createEffect<{
+  get: <T = any>() => T;
+  set: <T = any>(a: T) => void;
+  update: <T = any>(f: (a: T) => T) => T,
+}>('State', {
   get: func([], 'a'),
   set: func(['a']),
   update: func(['a -> a'], 'a'),

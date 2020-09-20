@@ -19,6 +19,7 @@
 - [x] "global" handlers to generic effects
 - [x] Support try-catch inside program
 - [x] Typescript types
+- [ ] Fix type for effect ops
 - [ ] Stateful/parameterized states (to avoid the second parameter to .of method of State)
 - [ ] ?Redux middleware
 

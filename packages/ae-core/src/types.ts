@@ -66,8 +66,11 @@ export interface HandlerInstance<Args extends any[] = any[]> {
   runMulti: (...args: Args) => TaskWithCancel;
 }
 
+export type OperationType = Function;
+
 export type HandlerMap<T extends string|symbol|number = string> = Record<T, OperationBehavior>;
 export type OperationMap<T extends string|symbol|number = string> = Record<T, OperationSignature>;
+export type EffectOpsType<T extends string = string> = Record<T, OperationType>;
 
 export interface Effect<T = {}> {
   name: string;
