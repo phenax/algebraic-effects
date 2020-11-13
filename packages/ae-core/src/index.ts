@@ -8,6 +8,7 @@ import { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, Handler
 
 export { Program, ProgramIterator, ProgramIteratorResult, FlowOperators, HandlerMap, OperationMap, Effect };
 
+// @ts-ignore
 function runProgram<Args extends Array<any> = any[]>(
   program: Program<Args> | ProgramIterator,
   ...args: Args

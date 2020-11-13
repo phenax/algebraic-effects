@@ -1,6 +1,6 @@
 {
   "name": "@algebraic-effects/observable",
-  "version": "0.0.5-alpha.1",
+  "version": "0.0.5-alpha.2",
   "description": "A lightweight observables library instead of promise",
   "main": "build/index.js",
   "buildOptions": {},
@@ -8,7 +8,7 @@
   "author": "Akshay Nair <phenax5@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@algebraic-effects/utils": "0.0.5-alpha.1"
+    "@algebraic-effects/utils": "0.0.5-alpha.2"
   },
   "devDependencies": {
     "@algebraic-effect/test-utils": "0.0.5-alpha.1"

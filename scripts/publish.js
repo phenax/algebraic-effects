@@ -45,7 +45,7 @@ const loginUser = () =>
   runCommand('npm', ['login', '--scope', rootProjectPackageJson.scope], { cwd: PROJECT_ROOT });
 
 const publishPackage = dir =>
-  runCommand('npm', ['publish', '--access=public', ...forwardArgs], { cwd: dir });
+  runCommand('yarn', ['publish', '--access=public', ...forwardArgs], { cwd: dir });
 
 const savePackageJson = (pjson, dir) =>
   fsextra.writeFile(path.join(dir, 'package.json'), JSON.stringify(pjson, 0, 2));
@@ -79,9 +79,10 @@ const updatePackageVersion = (version, packages) => {
     .then(resolveAll);
 };
 
-runLinter()
-  .then(() => runPackageTests())
-  .then(() => runBuild())
+Promise.resolve()
+  //.then(runLinter)
+  .then(runPackageTests)
+  .then(runBuild)
   .then(() => getPackages())
   .then(toPackagePaths)
   .then(filter(isPublishable))
